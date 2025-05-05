@@ -5,6 +5,8 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { Card, CardHeader, CardBody, Divider, Button, Alert } from "@heroui/react";
 import React, { ReactElement, useEffect, useState } from "react";
 
+import * as d3 from "d3";
+
 enum QueryStatus {
   None,
   Loading,
@@ -21,6 +23,8 @@ export default function Home() {
   const [titleColor, setTitleColor] = useState("");
 
   const titleColorArray = ["yellow", "green", "blue", "violet", "cyan", "pink"];
+
+ 
 
   useEffect(() => {
     if (!titleColor) {
@@ -52,6 +56,10 @@ export default function Home() {
   };
 
   const readData = async () => {
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    console.log(colorScale("0")); // Example usage of d3 color scale
+    
+
     setDbReadStatus(QueryStatus.Loading);
 
     try {

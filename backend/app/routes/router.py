@@ -5,6 +5,12 @@ from neo4j import GraphDatabase
 import os
 import time
 
+# graphx
+import json
+import networkx as nx
+from networkx.readwrite import json_graph
+
+
 # Credentials
 NEO4J_URI = "bolt://" + os.environ.get('DB_HOST') + ":7687"
 NEO4J_USER = "neo4j"
@@ -25,19 +31,48 @@ relationships = [
 ]
 
 
-@router.get("/", response_class=HTMLResponse, tags=["ROOT"])
-async def root():
-    html_content = """
-        <html>
-            <head>
-                <title>AVA Template Python API</title>
-            </head>
-            <body>
-                <h1>AVA Template Python API</h1>
-            </body>
-        </html>
-        """
-    return HTMLResponse(content=html_content, status_code=200)
+# @router.get("/", response_class=HTMLResponse, tags=["ROOT"])
+# async def root():
+#     html_content = """
+#         <html>
+#             <head>
+#                 <title>AVA Template Python API</title>
+#             </head>
+#             <body>
+#                 <h1>AVA Template Python API</h1>
+#             </body>
+#         </html>
+#         """
+#     return HTMLResponse(content=html_content, status_code=200)
+
+
+@router.get("/")
+async def default():
+    """ Example route to try if loading the graph works """
+    
+    
+    # Load the JSON data
+    with open('data/MC3_graph.json', 'r') as f:
+        json_data = json.load(f)
+
+    # Convert to NetworkX graph object
+    G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
+
+    # Basic info
+    print(f"Number of nodes: {G.number_of_nodes()}")
+    print(f"Number of edges: {G.number_of_edges()}")
+
+    # Check a few nodes
+    for node, data in list(G.nodes(data=True))[:5]:
+        print(node, data)
+
+    # Check a few edges
+    for u, v, data in list(G.edges(data=True))[:5]:
+        print(f"{u} -> {v} with data {data}")
+
+    return {"message": "Welcome to the Airport API!",
+            "node_count": G.number_of_nodes(),
+            "edge_count": G.number_of_edges()}
 
 # Just used for debugging
 @router.get("/clear-db", response_class=JSONResponse)
