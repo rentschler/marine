@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import Graph from "graphology";
 import { SigmaContainer, useLoadGraph } from "@react-sigma/core";
 import "@react-sigma/core/lib/style.css";
-import { GraphData, LinkType, Node, NodeType } from "@/types/graph-types";
+import { GraphData, LinkType, Node, NodeType, Link } from "@/types/graph-types";
 import * as d3 from "d3";
 import { ColorLegend } from "@/components/ui/color-legend";
 
 const sigmaStyle = { height: "1000px", width: "1000px" };
-
+   const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
+    const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
+  
 // Component that load the graph
 export const LoadGraph = () => {
     const loadGraph = useLoadGraph();
     const [error, setError] = useState<string | null>(null);
 
-    const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
-    const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
-  
+ 
     useEffect(() => {
       const fetchGraphData = async () => {
         try {
@@ -30,7 +30,6 @@ export const LoadGraph = () => {
           }
           const graphData: GraphData = await response.json();
           console.log("Graph data:", graphData);
-          
           
           // Create the graph
           const graph = new Graph();
@@ -49,7 +48,7 @@ export const LoadGraph = () => {
           });
           
           // Add edges
-          graphData.links.forEach((edge: any) => {
+          graphData.links.forEach((edge: Link) => {
             graph.addEdgeWithKey(
               `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
               edge.source,
@@ -58,11 +57,11 @@ export const LoadGraph = () => {
                 ...edge,
                 type: "arrow",
                 label: edge.type || 'RELATION',
-                color: edgeColorScale(edge.type),
+                color: edgeColorScale(edge.type || LinkType.Null),
               }
             );
           });
-  
+
           loadGraph(graph);
         } catch (err) {
           setError(err instanceof Error ? err.message : 'An error occurred');
@@ -83,24 +82,24 @@ export const LoadGraph = () => {
 
   // Component that display the graph
   export const OverviewGraph = () => {
-    const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
-    const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
     return (
       <div className="relative flex flex-row items-center justify-center">
         <SigmaContainer style={sigmaStyle}>
           <LoadGraph />
         </SigmaContainer>
-        <ColorLegend 
-          title="Node Types" 
-          scale={nodeColorScale} 
-          domain={Object.values(NodeType)} 
-        />
-        <ColorLegend 
-          title="Edge Types" 
-          scale={edgeColorScale} 
-          domain={Object.values(LinkType)} 
-        />
+        <div className="flex flex-col gap-4">
+          <ColorLegend 
+            title="Node Types" 
+            scale={nodeColorScale} 
+            domain={Object.values(NodeType)} 
+          />
+          <ColorLegend 
+            title="Edge Types" 
+            scale={edgeColorScale} 
+            domain={Object.values(LinkType)} 
+          />
+        </div>
       </div>
     );
   };

@@ -28,6 +28,7 @@ export enum LinkType {
     EvidenceFor = "evidence_for",
     Received = "received",
     Sent = "sent",
+    Null = "null",
 }
 
 export interface Node {
