@@ -21,12 +21,10 @@ const sigmaStyle = { height: "1000px", width: "1000px" };
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
-interface LoadGraphProps {
-    layout?: "force" | "circular" | "atlas2" | "circlepack" | "noverlap" | "random"
-}
+
 
 // Component that load the graph
-export const LoadGraph = ({ layout = "random" }: LoadGraphProps) => {
+export const LoadGraph = ({ layout = "random", limit }: OverviewGraphProps) => {
     const loadGraph = useLoadGraph();
     const [error, setError] = useState<string | null>(null);
 
@@ -64,33 +62,71 @@ export const LoadGraph = ({ layout = "random" }: LoadGraphProps) => {
                 // Create the graph
                 const graph = new Graph();
 
-                // Add nodes
-                graphData.nodes.forEach((node: Node) => {
-                    graph.addNode(node.id, {
-                        // ...node,
-                        type: "circle",
-                        x: Math.random() * 10 - 5, // Random position between -5 and 5
-                        y: Math.random() * 10 - 5,
-                        label: node.label,
-                        size: 10,
-                        color: nodeColorScale(node.type),
-                    });
-                });
+                if (limit) {
 
-                // Add edges
-                graphData.links.forEach((edge: Link) => {
-                    graph.addEdgeWithKey(
-                        `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
-                        edge.source,
-                        edge.target,
-                        {
-                            ...edge,
-                            type: "arrow",
-                            label: edge.type || 'RELATION',
-                            color: edgeColorScale(edge.type || LinkType.Null),
+
+                    // Add nodes
+                    graphData.nodes.slice(0, limit ? limit : graphData.nodes.length).forEach((node: Node) => {
+                        graph.addNode(node.id, {
+                            // ...node,
+                            type: "circle",
+                            x: Math.random() * 10 - 5, // Random position between -5 and 5
+                            y: Math.random() * 10 - 5,
+                            label: node.label,
+                            size: 10,
+                            color: nodeColorScale(node.type),
+                        });
+                    });
+
+                    // Add edges
+                    graphData.links.forEach((edge: Link) => {
+                        // Only add edge if both source and target nodes exist
+                        if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
+                            graph.addEdgeWithKey(
+                                `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
+                                edge.source,
+                                edge.target,
+                                {
+                                    ...edge,
+                                    type: "arrow",
+                                    label: edge.type || 'RELATION',
+                                    color: edgeColorScale(edge.type || LinkType.Null),
+                                }
+                            );
                         }
-                    );
-                });
+                    });
+
+                }
+                else {
+
+                    // Add nodes
+                    graphData.nodes.slice(0, limit ? limit : graphData.nodes.length).forEach((node: Node) => {
+                        graph.addNode(node.id, {
+                            // ...node,
+                            type: "circle",
+                            x: Math.random() * 10 - 5, // Random position between -5 and 5
+                            y: Math.random() * 10 - 5,
+                            label: node.label,
+                            size: 10,
+                            color: nodeColorScale(node.type),
+                        });
+                    });
+
+                    // Add edges
+                    graphData.links.forEach((edge: Link) => {
+                        graph.addEdgeWithKey(
+                            `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
+                            edge.source,
+                            edge.target,
+                            {
+                                ...edge,
+                                type: "arrow",
+                                label: edge.type || 'RELATION',
+                                color: edgeColorScale(edge.type || LinkType.Null),
+                            }
+                        );
+                    });
+                }
                 assign()
                 // Load the graph in sigma
                 loadGraph(graph);
@@ -112,9 +148,14 @@ export const LoadGraph = ({ layout = "random" }: LoadGraphProps) => {
     return null;
 };
 
+interface OverviewGraphProps {
+    layout?: "force" | "circular" | "atlas2" | "circlepack" | "noverlap" | "random"
+    limit?: number
+}
+
 
 // Component that display the graph
-export const OverviewGraph = ({ layout }: { layout?: "force" | "circular" | "atlas2" | "circlepack" | "noverlap" | "random" }) => {
+export const OverviewGraph = ({ layout, limit }: OverviewGraphProps) => {
     const layoutDescriptions = {
         force: "JavaScript implementation of a basic force directed layout algorithm for graphology. Only works well for small graphs.",
         circlepack: "Arranges the nodes as a bubble chart, according to specified attributes.",
@@ -136,7 +177,7 @@ export const OverviewGraph = ({ layout }: { layout?: "force" | "circular" | "atl
             </div>
             <div className="relative flex flex-row items-center justify-center">
                 <SigmaContainer style={sigmaStyle} settings={{ allowInvalidContainer: true }}>
-                    <LoadGraph layout={layout} />
+                    <LoadGraph layout={layout} limit={limit} />
                     <ControlsContainer position={'bottom-right'}>
                         <ZoomControl />
                         <FullScreenControl />
