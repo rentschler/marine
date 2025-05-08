@@ -21,7 +21,6 @@ NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 router = APIRouter()
 
-
 @router.on_event("startup")
 async def start_up():
     
