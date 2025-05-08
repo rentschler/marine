@@ -1,8 +1,10 @@
 import random
+from models.Graph import GraphData
+from database_utils.get_hole_graph import get_hole_graph
 from database_utils.get_node_count import get_node_count_in_db
 from database_utils.import_edges import import_edges
 from database_utils.import_nodes import import_nodes
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
 import os
@@ -49,4 +51,12 @@ async def start_up():
     except Exception as e:
         print(f"Error during DB setup: \n {e}")
 
-
+@router.get("/graph-data")
+async def get_graph_data():
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph = await get_hole_graph(session)
+                return graph.model_dump(exclude_unset=True, exclude_none=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error while fetching data from Neo4j: {str(e)}")
