@@ -19,8 +19,8 @@ async def get_hole_graph(session) -> GraphData:
         r = record["r"]
         link_data = {
             "id": r.id,
-            "source": record["a"].id,
-            "target": record["b"].id,
+            "source": record["a"].get("id"),
+            "target": record["b"].get("id"),
             "type": r.get("type"),
             "is_inferred": r.get("is_inferred", False)
         }

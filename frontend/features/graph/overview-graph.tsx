@@ -52,6 +52,7 @@ export const LoadGraph = ({ layout = "random", limit }: OverviewGraphProps) => {
                 console.log("Fetching graph data");
 
                 const response = await fetch('/api/graph-data');
+                console.log(response)
 
                 if (!response.ok) {
                     throw new Error('Failed to fetch graph data');
