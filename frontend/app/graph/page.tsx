@@ -1,0 +1,22 @@
+'use client'
+
+import * as React from 'react'
+import { useSearchParams } from 'next/navigation'
+// import OverviewGraph from '@/features/graph/overview-graph';
+
+import dynamic from "next/dynamic";
+
+const OverviewGraph = dynamic(() => import("@/features/graph/overview-graph"), {
+	ssr: false,
+});
+
+
+function Page() {
+  // asynchronous access of `params`.
+  const searchParams = useSearchParams();
+  const layout = searchParams.get('layout');
+  const limit = searchParams.get('limit');
+  return <OverviewGraph layout={layout as "force" | "circular" | "atlas2" | "circlepack" | "noverlap" | "random" | undefined} limit={limit ? +limit : undefined} />
+}
+
+export default Page;

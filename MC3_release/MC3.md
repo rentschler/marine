@@ -73,7 +73,7 @@ Milestone 1: **Overview of the Data** (due 05/12/2025)
 - (minimal) prepreocessioning of the data
 - load it into a graph database
 
-
+- **simple view of the whole graph in the frontend**
 
 - sketch ideas
 - think about milestones
