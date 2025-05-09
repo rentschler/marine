@@ -5,6 +5,8 @@ interface ColorLegendProps {
   scale: d3.ScaleOrdinal<string, string>;
   domain: string[];
 }
+    
+
 
 export const ColorLegend: React.FC<ColorLegendProps> = ({ title, scale, domain }) => {
   return (

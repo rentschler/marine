@@ -1,4 +1,5 @@
 import random
+from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
 from models.Graph import GraphData
 from database_utils.get_hole_graph import get_hole_graph
@@ -66,6 +67,8 @@ async def get_options():
     try:
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
-                return await get_min_max_node_degree(session)
+                degrees = await get_min_max_node_degree(session)
+                types = await get_node_edges_filter_options(session)
+                return {**degrees, **types}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
