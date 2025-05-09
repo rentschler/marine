@@ -1,4 +1,6 @@
 import random
+from database_utils.get_filtered_graph import get_filtered_graph
+from models.filter_request_body import FilterRequestBody
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
 from models.Graph import GraphData
@@ -25,7 +27,6 @@ router = APIRouter()
 
 @router.on_event("startup")
 async def start_up():
-    
     
     with open('data/MC3_graph.json', 'r') as f:
         json_data = json.load(f)
@@ -70,5 +71,16 @@ async def get_options():
                 degrees = await get_min_max_node_degree(session)
                 types = await get_node_edges_filter_options(session)
                 return {**degrees, **types}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/filter")
+async def filter_graph(request: FilterRequestBody):
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph = await get_filtered_graph(session, request)
+                return graph.model_dump(exclude_unset=True, exclude_none=True)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
