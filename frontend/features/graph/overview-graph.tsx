@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Graph from "graphology";
-import { ControlsContainer, FullScreenControl, SigmaContainer, useLoadGraph, ZoomControl } from "@react-sigma/core";
+import { ControlsContainer, FullScreenControl, SigmaContainer, useLoadGraph, useRegisterEvents, useSetSettings, ZoomControl, useSigma } from "@react-sigma/core";
 import "@react-sigma/core/lib/style.css";
 import { GraphData, LinkType, Node, NodeType, Link } from "@/types/graph-types";
 import * as d3 from "d3";
@@ -11,12 +11,12 @@ import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from "@react-sigma/lay
 import '@react-sigma/core/lib/style.css';
 import { GraphSearch, GraphSearchOption } from '@react-sigma/graph-search';
 import '@react-sigma/graph-search/lib/style.css';
-import { MiniMap } from '@react-sigma/minimap';
 import { useLayoutCircular } from "@react-sigma/layout-circular";
 import { useLayoutForce } from "@react-sigma/layout-force";
-import { LayoutNoverlapControl, useLayoutNoverlap } from "@react-sigma/layout-noverlap";
+import { useLayoutNoverlap } from "@react-sigma/layout-noverlap";
 import { useLayoutRandom } from "@react-sigma/layout-random";
 import { useLayoutCirclepack } from "@react-sigma/layout-circlepack";
+import { FocusOnNode } from "./FocusOnNode";
 const sigmaStyle = { height: "1000px", width: "1000px" };
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
@@ -27,6 +27,15 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 export const LoadGraph = ({ layout = "random", limit }: OverviewGraphProps) => {
     const loadGraph = useLoadGraph();
     const [error, setError] = useState<string | null>(null);
+    const [data, setData] = useState<GraphData | null>(null);
+
+    const sigma = useSigma();
+    const registerEvents = useRegisterEvents();
+    const setSettings = useSetSettings();
+    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+    const disableHoverEffect = false;
+
+
 
     // Hook for the layout
     let positions: any;
@@ -46,6 +55,9 @@ export const LoadGraph = ({ layout = "random", limit }: OverviewGraphProps) => {
     }
 
 
+    /**
+     * When component mounts, fetch the graph data
+     */
     useEffect(() => {
         const fetchGraphData = async () => {
             try {
@@ -59,80 +71,7 @@ export const LoadGraph = ({ layout = "random", limit }: OverviewGraphProps) => {
                 }
                 const graphData: GraphData = await response.json();
                 console.log("Graph data:", graphData);
-
-                // Create the graph
-                const graph = new Graph();
-
-                if (limit) {
-
-
-                    // Add nodes
-                    graphData.nodes.slice(0, limit ? limit : graphData.nodes.length).forEach((node: Node) => {
-                        graph.addNode(node.id, {
-                            // ...node,
-                            type: "circle",
-                            x: Math.random() * 10 - 5, // Random position between -5 and 5
-                            y: Math.random() * 10 - 5,
-                            label: node.label,
-                            size: 10,
-                            color: nodeColorScale(node.type),
-                        });
-                    });
-
-                    // Add edges
-                    graphData.links.forEach((edge: Link) => {
-                        // Only add edge if both source and target nodes exist
-                        if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
-                            graph.addEdgeWithKey(
-                                `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
-                                edge.source,
-                                edge.target,
-                                {
-                                    ...edge,
-                                    type: "arrow",
-                                    label: edge.type || 'RELATION',
-                                    color: edgeColorScale(edge.type || LinkType.Null),
-                                }
-                            );
-                        }
-                    });
-
-                }
-                else {
-
-                    // Add nodes
-                    graphData.nodes.slice(0, limit ? limit : graphData.nodes.length).forEach((node: Node) => {
-                        graph.addNode(node.id, {
-                            // ...node,
-                            type: "circle",
-                            x: Math.random() * 10 - 5, // Random position between -5 and 5
-                            y: Math.random() * 10 - 5,
-                            label: node.label,
-                            size: 10,
-                            color: nodeColorScale(node.type),
-                        });
-                    });
-
-                    // Add edges
-                    graphData.links.forEach((edge: Link) => {
-                        graph.addEdgeWithKey(
-                            `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
-                            edge.source,
-                            edge.target,
-                            {
-                                ...edge,
-                                type: "arrow",
-                                label: edge.type || 'RELATION',
-                                color: edgeColorScale(edge.type || LinkType.Null),
-                            }
-                        );
-                    });
-                }
-                assign()
-                // Load the graph in sigma
-                loadGraph(graph);
-                // Apply the layout
-                assign();
+                setData(graphData);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'An error occurred');
                 console.error('Error loading graph:', err);
@@ -140,7 +79,92 @@ export const LoadGraph = ({ layout = "random", limit }: OverviewGraphProps) => {
         };
 
         fetchGraphData();
-    }, [loadGraph, positions, assign]);
+    }, []);
+
+    /**
+     * When the data is loaded, create the graph
+     */
+    useEffect(() => {
+        if (!data) return;
+
+        // Create the graph
+        const graph = new Graph();
+
+        // Add nodes
+        data.nodes.slice(0, limit ? limit : data.nodes.length).forEach((node: Node) => {
+            graph.addNode(node.id, {
+                // ...node,
+                type: "circle",
+                x: Math.random() * 10 - 5, // Random position between -5 and 5
+                y: Math.random() * 10 - 5,
+                label: node.label,
+                size: 10,
+                color: nodeColorScale(node.type),
+            });
+        });
+
+        // Add edges
+        data.links.forEach((edge: Link) => {
+            graph.addEdgeWithKey(
+                `${edge.source}-${edge.target}-${edge.id || Math.random()}`,
+                edge.source,
+                edge.target,
+                {
+                    ...edge,
+                    type: "arrow",
+                    label: edge.type || 'RELATION',
+                    color: edgeColorScale(edge.type || LinkType.Null),
+                }
+            );
+        });
+        assign()
+        // Load the graph in sigma
+        loadGraph(graph);
+        // Apply the layout
+        assign();
+
+        // Register the events
+        registerEvents({
+            enterNode: (event: any) => {
+                console.log("Enter node", event);
+                return setHoveredNode(event.node)
+            },
+            leaveNode: () => setHoveredNode(null),
+        });
+    }, [data, loadGraph, positions, assign]);
+
+    /**
+     * When data is loaded or hovered node changes, update the graph
+     */
+    useEffect(() => {
+        setSettings({
+            nodeReducer: (node, data) => {
+                const graph = sigma.getGraph();
+                const newData = { ...data, highlighted: data.highlighted || false } as any;
+
+                if (!disableHoverEffect && hoveredNode) {
+                    if (node === hoveredNode || graph.neighbors(hoveredNode).includes(node)) {
+                        newData.highlighted = true;
+                    } else {
+                        newData.color = '#E2E2E2';
+                        newData.highlighted = false;
+                    }
+                }
+                return newData;
+            },
+            edgeReducer: (edge, data) => {
+                const graph = sigma.getGraph();
+                const newData = { ...data, hidden: false };
+
+                if (!disableHoverEffect && hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
+                    newData.hidden = true;
+                }
+                return newData;
+            },
+        });
+    }, [hoveredNode, setSettings, sigma, disableHoverEffect]);
+
+
 
     if (error) {
         return <div>Error: {error}</div>;
@@ -166,6 +190,33 @@ export const OverviewGraph = ({ layout, limit }: OverviewGraphProps) => {
         random: "Random layout positioning every node by choosing each coordinates uniformly at random on the interval [0, 1)."
     };
 
+    // state management for userinteraction
+    const [selectedNode, setSelectedNode] = useState<string | null>(null);
+    const [focusNode, setFocusNode] = useState<string | null>(null);
+
+    const onFocus = useCallback((value: GraphSearchOption | null) => {
+        if (value === null) setFocusNode(null);
+        else if (value.type === 'nodes') setFocusNode(value.id);
+    }, []);
+    const onChange = useCallback((value: GraphSearchOption | null) => {
+        if (value === null) setSelectedNode(null);
+        else if (value.type === 'nodes') setSelectedNode(value.id);
+    }, []);
+    const postSearchResult = useCallback((options: GraphSearchOption[]): GraphSearchOption[] => {
+        return options.length <= 10
+            ? options
+            : [
+                ...options.slice(0, 10),
+                {
+                    type: 'message',
+                    message: <span className="text-center text-muted">And {options.length - 10} others</span>,
+                },
+            ];
+    }, []);
+
+
+
+
     return (
         <div className="flex flex-col items-center gap-6 p-6">
             <div className="text-center">
@@ -179,10 +230,21 @@ export const OverviewGraph = ({ layout, limit }: OverviewGraphProps) => {
             <div className="relative flex flex-row items-center justify-center">
                 <SigmaContainer style={sigmaStyle} settings={{ allowInvalidContainer: true }}>
                     <LoadGraph layout={layout} limit={limit} />
+                    <FocusOnNode node={focusNode ?? selectedNode} />
                     <ControlsContainer position={'bottom-right'}>
                         <ZoomControl />
                         <FullScreenControl />
                         <LayoutForceAtlas2Control />
+                    </ControlsContainer>
+
+                    <ControlsContainer position={'top-right'}>
+                        <GraphSearch
+                            type="nodes"
+                            value={selectedNode ? { type: 'nodes', id: selectedNode } : null}
+                            onFocus={onFocus}
+                            onChange={onChange}
+                            postSearchResult={postSearchResult}
+                        />
                     </ControlsContainer>
                 </SigmaContainer>
                 <div className="flex flex-col gap-4">
