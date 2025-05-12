@@ -10,7 +10,6 @@ class LinkType(str, Enum):
     EvidenceFor = "evidence_for"
     Received = "received"
     Sent = "sent"
-    Null = "null"
 
 class Link(BaseModel):
     model_config = ConfigDict(exclude_unset=True, exclude_none=True)

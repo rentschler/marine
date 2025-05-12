@@ -1,10 +1,6 @@
 async def get_node_edges_filter_options(session):
     node_properties = [
-        "type", "monitoring_type", "findings", "content", "assessment_type", "results", "movement_type",
-        "destination", "enforcement_type", "outcome", "activity_type", "participants", "thing_collected",
-        "reference", "date", "time", "friendship_type", "permission_type", "start_date", "end_date",
-        "report_type", "submission_date", "jurisdiction_type", "authority_level", "coordination_type",
-        "operational_role"
+        "type", "sub_type"
     ]
     result = {}
     for prop in node_properties:
