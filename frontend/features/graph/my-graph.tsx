@@ -18,8 +18,18 @@ import { GraphWrapperProps } from './graph-wrapper';
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
+interface MyGraphProps extends GraphWrapperProps {
+  hoveredNode: string | null;
+  setHoveredNode: (node: string | null) => void;
+}
+
 // Component that load the graph
-export const MyGraph = ({ layout = 'random', limit }: GraphWrapperProps) => {
+export const MyGraph = ({
+  layout = 'random',
+  limit,
+  hoveredNode,
+  setHoveredNode,
+}: MyGraphProps) => {
   const loadGraph = useLoadGraph();
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<GraphData | null>(null);
@@ -27,7 +37,6 @@ export const MyGraph = ({ layout = 'random', limit }: GraphWrapperProps) => {
   const sigma = useSigma();
   const registerEvents = useRegisterEvents();
   const setSettings = useSetSettings();
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const disableHoverEffect = false;
 
   // Hook for the layout
@@ -92,6 +101,7 @@ export const MyGraph = ({ layout = 'random', limit }: GraphWrapperProps) => {
         label: node.label,
         size: 10,
         color: nodeColorScale(node.type),
+        data: node,
       });
     });
 
