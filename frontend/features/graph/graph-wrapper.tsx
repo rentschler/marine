@@ -89,16 +89,10 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
       try {
         // Create filter request body based on selected filters
         const filterBody: FilterRequestBody = {
-          filterEntitys: -1,
-          showEvents: true,
-          showRelations: true,
-          showEvidenceFor: true,
-          showReceived: true,
-          showSent: true,
-          showNull: true,
           minDegree: selectedNodeDegrees?.[0] ?? 0,
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
-          type: selectedNodeTypes,
+          nodeTypes: selectedNodeTypes,
+          edgeTypes: selectedEdgeTypes
         };
 
         
