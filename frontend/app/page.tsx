@@ -1,24 +1,27 @@
-"use client";
+'use client';
+
+
+import { FilterDashboard } from "@/features/filter_dashboard/filter-dashboard";
+
+import dynamic from 'next/dynamic';
+
+
+const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
+  // special import to ensure that the component is not rendered on the server
+  ssr: false,
+});
 
 export default function Home() {
-
-
-
   return (
-    <>
-      <div className="flex flex-col items-center justify-center gap-4">
-        {/* <CustomLink href="/" className="my-auto">Home</CustomLink>
-        <CustomLink href="/graph" className="my-auto">Default</CustomLink>
-        <CustomLink href="/graph?layout=force" className="my-auto">Force</CustomLink>
-        <CustomLink href="/graph?layout=circular" className="my-auto">Circular</CustomLink>
-        <CustomLink href="/graph?layout=atlas2" className="my-auto">Atlas2</CustomLink>
-        <CustomLink href="/graph?layout=circlepack" className="my-auto">Circlepack</CustomLink>
-        <CustomLink href="/graph?layout=noverlap" className="my-auto">Noverlap</CustomLink> */}
-        {/* <CustomLink href="/graph?layout=random" className="my-auto">Random</CustomLink> */}
-
-
+    <div className="h-screen w-full grid grid-cols-[70%_30%] grid-rows-[80%_20%]">
+      <div className=" w-full h-full">
+        <GraphWrapper layout="circlepack"/>
       </div>
-
-    </>
+      <div className=" w-full h-full">
+        <FilterDashboard/>
+      </div>
+      <div className="col-span-2 bg-red-500 w-full h-full">Timeline</div>
+    </div>
   );
 }
+

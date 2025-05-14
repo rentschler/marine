@@ -1,14 +1,13 @@
 import { useCamera, useSigma } from '@react-sigma/core';
 import { FC, useEffect } from 'react';
 
-
 /**
  * This component is used to focus on a node.
  * Found in the @react-sigma/core documentation.
  * https://github.com/sim51/react-sigma/blob/main/packages/storybook/stories/common/FocusOnNode.tsx#L13
  * @param node - The node to focus on.
  * @param move - Whether to move the camera to the node.
- * @returns 
+ * @returns
  */
 export const FocusOnNode: FC<{ node: string | null; move?: boolean }> = ({ node, move }) => {
   // Get sigma
