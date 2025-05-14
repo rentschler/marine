@@ -32,6 +32,7 @@
     "@react-sigma/layout-noverlap": "^5.0.2",
     "@react-sigma/layout-random": "^5.0.2",
     "@react-sigma/minimap": "^5.0.2",
+    "@sigma/edge-curve": "^3.1.0",
     "@types/d3": "^7.4.3",
     "clsx": "2.1.1",
     "d3": "^7.9.0",
