@@ -88,7 +88,7 @@ export function FilterDashboard(){
                         <Slider
                             className="w-full"
                             label="Node Degree"
-                            value={selectedNodeDegrees}
+                            defaultValue={selectedNodeDegrees}
                             onChangeEnd={(val) => setSelectedNodeDegrees(val as [number, number])}
                             maxValue={optionsValues?.max_degree as number}
                             minValue={optionsValues?.min_degree as number}

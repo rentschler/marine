@@ -6,7 +6,8 @@ import { useSearchParams } from 'next/navigation';
 
 import dynamic from 'next/dynamic';
 
-const OverviewGraph = dynamic(() => import('@/features/graph/graph-wrapper'), {
+const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
+  // special import to ensure that the component is not rendered on the server
   ssr: false,
 });
 
@@ -17,7 +18,7 @@ function Page() {
   const limit = searchParams.get('limit');
   return (
     <div className="w-full h-full">
-      <OverviewGraph
+      <GraphWrapper
         layout={
           layout as
             | 'force'
