@@ -16,12 +16,21 @@ function Page() {
   const layout = searchParams.get('layout');
   const limit = searchParams.get('limit');
   return (
-    <OverviewGraph
-      layout={
-        layout as 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | undefined
-      }
-      limit={limit ? +limit : undefined}
-    />
+    <div className="w-full h-full">
+      <OverviewGraph
+        layout={
+          layout as
+            | 'force'
+            | 'circular'
+            | 'atlas2'
+            | 'circlepack'
+            | 'noverlap'
+            | 'random'
+            | undefined
+        }
+        limit={limit ? +limit : undefined}
+      />
+    </div>
   );
 }
 

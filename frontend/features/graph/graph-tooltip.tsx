@@ -4,9 +4,10 @@ import { Node } from '@/types/graph-types';
 
 interface GraphTooltipProps {
   node: string | null;
+  width: number;
 }
 
-const GraphTooltip = ({ node }: GraphTooltipProps) => {
+const GraphTooltip = ({ node, width }: GraphTooltipProps) => {
   // Get sigma
   const sigma = useSigma();
 
@@ -14,7 +15,7 @@ const GraphTooltip = ({ node }: GraphTooltipProps) => {
 
   useEffect(() => {
     if (!node) {
-      setTooltip(null);
+      // setTooltip(null);
       return;
     }
     const highlightedNode = sigma.getGraph().getNodeAttributes(node);
@@ -40,7 +41,7 @@ const GraphTooltip = ({ node }: GraphTooltipProps) => {
   if (!tooltip) return null;
 
   return (
-    <div className=" bg-white p-4 rounded-lg shadow-lg">
+    <div className=" bg-white p-4 rounded-lg shadow-lg" style={{ width: width }}>
       <div className="text-sm font-bold">{tooltip}</div>
     </div>
   );

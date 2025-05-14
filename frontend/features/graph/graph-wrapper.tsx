@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import {
   ControlsContainer,
   FullScreenControl,
@@ -18,7 +18,8 @@ import '@react-sigma/graph-search/lib/style.css';
 import { FocusOnNode } from './focus-on-node';
 import { MyGraph } from './my-graph';
 import GraphTooltip from './graph-tooltip';
-const sigmaStyle = { height: '1000px', width: '1000px' };
+import { useEffect } from 'react';
+import { useDimensions } from '@/hooks/use-dimension';
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
@@ -29,6 +30,11 @@ export interface GraphWrapperProps {
 
 // Component that display the graph
 export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
+  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+  // get the dimensions of the box + update when the screen size changes
+  const { width, height } = useDimensions(boxRef);
+
+  const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
   const layoutDescriptions = {
     force:
       'JavaScript implementation of a basic force directed layout algorithm for graphology. Only works well for small graphs.',
@@ -70,14 +76,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6">
-      <div className="text-center">
-        {/* Title and description of the layout */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          {layout ? layout.charAt(0).toUpperCase() + layout.slice(1) : 'Random'} Layout
-        </h1>
-        <p className="text-gray-600 max-w-2xl">{layoutDescriptions[layout || 'random']}</p>
-      </div>
+    <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
         <SigmaContainer style={sigmaStyle} settings={{ allowInvalidContainer: true }}>
@@ -91,7 +90,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
           {/* Container for the controls */}
-          <ControlsContainer position={'bottom-right'}>
+          <ControlsContainer position={'top-left'}>
             <ZoomControl />
             <FullScreenControl />
             <LayoutForceAtlas2Control />
@@ -109,15 +108,24 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
 
           {/* Container for the tooltip component */}
           <ControlsContainer>
-            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} />
+            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={width * 0.66} />
+          </ControlsContainer>
+          <ControlsContainer position={'bottom-right'}>
+            <div className="flex flex-row gap-2">
+              {/* Container for the color legends */}
+              <ColorLegend
+                title="Node Types"
+                scale={nodeColorScale}
+                domain={Object.values(NodeType)}
+              />
+              {/* <ColorLegend
+                title="Edge Types"
+                scale={edgeColorScale}
+                domain={Object.values(LinkType)}
+              /> */}
+            </div>
           </ControlsContainer>
         </SigmaContainer>
-
-        {/* Container for the color legends */}
-        <div className="flex flex-col gap-4">
-          <ColorLegend title="Node Types" scale={nodeColorScale} domain={Object.values(NodeType)} />
-          <ColorLegend title="Edge Types" scale={edgeColorScale} domain={Object.values(LinkType)} />
-        </div>
       </div>
     </div>
   );
