@@ -52,7 +52,8 @@ export const MyGraph = ({
     ({ positions, assign } = useLayoutCirclepack());
   } else if (layout === 'noverlap') {
     ({ positions, assign } = useLayoutNoverlap());
-  } else {
+  }
+  else if (layout === 'random') {
     ({ positions, assign } = useLayoutRandom());
   }
 
