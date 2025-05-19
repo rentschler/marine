@@ -1,5 +1,4 @@
 import { GraphData, SubType } from '@/types/graph-types';
-import { SigmaContainer, useLoadGraph } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
 import EdgeCurveProgram, {
   DEFAULT_EDGE_CURVATURE,
@@ -9,6 +8,15 @@ import { MultiDirectedGraph as MultiGraphConstructor } from 'graphology';
 import { CSSProperties, FC, useEffect, useMemo, useState } from 'react';
 import { EdgeArrowProgram } from 'sigma/rendering';
 import { Node } from '@/types/graph-types';
+import { LayoutForceAtlas2Control, useLayoutForceAtlas2 } from '@react-sigma/layout-forceatlas2';
+
+import {
+  ControlsContainer,
+  FullScreenControl,
+  SigmaContainer,
+  ZoomControl,
+  useLoadGraph,
+} from '@react-sigma/core';
 
 interface NodeType {
   x: number;
@@ -32,6 +40,8 @@ interface MyGraphProps {
 
 const MyGraph: React.FC<MyGraphProps> = ({ data }) => {
   const loadGraph = useLoadGraph<NodeType, EdgeType>();
+  const {positions, assign} = useLayoutForceAtlas2();
+
 
   useEffect(() => {
     if (!data) return;
@@ -119,7 +129,9 @@ const MyGraph: React.FC<MyGraphProps> = ({ data }) => {
 
     // load the graph in sigma
     loadGraph(graph);
-  }, [loadGraph, data]);
+        // Apply the layout
+    assign();
+  }, [loadGraph, data, positions]);
 
   return null;
 };
@@ -179,6 +191,11 @@ const MultiGraphWrapper = () => {
   return (
     <SigmaContainer graph={MultiGraphConstructor<NodeType, EdgeType>} settings={settings}>
       <MyGraph data={currData} />
+      <ControlsContainer position={'top-left'}>
+        <ZoomControl />
+        <FullScreenControl />
+        <LayoutForceAtlas2Control />
+      </ControlsContainer>
     </SigmaContainer>
   );
 };
