@@ -21,6 +21,7 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 interface MyGraphProps extends GraphWrapperProps {
   hoveredNode: string | null;
   setHoveredNode: (node: string | null) => void;
+  data: GraphData | null;
 }
 
 // Component that load the graph
@@ -29,10 +30,9 @@ export const MyGraph = ({
   limit,
   hoveredNode,
   setHoveredNode,
+  data,
 }: MyGraphProps) => {
   const loadGraph = useLoadGraph();
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<GraphData | null>(null);
 
   const sigma = useSigma();
   const registerEvents = useRegisterEvents();
@@ -52,35 +52,36 @@ export const MyGraph = ({
     ({ positions, assign } = useLayoutCirclepack());
   } else if (layout === 'noverlap') {
     ({ positions, assign } = useLayoutNoverlap());
-  } else {
+  }
+  else if (layout === 'random') {
     ({ positions, assign } = useLayoutRandom());
   }
 
   /**
    * When component mounts, fetch the graph data
    */
-  useEffect(() => {
-    const fetchGraphData = async () => {
-      try {
-        console.log('Fetching graph data');
+  // useEffect(() => {
+  //   const fetchGraphData = async () => {
+  //     try {
+  //       console.log('Fetching graph data');
 
-        const response = await fetch('/api/graph-data');
-        console.log(response);
+  //       const response = await fetch('/api/graph-data');
+  //       console.log(response);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch graph data');
-        }
-        const graphData: GraphData = await response.json();
-        console.log('Graph data:', graphData);
-        setData(graphData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-        console.error('Error loading graph:', err);
-      }
-    };
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch graph data');
+  //       }
+  //       const graphData: GraphData = await response.json();
+  //       console.log('Graph data:', graphData);
+  //       setData(graphData);
+  //     } catch (err) {
+  //       setError(err instanceof Error ? err.message : 'An error occurred');
+  //       console.error('Error loading graph:', err);
+  //     }
+  //   };
 
-    fetchGraphData();
-  }, []);
+  //   fetchGraphData();
+  // }, []);
 
   /**
    * When the data is loaded, create the graph
@@ -166,8 +167,9 @@ export const MyGraph = ({
     });
   }, [hoveredNode, setSettings, sigma, disableHoverEffect]);
 
-  if (error) {
-    return <div>Error: {error}</div>;
+
+  if (!data) {
+    return <div>Loading...</div>;
   }
 
   return null;
