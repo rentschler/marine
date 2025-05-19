@@ -7,7 +7,10 @@ async def get_node_edges_filter_options(session):
         query = f"MATCH (n) WHERE n.{prop} IS NOT NULL RETURN DISTINCT n.{prop} AS value"
         try:
             records = await session.run(query)
-            values = [record["value"] async for record in records]
+            values = []
+            async for record in records:
+                if record["value"] != "Entity":
+                    values.append(record["value"])
             result[prop] = sorted(values)
         except Exception as e:
             result[prop] = []

@@ -8,7 +8,8 @@ import {
   ZoomControl,
 } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { LinkType, NodeType } from '@/types/graph-types';
+import { GraphData, LinkType, NodeType } from '@/types/graph-types';
+import { FilterRequestBody } from '@/types/filter-types';
 import * as d3 from 'd3';
 import { ColorLegend } from '@/components/ui/color-legend';
 import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
@@ -20,6 +21,8 @@ import { MyGraph } from './my-graph';
 import GraphTooltip from './graph-tooltip';
 import { useEffect } from 'react';
 import { useDimensions } from '@/hooks/use-dimension';
+import { useFilterContext } from '@/context/filter-context';
+
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
@@ -33,6 +36,12 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   // get the dimensions of the box + update when the screen size changes
   const { width, height } = useDimensions(boxRef);
+
+  // filter options
+  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
+
+  const [currentData, setCurrentData] = useState<GraphData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
   const layoutDescriptions = {
@@ -75,6 +84,47 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
         ];
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Create filter request body based on selected filters
+        const filterBody: FilterRequestBody = {
+          minDegree: selectedNodeDegrees?.[0] ?? 0,
+          maxDegree: selectedNodeDegrees?.[1] ?? 1000,
+          nodeTypes: selectedNodeTypes,
+          edgeTypes: selectedEdgeTypes
+        };
+
+        
+
+        const response = await fetch('/api/filter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(filterBody),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch filtered graph data');
+        }
+
+        const data: GraphData = await response.json();
+        console.log('Filtered data:', data);
+        setCurrentData(data);
+      } catch (error) {
+        console.error('Error fetching filtered graph data:', error);
+        setError('Failed to fetch filtered graph data');
+      }
+    };
+
+    fetchData();
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
   return (
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
@@ -86,6 +136,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
             limit={limit}
             hoveredNode={hoveredNode}
             setHoveredNode={setHoveredNode}
+            data={currentData}
           />
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
