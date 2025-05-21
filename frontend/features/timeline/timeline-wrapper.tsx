@@ -11,8 +11,8 @@ interface TimelineData {
   max_date: string;
 }
 
-interface YearBin {
-  year: number;
+interface DayBin {
+  day: string;
   nodes: Node[];
 }
 
@@ -20,39 +20,39 @@ export default function TimelineWrapper() {
   const [timelineData, setTimelineData] = useState<TimelineData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentData, setCurrentData] = useState<YearBin[] | null>(null);
+  const [currentData, setCurrentData] = useState<DayBin[] | null>(null);
   const [uniqueDates, setUniqueDates] = useState<(Date | undefined)[]>([]);
 
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
 
-  useEffect(() => {
-    const fetchTimelineData = async () => {
-      try {
-        const response = await fetch('/api/options');
-        if (!response.ok) {
-          throw new Error('Failed to fetch timeline data');
-        }
-        const data = await response.json();
-        setTimelineData({
-          min_date: data.min_date,
-          max_date: data.max_date
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchTimelineData = async () => {
+  //     try {
+  //       const response = await fetch('/api/options');
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch timeline data');
+  //       }
+  //       const data = await response.json();
+  //       setTimelineData({
+  //         min_date: data.min_date,
+  //         max_date: data.max_date
+  //       });
+  //     } catch (err) {
+  //       setError(err instanceof Error ? err.message : 'An error occurred');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchTimelineData();
-  }, []);
+  //   fetchTimelineData();
+  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Create filter request body based on selected filters
         // const filterBody: FilterRequestBody = {"minDegree":1,"maxDegree":167,"nodeTypes":["Commodity","Event","Relationship"],"edgeTypes":["evidence_for","missing","received","sent"]}
-        
+
 
         const response = await fetch('/api/graph-data-timestamps', {
           method: 'GET',
@@ -68,33 +68,51 @@ export default function TimelineWrapper() {
         const data: GraphData = await response.json();
 
 
+        // filter out the one node with the year of 2023
+        const filteredNodes = data.nodes.filter(node => {
+          if (!node.timestamp) return true;
+          const year = new Date(node.timestamp).getFullYear();
+          return year !== 2023;
+        });
+
+        const minDate = d3.min(filteredNodes, node => node.timestamp ? new Date(node.timestamp) : null);
+        const maxDate = d3.max(filteredNodes, node => node.timestamp ? new Date(node.timestamp) : null);
+
+        setTimelineData({
+          min_date: minDate?.toDateString() ?? '',
+          max_date: maxDate?.toDateString() ?? ''
+        });
         // data preprocessing 
         // bin the data into one bin for each year
-        const binnedData = new Map<number, Node[]>();
-        
-        data.nodes.forEach(node => {
+        const binnedData = new Map<string, Node[]>();
+
+        filteredNodes.forEach(node => {
           if (node.timestamp) {
-            const year = new Date(node.timestamp).getFullYear();
-            if (!binnedData.has(year)) {
-              binnedData.set(year, []);
+            const day = new Date(node.timestamp).toDateString();
+            if (!binnedData.has(day)) {
+              binnedData.set(day, []);
             }
-            binnedData.get(year)?.push(node);
+            binnedData.get(day)?.push(node);
           }
         });
 
+        console.log("binnedData", binnedData);
+
+
         // Convert Map to array of year bins
-        const yearBins: YearBin[] = Array.from(binnedData.entries()).map(([year, nodes]) => ({
-          year,
+        const dayBins: DayBin[] = Array.from(binnedData.entries()).map(([day, nodes]) => ({
+          day,
           nodes
         }));
 
         // Sort bins by year
-        yearBins.sort((a, b) => a.year - b.year);
+        dayBins.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
 
-        setCurrentData(yearBins);
-        console.log('Current data:', yearBins);
-        
-       
+        setCurrentData(dayBins);
+        console.log('Current data:', dayBins);
+
+        setLoading(false);
+
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -118,24 +136,24 @@ export default function TimelineWrapper() {
         <h1 className="text-2xl font-bold mb-4">Timeline</h1>
         {timelineData && (
           <div className="space-y-2">
-            <p>Start Date: {new Date(timelineData.min_date).toLocaleDateString()}</p>
-            <p>End Date: {new Date(timelineData.max_date).toLocaleDateString()}</p>
+            <p>Start Date: {timelineData.min_date}</p>
+            <p>End Date: {timelineData.max_date}</p>
           </div>
         )}
-        
+
         <br></br>
 
         {currentData && (
           <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-4">Events by Year</h2>
+            <h2 className="text-xl font-semibold mb-4">Events by Day</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentData.map((bin) => (
-                <div 
-                  key={bin.year} 
-                  className="p-4 shadow hover:shadow-md transition-shadow"
+                <div
+                  key={bin.day}
+                  className=""
                 >
-                  <h3 className="text-lg font-medium text-gray-800">Year {bin.year}</h3>
-                  <p className="text-gray-600 mt-2">
+                  <h3 className="text-lg font-medium ">Day {bin.day}</h3>
+                  <p className="">
                     {bin.nodes.length} {bin.nodes.length === 1 ? 'event' : 'events'}
                   </p>
                 </div>
