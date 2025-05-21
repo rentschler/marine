@@ -109,6 +109,16 @@ async def graph_with_timestamps():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/graph-data-timestamps")
+async def graph_with_timestamps():
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph = await get_graph_with_timestamps(session)
+                return graph.model_dump(exclude_unset=True, exclude_none=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/nl-query")
 async def nl_query(question: str):
