@@ -6538,7 +6538,7 @@
             "type": "Event",
             "sub_type": "VesselMovement",
             "label": "VesselMovement",
-            "timestamp": "2023-10-14 22:00:00",
+            "timestamp": "2040-10-14 22:00:00",
             "movement_type": "rendezvous",
             "destination": "southern dock",
             "id": "Event_VesselMovement_1000"
