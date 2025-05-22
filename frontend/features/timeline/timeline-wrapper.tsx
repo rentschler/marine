@@ -6,6 +6,7 @@ import { GraphData, LinkType, NodeType, Node } from '@/types/graph-types';
 import { useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import BarChart from './barchart';
+import StackedBarChart from './stacked-barchart';
 
 export interface TimelineData {
   min_date: string;
@@ -18,12 +19,22 @@ export interface DayBin {
   count: number;
 }
 
+export type StackedSeries = d3.Series<{
+  [key: string]: number;
+}, string>[]
+
+export interface StackedBarChartData {
+  data: StackedSeries;
+  bars: string[];
+  segments: string[];
+}
 
 export default function TimelineWrapper() {
   const [timelineData, setTimelineData] = useState<TimelineData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
+  const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(undefined);
 
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
 
@@ -108,25 +119,33 @@ export default function TimelineWrapper() {
             d => d.sub_type
         );
         
+        const groups = d3.union(nodes.map(d => d.sub_type));
+        const days = Array.from(binnedData.keys());
         // Convert the Map to an array of objects
-        const aggregatedArray = Array.from(aggregatedData, ([day, subTypes]) => 
-            Array.from(subTypes, ([subType, count]) => ({
-                day,
-                sub_type: subType,
-                count
-            }))
-        ).flat();
+        const aggregatedArray = Array.from(aggregatedData, ([day, subTypes]) => {
+            const obj: { [key: string]: any } = { day };
+            // initialize the counts to 0
+            Array.from(groups).forEach((subType) => {
+                obj[subType] = 0;
+            });
+            subTypes.forEach((count, subType) => {
+                obj[subType] = count ?? 0;
+            });
+            return obj;
+        });
         
-        console.log(aggregatedArray);
-        
-
         // stack the data using the subtype and the day
         const series = d3.stack()
-          .keys(d3.union(nodes.map(d => d.sub_type))) // apples, bananas, cherries, …
-          .value(([, group], key) => group.get(key)?.count ?? 0)
-          (d3.index(aggregatedArray, d => d.day, d => d.sub_type));
+            .keys(groups)
+            .order(d3.stackOrderDescending)
+            (aggregatedArray);
 
         console.log("series", series);
+        setCurrentStackedData({
+          data: series,
+          bars: days,
+          segments: Array.from(groups)
+        });
 
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
@@ -147,7 +166,8 @@ export default function TimelineWrapper() {
 
   return (
     <div className="w-full h-full">
-      <BarChart data={currentData} />
+      {/* <BarChart data={currentData} /> */}
+      <StackedBarChart data={currentStackedData?.data} bars={currentStackedData?.bars} segments={currentStackedData?.segments} />
     </div>
   );
 } 
