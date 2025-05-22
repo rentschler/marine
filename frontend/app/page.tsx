@@ -5,6 +5,7 @@ import { FilterDashboard } from "@/features/filter_dashboard/filter-dashboard";
 import { useSearchParams } from 'next/navigation';
 
 import dynamic from 'next/dynamic';
+import TimelineWrapper from "@/features/timeline/timeline-wrapper";
 
 
 const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
@@ -35,7 +36,9 @@ export default function Home() {
       <div className=" w-full h-full">
         <FilterDashboard/>
       </div>
-      <div className="col-span-2 bg-red-500 w-full h-full">Timeline</div>
+      <div className="col-span-2 w-full h-full">
+        <TimelineWrapper/>
+      </div>
     </div>
   );
 }

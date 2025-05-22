@@ -5,47 +5,28 @@ import { FilterRequestBody } from '@/types/filter-types';
 import { GraphData, LinkType, NodeType, Node } from '@/types/graph-types';
 import { useEffect, useState } from 'react';
 import * as d3 from 'd3';
+import BarChart from './barchart';
 
-interface TimelineData {
+export interface TimelineData {
   min_date: string;
   max_date: string;
 }
 
-interface DayBin {
-  day: string;
+export interface DayBin {
+  day: Date;
   nodes: Node[];
+  count: number;
 }
+
 
 export default function TimelineWrapper() {
   const [timelineData, setTimelineData] = useState<TimelineData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentData, setCurrentData] = useState<DayBin[] | null>(null);
-  const [uniqueDates, setUniqueDates] = useState<(Date | undefined)[]>([]);
+  const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
 
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
 
-  // useEffect(() => {
-  //   const fetchTimelineData = async () => {
-  //     try {
-  //       const response = await fetch('/api/options');
-  //       if (!response.ok) {
-  //         throw new Error('Failed to fetch timeline data');
-  //       }
-  //       const data = await response.json();
-  //       setTimelineData({
-  //         min_date: data.min_date,
-  //         max_date: data.max_date
-  //       });
-  //     } catch (err) {
-  //       setError(err instanceof Error ? err.message : 'An error occurred');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchTimelineData();
-  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,26 +48,31 @@ export default function TimelineWrapper() {
 
         const data: GraphData = await response.json();
 
+        const nodes = data.nodes.map(d => {
+          return {
+            timestamp: d.timestamp ? new Date(d.timestamp) : null,
+            day: d.timestamp ? new Date(d.timestamp).toDateString() : null,
+            type: d.type,
+            label: d.label,
+            sub_type: d.sub_type,
+            id: d.id
+          }
+        })
+        console.log("nodes", nodes);
 
-        // filter out the one node with the year of 2023
-        const filteredNodes = data.nodes.filter(node => {
-          if (!node.timestamp) return true;
-          const year = new Date(node.timestamp).getFullYear();
-          return year !== 2023;
-        });
-
-        const minDate = d3.min(filteredNodes, node => node.timestamp ? new Date(node.timestamp) : null);
-        const maxDate = d3.max(filteredNodes, node => node.timestamp ? new Date(node.timestamp) : null);
+        const minDate = d3.min(nodes, node => node.timestamp ? new Date(node.timestamp) : null);
+        const maxDate = d3.max(nodes, node => node.timestamp ? new Date(node.timestamp) : null);
 
         setTimelineData({
           min_date: minDate?.toDateString() ?? '',
           max_date: maxDate?.toDateString() ?? ''
         });
+
         // data preprocessing 
         // bin the data into one bin for each year
         const binnedData = new Map<string, Node[]>();
 
-        filteredNodes.forEach(node => {
+        nodes.forEach(node => {
           if (node.timestamp) {
             const day = new Date(node.timestamp).toDateString();
             if (!binnedData.has(day)) {
@@ -101,8 +87,9 @@ export default function TimelineWrapper() {
 
         // Convert Map to array of year bins
         const dayBins: DayBin[] = Array.from(binnedData.entries()).map(([day, nodes]) => ({
-          day,
-          nodes
+          day: new Date(day),
+          nodes,
+          count: nodes.length
         }));
 
         // Sort bins by year
@@ -112,6 +99,34 @@ export default function TimelineWrapper() {
         console.log('Current data:', dayBins);
 
         setLoading(false);
+
+        // Aggregate the data by day and sub_type before indexing
+        const aggregatedData = d3.rollup(
+            nodes,
+            v => v.length, // Count the number of events in each group
+            d => d.day,
+            d => d.sub_type
+        );
+        
+        // Convert the Map to an array of objects
+        const aggregatedArray = Array.from(aggregatedData, ([day, subTypes]) => 
+            Array.from(subTypes, ([subType, count]) => ({
+                day,
+                sub_type: subType,
+                count
+            }))
+        ).flat();
+        
+        console.log(aggregatedArray);
+        
+
+        // stack the data using the subtype and the day
+        const series = d3.stack()
+          .keys(d3.union(nodes.map(d => d.sub_type))) // apples, bananas, cherries, …
+          .value(([, group], key) => group.get(key)?.count ?? 0)
+          (d3.index(aggregatedArray, d => d.day, d => d.sub_type));
+
+        console.log("series", series);
 
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
@@ -131,37 +146,8 @@ export default function TimelineWrapper() {
   }
 
   return (
-    <div className="w-full h-screen p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">Timeline</h1>
-        {timelineData && (
-          <div className="space-y-2">
-            <p>Start Date: {timelineData.min_date}</p>
-            <p>End Date: {timelineData.max_date}</p>
-          </div>
-        )}
-
-        <br></br>
-
-        {currentData && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-4">Events by Day</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {currentData.map((bin) => (
-                <div
-                  key={bin.day}
-                  className=""
-                >
-                  <h3 className="text-lg font-medium ">Day {bin.day}</h3>
-                  <p className="">
-                    {bin.nodes.length} {bin.nodes.length === 1 ? 'event' : 'events'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="w-full h-full">
+      <BarChart data={currentData} />
     </div>
   );
 } 
