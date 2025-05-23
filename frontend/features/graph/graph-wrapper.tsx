@@ -38,24 +38,13 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
   const { width, height } = useDimensions(boxRef);
 
   // filter options
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
+  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
+    useFilterContext();
 
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
-  const layoutDescriptions = {
-    force:
-      'JavaScript implementation of a basic force directed layout algorithm for graphology. Only works well for small graphs.',
-    circlepack: 'Arranges the nodes as a bubble chart, according to specified attributes.',
-    circular: 'Arranges the node in a circle (or an sphere/hypersphere in higher dimensions).',
-    atlas2:
-      'An advanced force-directed layout that efficiently handles large graphs with improved stability.',
-    noverlap:
-      'Noverlap anti-collision layout algorithm. It might not converge easily in some cases.',
-    random:
-      'Random layout positioning every node by choosing each coordinates uniformly at random on the interval [0, 1).',
-  };
 
   // state management for userinteraction
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -92,10 +81,10 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
           minDegree: selectedNodeDegrees?.[0] ?? 0,
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes,
-          edgeTypes: selectedEdgeTypes
+          edgeTypes: selectedEdgeTypes,
+          startDate: selectedDateRange?.[0] ?? null,
+          endDate: selectedDateRange?.[1] ?? null,
         };
-
-        
 
         const response = await fetch('/api/filter', {
           method: 'POST',
@@ -119,7 +108,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;

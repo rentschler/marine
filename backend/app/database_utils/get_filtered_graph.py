@@ -1,6 +1,7 @@
 from collections import defaultdict
 from models.Graph import EDefault, Graph, GraphData, Link, Node
 from models.filter_request_body import FilterRequestBody
+from datetime import datetime, timedelta
 
 def build_edge_filters(filters: FilterRequestBody) -> str:
     conditions = []
@@ -9,13 +10,31 @@ def build_edge_filters(filters: FilterRequestBody) -> str:
         conditions.append(f"r.type IN [{type_list}]")
     return " AND ".join(conditions) if conditions else "true"
 
+def build_node_date_filter(filters: FilterRequestBody) -> str:
+    if not filters.startDate or not filters.endDate:
+        return "true"
+    
+    # Convert ISO format dates to datetime objects
+    start_date = datetime.fromisoformat(filters.startDate.replace('Z', '+00:00'))
+    end_date = datetime.fromisoformat(filters.endDate.replace('Z', '+00:00')) + timedelta(days=1)
+    
+    # Format dates for Neo4j
+    start_str = start_date.strftime('%Y-%m-%dT%H:%M:%S')
+    end_str = end_date.strftime('%Y-%m-%dT%H:%M:%S')
+
+
+    
+    return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_str}' AND c.timestamp <= '{end_str}')"
+
 async def get_filtered_graph(session, filters: FilterRequestBody):
     nodes = []
     node_ids = set()
     entity_ids = set()
     event_ids = set()
 
-    entity_query = """
+    # Build date filter condition
+    date_filter = build_node_date_filter(filters)
+    entity_query = f"""
         MATCH (n)
         WHERE n.type = "Entity"
         WITH n, SIZE([(n)--() | 1]) AS degree
@@ -33,10 +52,11 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             nodes.append(Node(**node_data))
 
     if filters.nodeTypes and "Event" in filters.nodeTypes:
-        event_query = """
+        event_query = f"""
             MATCH (e)-[]-(c)
             WHERE e.type = "Entity" AND c.type = "Event"
             AND elementId(e) IN $entity_ids
+            AND {date_filter}
             RETURN DISTINCT c
         """
         records_events = await session.run(event_query, entity_ids=list(entity_ids))
@@ -49,7 +69,7 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
                 node_ids.add(c.element_id)
 
     if filters.nodeTypes and "Relationship" in filters.nodeTypes:
-        relationship_query = """
+        relationship_query = f"""
             MATCH (c)-[]-(r)
             WHERE c.type = "Event" AND r.type = "Relationship"
             AND elementId(c) IN $event_ids
