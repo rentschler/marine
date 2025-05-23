@@ -2,6 +2,7 @@ import { useDimensions } from '@/hooks/use-dimension';
 import { DayBin } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { useFilterContext } from '@/context/filter-context';
 interface BarchartProps {
   data?: DayBin[];
 }
@@ -11,6 +12,7 @@ const Barchart = ({ data }: BarchartProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = useDimensions(boxRef);
+  const { selectedDateRange, setSelectedDateRange } = useFilterContext();
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -50,10 +52,11 @@ const Barchart = ({ data }: BarchartProps) => {
 
     // create the bars
     const bars = g
-      .selectAll('rect')
+      .selectAll('.bar')
       .data(data)
       .enter()
       .append('rect')
+      .classed('bar', true)
       .attr('x', (d) => scaleOrdinal(d.day.toISOString()) || 0)
       .attr('y', (d) => scaleLinear(d.count))
       .attr('width', scaleOrdinal.bandwidth())
@@ -86,6 +89,78 @@ const Barchart = ({ data }: BarchartProps) => {
       .attr('text-anchor', 'middle')
       .attr('fill', 'currentColor')
       .text('Count');
+
+    const brush = d3
+      .brushX()
+      .extent([
+        [0, 0],
+        [boundsWidth, boundsHeight],
+      ])
+      .on('start brush', (event) => {
+        console.log('event', event);
+
+        const selection = event.selection;
+        if (!selection) return;
+
+        const [x0, x1] = selection;
+        const bars = g.selectAll('.bar');
+
+        let highlightBars: any[] = [];
+
+        bars.each(function (d) {
+          const bar = d3.select(this);
+          const xMin = +bar.attr('x');
+          const xMax = xMin + scaleOrdinal.bandwidth();
+
+          // check if the bar is intersect with the selection
+          const isBrushed = x0 <= xMax && x1 >= xMin;
+          bar.attr('fill', isBrushed ? 'red' : 'steelblue');
+
+          if (isBrushed) {
+            highlightBars.push(bar.data());
+          }
+        });
+
+        console.log('highlightBars', highlightBars);
+      })
+      .on('end', (event) => {
+        const selection = event.selection;
+        if (!selection) {
+          setSelectedDateRange([]);
+          return;
+        }
+
+        const [x0, x1] = selection;
+        const bars = g.selectAll('.bar');
+
+        let highlightBars: any[] = [];
+
+        bars.each(function (d) {
+          const bar = d3.select(this);
+          const xMin = +bar.attr('x');
+          const xMax = xMin + scaleOrdinal.bandwidth();
+
+          // check if the bar is intersect with the selection
+          const isBrushed = x0 <= xMax && x1 >= xMin;
+
+          if (isBrushed) {
+            highlightBars.push(bar.data()[0]);
+          }
+        });
+
+        console.log('highlightBars', highlightBars);
+        const startDate = d3.min(highlightBars, (d) => d.day);
+        const endDate = d3.max(highlightBars, (d) => d.day);
+
+        console.log('Selected date range:', {
+          start: startDate,
+          end: endDate,
+        });
+
+        setSelectedDateRange([startDate, endDate]);
+      });
+
+    g.call(brush);
   }, [data, width, height]);
 
   return (

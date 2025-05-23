@@ -55,7 +55,7 @@ export const MyGraph = ({
   }
   else if (layout === 'random') {
     ({ positions, assign } = useLayoutRandom());
-  }
+  } 
 
   /**
    * When component mounts, fetch the graph data
@@ -94,8 +94,8 @@ export const MyGraph = ({
 
     // Add nodes
     data.nodes.slice(0, limit ? limit : data.nodes.length).forEach((node: Node) => {
-      graph.addNode(node.id, {
-        // ...node,
+      const n = {
+        ...node,
         type: 'circle',
         x: Math.random() * 10 - 5, // Random position between -5 and 5
         y: Math.random() * 10 - 5,
@@ -103,7 +103,12 @@ export const MyGraph = ({
         size: 10,
         color: nodeColorScale(node.type),
         data: node,
-      });
+      }
+      if(!assign){
+        n.x = node.x || 0;
+        n.y = node.y || 0;
+      }
+      graph.addNode(node.id, n);
     });
 
     // Add edges
@@ -120,11 +125,13 @@ export const MyGraph = ({
         }
       );
     });
-    assign();
+    if(assign){
+      assign();
+    }
     // Load the graph in sigma
     loadGraph(graph);
     // Apply the layout
-    assign();
+    // assign();
 
     // Register the events
     registerEvents({
