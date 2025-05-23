@@ -8,6 +8,8 @@ from database_utils.get_hole_graph import get_hole_graph
 from database_utils.get_node_count import get_node_count_in_db
 from database_utils.import_edges import import_edges
 from database_utils.import_nodes import import_nodes
+from database_utils.get_min_max_date import get_min_max_date
+from database_utils.get_graph_with_timestamps import get_graph_with_timestamps
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
@@ -70,7 +72,8 @@ async def get_options():
             async with driver.session() as session:
                 degrees = await get_min_max_node_degree(session)
                 types = await get_node_edges_filter_options(session)
-                return {**degrees, **types}
+                dates = await get_min_max_date(session)
+                return {**degrees, **types, **dates}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -82,5 +85,15 @@ async def filter_graph(request: FilterRequestBody):
                 graph = await get_filtered_graph(session, request)
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/graph-data-timestamps")
+async def graph_with_timestamps():
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph = await get_graph_with_timestamps(session)
+                return graph.model_dump(exclude_unset=True, exclude_none=True)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
