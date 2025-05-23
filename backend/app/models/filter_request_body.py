@@ -7,4 +7,5 @@ class FilterRequestBody(BaseModel):
     maxDegree: Optional[int] = 1000
     nodeTypes: Optional[List[str]] = None
     edgeTypes: Optional[List[str]] = None
-
+    startDate: Optional[str] = None
+    endDate: Optional[str] = None

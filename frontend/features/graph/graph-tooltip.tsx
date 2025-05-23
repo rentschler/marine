@@ -15,7 +15,7 @@ const GraphTooltip = ({ node, width }: GraphTooltipProps) => {
 
   useEffect(() => {
     if (!node) {
-      // setTooltip(null);
+      setTooltip(null);
       return;
     }
     const highlightedNode = sigma.getGraph().getNodeAttributes(node);

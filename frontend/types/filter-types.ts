@@ -3,4 +3,6 @@ export interface FilterRequestBody {
   maxDegree?: number;
   nodeTypes?: string[];
   edgeTypes?: string[];
-} 
+  startDate?: Date;
+  endDate?: Date;
+}
