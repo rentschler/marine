@@ -8,7 +8,7 @@ interface BarchartProps {
   segments?: string[];
 }
 
-const MARGIN = { top: 25, right: 10, bottom: 40, left: 50 };
+const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
 const StackedBarChart = ({ data, bars, segments }: BarchartProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const svgRef = useRef<SVGSVGElement>(null);
@@ -71,21 +71,22 @@ const StackedBarChart = ({ data, bars, segments }: BarchartProps) => {
       .attr('width', scaleOrdinal.bandwidth());
 
     // add the axes
-    const xAxis = d3
-      .axisBottom(scaleOrdinal)
-      .tickFormat((d) => d3.timeFormat('%Y-%m-%d')(new Date(d)));
+    const xAxis = d3.axisBottom(scaleOrdinal).tickFormat((d) => {
+      const date = new Date(d);
+      return d3.timeFormat('%Y-%m-%d %H:%M')(date);
+    });
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
     g.append('g')
       .attr('transform', `translate(0, ${boundsHeight})`)
       .call(xAxis)
-      .append('text')
-      .attr('x', boundsWidth / 2)
-      .attr('y', 35)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'currentColor')
-      .text('Date');
+      .classed('x-axis', true)
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em')
+      .attr('transform', 'rotate(-45)');
 
     g.append('g')
       .call(yAxis)

@@ -19,6 +19,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const layout = searchParams.get('layout') || 'circlepack'
   const limit = searchParams.get('limit');
+  const numberOfBins = searchParams.get('nbins') || 14 * 4;
 
   return (
     <div className="h-screen w-full grid grid-cols-[70%_30%] grid-rows-[80%_20%]">
@@ -43,6 +44,9 @@ export default function Home() {
       </div>
       <div className=" w-full h-full">
         <FilterDashboard/>
+      </div>
+      <div className="col-span-2 w-full h-full">
+        <TimelineWrapper numberOfBins={+numberOfBins}/>
       </div>
     </div>
   );
