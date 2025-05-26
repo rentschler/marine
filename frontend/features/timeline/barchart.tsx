@@ -5,10 +5,11 @@ import * as d3 from 'd3';
 import { useFilterContext } from '@/context/filter-context';
 interface BarchartProps {
   data?: DayBin[];
+  numberOfBins: number;
 }
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const Barchart = ({ data }: BarchartProps) => {
+const Barchart = ({ data, numberOfBins }: BarchartProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = useDimensions(boxRef);
@@ -16,6 +17,7 @@ const Barchart = ({ data }: BarchartProps) => {
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
+    console.log('barchart data', data);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -39,7 +41,7 @@ const Barchart = ({ data }: BarchartProps) => {
     // scale the x axis
     const scaleOrdinal = d3
       .scaleBand()
-      .domain(data.map((d) => d.day.toISOString()))
+      .domain(data.map((d) => d.start.toISOString()))
       .range([0, boundsWidth])
       .padding(0.2);
 
@@ -57,11 +59,13 @@ const Barchart = ({ data }: BarchartProps) => {
       .enter()
       .append('rect')
       .classed('bar', true)
-      .attr('x', (d) => scaleOrdinal(d.day.toISOString()) || 0)
+      .attr('x', (d) => scaleOrdinal(d.start.toISOString()) || 0)
       .attr('y', (d) => scaleLinear(d.count))
       .attr('width', scaleOrdinal.bandwidth())
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
-      .attr('fill', 'steelblue');
+      .attr('fill', 'steelblue')
+      .append('title')
+      .text((d) => d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end));
 
     // add the axes
     const xAxis = d3
@@ -159,8 +163,8 @@ const Barchart = ({ data }: BarchartProps) => {
         });
 
         console.log('highlightBars', highlightBars);
-        const startDate = d3.min(highlightBars, (d) => d.day);
-        const endDate = d3.max(highlightBars, (d) => d.day);
+        const startDate = d3.min(highlightBars, (d) => d.start);
+        const endDate = d3.max(highlightBars, (d) => d.end);
 
         console.log('Selected date range:', {
           start: startDate,

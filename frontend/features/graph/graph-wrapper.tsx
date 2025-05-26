@@ -100,6 +100,14 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
 
         const data: GraphData = await response.json();
         console.log('Filtered data:', data);
+
+        // Find the min and max dates
+        const dates = data.nodes.filter((n) => n.timestamp).map((n) => n.timestamp as Date);
+        //const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
+        //const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+
+        console.log('dates', dates);
+
         setCurrentData(data);
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);

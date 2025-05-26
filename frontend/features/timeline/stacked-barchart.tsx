@@ -6,17 +6,19 @@ interface BarchartProps {
   data?: StackedSeries;
   bars?: string[];
   segments?: string[];
+  numberOfBins: number;
 }
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const StackedBarChart = ({ data, bars, segments }: BarchartProps) => {
+const StackedBarChart = ({ data, bars, segments, numberOfBins }: BarchartProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = useDimensions(boxRef);
 
   useEffect(() => {
     if (!data || !svgRef.current || !bars || !segments) return;
-
+    console.log('stacked barchart data', data);
+    
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
     const svg = d3.select(svgRef.current).attr('width', width).attr('height', height);
