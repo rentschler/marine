@@ -18,13 +18,14 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
   const [error, setError] = useState<string | null>(null);
   const [isStacked, setIsStacked] = useState(false);
   const n_bins = numberOfBins;
-  
+
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
   const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(
     undefined
   );
 
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
+  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
+    useFilterContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,17 +71,22 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
           const binEnd = new Date(minDate.getTime() + (i + 1) * binSize);
 
           const binNodes = nodes.filter(
-            (node) => node.timestamp && node.timestamp >= binStart && node.timestamp < binEnd
+            (node) => node.timestamp && node.timestamp >= binStart && node.timestamp < binEnd && node.sub_type === 'Communication'
           );
 
+
           return {
-            day: binStart,
+            start: binStart,
+            end: binEnd,
             nodes: binNodes,
             count: binNodes.length,
           };
         });
 
+
+
         setCurrentData(bins);
+        console.log('bins', bins);
 
         setLoading(false);
 
@@ -99,7 +105,8 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
         // Convert the Map to an array of objects
         const aggregatedArray = Array.from(aggregatedData, ([binIndex, subTypes]) => {
           const obj: { [key: string]: any } = {
-            day: new Date(minDate.getTime() + binIndex * binSize),
+            start: new Date(minDate.getTime() + binIndex * binSize),
+            end: new Date(minDate.getTime() + (binIndex + 1) * binSize),
           };
           // initialize the counts to 0
           Array.from(groups).forEach((subType) => {
@@ -122,6 +129,9 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
           bars: binIndices.map((i) => new Date(minDate.getTime() + i * binSize).toString()),
           segments: Array.from(groups),
         });
+
+
+        
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -147,9 +157,10 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
           data={currentStackedData?.data}
           bars={currentStackedData?.bars}
           segments={currentStackedData?.segments}
+          numberOfBins={numberOfBins}
         />
       ) : (
-        <BarChart data={currentData} />
+        <BarChart data={currentData} numberOfBins={numberOfBins} />
       )}
 
       <Button
