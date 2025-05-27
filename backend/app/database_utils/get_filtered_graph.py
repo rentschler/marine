@@ -99,11 +99,12 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
                 node_a, node_b = tuple(key)
                 print(f"Multiple edges between nodes {node_a} and {node_b}: {edge_types}")
 
-    for link in links:
-        connected_node_ids.add(link.source)
-        connected_node_ids.add(link.target)
+    if "Event" in filters.nodeTypes:
+        for link in links:
+            connected_node_ids.add(link.source)
+            connected_node_ids.add(link.target)
 
-    nodes = [node for node in nodes if node.id in connected_node_ids]
+        nodes = [node for node in nodes if node.id in connected_node_ids]
 
 
     graph_meta = Graph(

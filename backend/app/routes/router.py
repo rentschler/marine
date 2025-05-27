@@ -1,4 +1,6 @@
 import random
+from nl_querying.query_utils import query_pipeline
+from nl_querying.community_utils import add_graph_communities
 from database_utils.get_filtered_graph import get_filtered_graph
 from models.filter_request_body import FilterRequestBody
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
@@ -12,6 +14,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
 import os
+from langchain_ollama import OllamaLLM
+
 
 import json
 import networkx as nx
@@ -22,6 +26,12 @@ from networkx.readwrite import json_graph
 NEO4J_URI = "bolt://" + os.environ.get('DB_HOST') + ":7687"
 NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
+
+# LLM
+llm = OllamaLLM(
+            model="llama3.1",
+            base_url="https://ollama.joos.dbvis.de",
+        )
 
 router = APIRouter()
 
@@ -39,6 +49,7 @@ async def start_up():
             if node_count == 0:
                 print("Laoding graph in DB...")
                 G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
+                G = add_graph_communities(graph=G, llm=llm)
 
                 pos = nx.forceatlas2_layout(G)
                 pos = nx.rescale_layout_dict(pos)
@@ -84,3 +95,8 @@ async def filter_graph(request: FilterRequestBody):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/nl-query")
+async def nl_query(question: str):
+    return query_pipeline(question, llm)

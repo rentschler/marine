@@ -5,3 +5,11 @@ pandas==2.2.3
 neo4j==5.28.1
 networkx==3.4.2
 pydantic
+langchain
+langchain-community
+langchain-core
+langchain-ollama
+langchain-neo4j
+leidenalg
+igraph
+openai

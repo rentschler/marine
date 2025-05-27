@@ -1,0 +1,4 @@
+{
+  "community": 7,
+  "summary": "The relationships between entities in this dataset are diverse and complex. There are numerous connections between various locations such as Nemo Reef, Southern Boundary, Western Boundary, Southern islands, Protected areas, and others. Events like Tour Activities, Monitoring, Enforcement, Communications, Assessments, Harbor Reports, and Transponder Pings are all linked to these locations. Additionally, entities like Sentinels, Diving Tour Operators, Relationship Reports, and Suspicious Activities play significant roles in the relationships between events and locations. These connections provide a rich context for understanding the dynamics of marine conservation and management."
+}
