@@ -29,6 +29,13 @@ class PathResult(BaseModel):
     nodes: List[Node]
     relationships: List[Relationship]
 
+def clean_json_string(dirty_string):
+    dirty_string = dirty_string.replace('json', '', 1).strip()
+    dirty_string = dirty_string.replace('```', '', 1).strip()
+    dirty_string = dirty_string.replace('```', '', 1).strip()
+    return dirty_string
+
+
 
 def extract_all_entities_from_query(query: str, llm) -> List[str]:
     prompt_entities = ChatPromptTemplate.from_messages([
@@ -42,6 +49,7 @@ def extract_all_entities_from_query(query: str, llm) -> List[str]:
         "}}\n\n"
         "If no names are found, return: {{\"entities\": []}}. "
         "Do NOT return a list, markdown, or anything else. Only this JSON object."
+        "Do not use  ```json."
     ),
     ("human", "Text: {input}")
 ])
@@ -49,6 +57,7 @@ def extract_all_entities_from_query(query: str, llm) -> List[str]:
 
     formatted_prompt = prompt_entities.format(input=query)
     response = llm.invoke(formatted_prompt)
+    response = clean_json_string(response)
     print(response)
     try:
         data = json.loads(response)
@@ -88,11 +97,14 @@ def extract_all_relevant_communities(query: str, llm, folder: str = "community_d
         }}
 
         Only include numbers (IDs), no explanations or text. The answer **must** be valid JSON.
+        Do not return anything else.
     """
 
 
     try:
         response = llm.invoke(prompt)
+        response = clean_json_string(response)
+
         print(response)
         data = json.loads(response)
         return data.get("relevant_communities", [])
@@ -135,6 +147,8 @@ def extract_all_relevant_entities_from_communities(communities: List[int], llm, 
 
     try:
         response = llm(prompt)
+        response = clean_json_string(response)
+
         print(response)
         data = json.loads(response)
         return data.get("entities", [])
@@ -298,6 +312,8 @@ def summarize_and_score_paths(paths: List[PathResult], question: str, llm) -> Di
     """
 
     response = llm(prompt)
+    response = clean_json_string(response)
+
     print(response)
     try:
         return json.loads(response)

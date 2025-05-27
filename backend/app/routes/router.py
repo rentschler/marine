@@ -31,7 +31,7 @@ NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
 llm = OllamaLLM(
-            model="llama3.1",
+            model="phi4:latest",
             base_url="https://ollama.joos.dbvis.de",
         )
 
@@ -97,7 +97,6 @@ async def filter_graph(request: FilterRequestBody):
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
 
     except Exception as e:
-        print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/graph-data-timestamps")
