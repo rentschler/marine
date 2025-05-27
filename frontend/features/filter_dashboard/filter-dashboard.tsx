@@ -6,7 +6,6 @@ import { Button, Divider, Slider, Spinner } from "@heroui/react";
 import { useFilterContext } from "@/context/filter-context";
 
 
-
 export function FilterDashboard(){
 
     const [loading, setLoading] = useState<boolean>(true);
