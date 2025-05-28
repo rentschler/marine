@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 import dynamic from 'next/dynamic';
 import TimelineWrapper from "@/features/timeline/timeline-wrapper";
+import { ChatUI } from "@/features/chat/chat-ui";
 
 
 const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
@@ -33,11 +34,15 @@ export default function Home() {
             | undefined
         }/>
       </div>
+
+      <div className="w-full h-full">
+        <ChatUI/>
+      </div>
+      <div className="w-full h-full">
+        <TimelineWrapper/>
+      </div>
       <div className=" w-full h-full">
         <FilterDashboard/>
-      </div>
-      <div className="col-span-2 w-full h-full">
-        <TimelineWrapper/>
       </div>
     </div>
   );

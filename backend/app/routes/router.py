@@ -12,7 +12,7 @@ from database_utils.import_edges import import_edges
 from database_utils.import_nodes import import_nodes
 from database_utils.get_min_max_date import get_min_max_date
 from database_utils.get_graph_with_timestamps import get_graph_with_timestamps
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
 import os
@@ -119,7 +119,20 @@ async def graph_with_timestamps():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.websocket("/ws/nl-query")
+async def websocket_nl_query(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            question = await websocket.receive_text()
+            await websocket.send_text("Processing...")
 
-@router.get("/nl-query")
-async def nl_query(question: str):
-    return query_pipeline(question, llm)
+            result = query_pipeline(question, llm)
+
+            await websocket.send_text(json.dumps(result, default=str))
+    except Exception as e:
+        print(e)
+        await websocket.send_text(json.dumps({
+            "answer": "Error. \n Please try again or enter a new query."
+        }))
+        await websocket.close()

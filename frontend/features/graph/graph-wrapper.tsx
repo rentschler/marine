@@ -41,7 +41,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
     useFilterContext();
 
-  const [currentData, setCurrentData] = useState<GraphData | null>(null);
+  const { currentData, setCurrentData } = useFilterContext();  
   const [error, setError] = useState<string | null>(null);
 
   const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };

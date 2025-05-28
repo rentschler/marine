@@ -13,3 +13,5 @@ langchain-neo4j
 leidenalg
 igraph
 openai
+uvicorn[standard]
+websockets
