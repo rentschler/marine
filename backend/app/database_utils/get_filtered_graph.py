@@ -27,7 +27,8 @@ def build_node_date_filter(filters: FilterRequestBody) -> str:
     return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_str}' AND c.timestamp <= '{end_str}')"
 
 async def get_filtered_graph(session, filters: FilterRequestBody):
-    nodes = []
+    nodes_dict = {}
+
     node_ids = set()
     entity_ids = set()
     event_ids = set()
@@ -39,17 +40,18 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
         WHERE n.type = "Entity"
         WITH n, SIZE([(n)--() | 1]) AS degree
         WHERE degree >= $minDegree AND degree <= $maxDegree
-        RETURN n
+        RETURN DISTINCT n
     """
     records_entities = await session.run(entity_query, minDegree=filters.minDegree, maxDegree=filters.maxDegree)
 
     async for record in records_entities:
         n = record["n"]
+        node_data = {**n._properties}
+        node = Node(**node_data)
+        nodes_dict[node.id] = node
         if n.element_id not in node_ids:
             node_ids.add(n.element_id)
             entity_ids.add(n.element_id)
-            node_data = {**n._properties}
-            nodes.append(Node(**node_data))
 
     if filters.nodeTypes and "Event" in filters.nodeTypes:
         event_query = f"""
@@ -62,11 +64,12 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
         records_events = await session.run(event_query, entity_ids=list(entity_ids))
         async for record in records_events:
             c = record["c"]
-            if c.element_id not in event_ids:
-                event_ids.add(c.element_id)
-                node_data = {**c._properties}
-                nodes.append(Node(**node_data))
+            node_data = {**c._properties}
+            node = Node(**node_data)
+            nodes_dict[node.id] = node
+            if c.element_id not in node_ids:
                 node_ids.add(c.element_id)
+                event_ids.add(c.element_id)
 
     if filters.nodeTypes and "Relationship" in filters.nodeTypes:
         relationship_query = f"""
@@ -79,11 +82,11 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
         async for record in records_relationships:
             r = record["r"]
             node_data = {**r._properties }
-            nodes.append(Node(**node_data))
+            node = Node(**node_data)
+            nodes_dict[node.id] = node
             node_ids.add(r.element_id)
     
-    links = []
-    edge_counter = defaultdict(list) 
+    links_dict = {}
     connected_node_ids = set()
     
     if len(filters.edgeTypes) > 0:
@@ -92,7 +95,7 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
         edge_query = f"""
             MATCH (a)-[r]->(b)
             WHERE elementId(a) IN $node_ids AND elementId(b) IN $node_ids AND ({edge_filter})
-            RETURN r, a, b
+            RETURN DISTINCT r, a, b
         """
 
         link_result = await session.run(edge_query, node_ids=list(node_ids)) 
@@ -101,30 +104,24 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             r = record["r"]
             source_id = record["a"].get("id")
             target_id = record["b"].get("id")
+            key = (source_id, target_id)
 
-            key = frozenset({source_id, target_id})
-            edge_counter[key].append(r.get("type"))
+            links_dict[key] = Link(
+                id=r.get("id"),
+                source=source_id,
+                target=target_id,
+                type=r.get("type"),
+                is_inferred=r.get("is_inferred", False)
+            )
 
-            link_data = {
-                "id": r.get("id"),
-                "source": source_id,
-                "target": target_id,
-                "type": r.get("type"),
-                "is_inferred": r.get("is_inferred", False)
-            }
-            links.append(Link(**link_data))
+    links = list(links_dict.values())
 
-        for key, edge_types in edge_counter.items():
-            if len(edge_types) > 1:
-                node_a, node_b = tuple(key)
-                print(f"Multiple edges between nodes {node_a} and {node_b}: {edge_types}")
+    for link in links:
+        connected_node_ids.add(link.source)
+        connected_node_ids.add(link.target)
 
-    if "Event" in filters.nodeTypes:
-        for link in links:
-            connected_node_ids.add(link.source)
-            connected_node_ids.add(link.target)
-
-        nodes = [node for node in nodes if node.id in connected_node_ids]
+    nodes = list(nodes_dict.values())
+    nodes = [node for node in nodes if node.id in connected_node_ids]
 
 
     graph_meta = Graph(
