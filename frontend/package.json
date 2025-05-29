@@ -36,6 +36,7 @@
     "@types/d3": "^7.4.3",
     "clsx": "2.1.1",
     "d3": "^7.9.0",
+    "flexlayout-react": "^0.8.17",
     "framer-motion": "12.9.2",
     "graphology": "^0.25.4",
     "graphology-layout-forceatlas2": "^0.10.1",

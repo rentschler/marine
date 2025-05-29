@@ -1,53 +1,23 @@
 'use client';
 
-
-import { FilterDashboard } from "@/features/filter_dashboard/filter-dashboard";
 import { useSearchParams } from 'next/navigation';
-
-import dynamic from 'next/dynamic';
-import TimelineWrapper from "@/features/timeline/timeline-wrapper";
-import { ChatUI } from "@/features/chat/chat-ui";
-
-
-const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
-  // special import to ensure that the component is not rendered on the server
-  ssr: false,
-});
+import { Layout } from 'flexlayout-react';
+import { useLayout } from '@/context/layout-context';
+import { LayoutFactory } from '@/components/layout/layout-factory';
+import 'flexlayout-react/style/light.css';
 
 export default function Home() {
-  // asynchronous access of `params`.
+  const { model } = useLayout();
   const searchParams = useSearchParams();
-  const layout = searchParams.get('layout') || 'circlepack'
-  const limit = searchParams.get('limit');
-  const numberOfBins = searchParams.get('nbins') || 14 * 4;
+  const layout = searchParams.get('layout') || 'circlepack';
+  const numberOfBins = +(searchParams.get('nbins') || 14 * 4);
 
   return (
-    <div className="h-screen w-full grid grid-cols-[70%_30%] grid-rows-[80%_20%]">
-      <div className=" w-full h-full">
-        <GraphWrapper layout={
-          layout as
-            | 'force'
-            | 'circular'
-            | 'atlas2'
-            | 'circlepack'
-            | 'noverlap'
-            | 'random'
-            | undefined
-        }/>
-      </div>
-
-      <div className="w-full h-full">
-        <ChatUI/>
-      </div>
-      <div className="w-full h-full">
-        <TimelineWrapper/>
-      </div>
-      <div className=" w-full h-full">
-        <FilterDashboard/>
-      </div>
-      <div className="col-span-2 w-full h-full">
-        <TimelineWrapper numberOfBins={+numberOfBins}/>
-      </div>
+    <div className="h-screen w-full">
+      <Layout 
+        model={model} 
+        factory={LayoutFactory({ layout, numberOfBins })} 
+      />
     </div>
   );
 }
