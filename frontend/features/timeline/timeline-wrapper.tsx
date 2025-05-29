@@ -1,19 +1,20 @@
 'use client';
 
 import { useFilterContext } from '@/context/filter-context';
-import { GraphData, Node } from '@/types/graph-types';
+import { GraphData } from '@/types/graph-types';
 import { useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
-import { Button } from '@heroui/react';
 import { DayBin, StackedBarChartData } from './time-line-types';
+import { TabNode } from 'flexlayout-react';
 
 interface TimelineWrapperProps {
   numberOfBins: number;
+  currentNode: TabNode;
 }
 
-export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) {
+export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isStacked, setIsStacked] = useState(false);
@@ -26,6 +27,13 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
 
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
     useFilterContext();
+
+  // get the dimensions of the current node
+  const dimensions = { width: currentNode.getRect().width, height: currentNode.getRect().height };
+
+  useEffect(() => {
+    console.log('timeline dimensions', dimensions);
+  }, [dimensions]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,9 +79,12 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
           const binEnd = new Date(minDate.getTime() + (i + 1) * binSize);
 
           const binNodes = nodes.filter(
-            (node) => node.timestamp && node.timestamp >= binStart && node.timestamp < binEnd && node.sub_type === 'Communication'
+            (node) =>
+              node.timestamp &&
+              node.timestamp >= binStart &&
+              node.timestamp < binEnd &&
+              node.sub_type === 'Communication'
           );
-
 
           return {
             start: binStart,
@@ -82,8 +93,6 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
             count: binNodes.length,
           };
         });
-
-
 
         setCurrentData(bins);
         console.log('bins', bins);
@@ -129,9 +138,6 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
           bars: binIndices.map((i) => new Date(minDate.getTime() + i * binSize).toString()),
           segments: Array.from(groups),
         });
-
-
-        
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -158,12 +164,13 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
           bars={currentStackedData?.bars}
           segments={currentStackedData?.segments}
           numberOfBins={numberOfBins}
+          dimensions={dimensions}
         />
       ) : (
-        <BarChart data={currentData} numberOfBins={numberOfBins} />
+        <BarChart data={currentData} numberOfBins={numberOfBins} dimensions={dimensions} />
       )}
 
-      <Button
+      {/* <Button
         color="primary"
         variant={isStacked ? 'solid' : 'bordered'}
         onPress={() => {
@@ -171,7 +178,7 @@ export default function TimelineWrapper({ numberOfBins }: TimelineWrapperProps) 
         }}
       >
         {'Stacked'}
-      </Button>
+      </Button> */}
     </div>
   );
 }
