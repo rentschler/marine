@@ -76,7 +76,6 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
                 event_count += 1
         
         print(f"Found {event_count} events within the specified time range")
-                event_ids.add(c.element_id)
 
     if filters.nodeTypes and "Relationship" in filters.nodeTypes:
         relationship_query = f"""
