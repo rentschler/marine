@@ -6,63 +6,92 @@ interface LayoutContextType {
   setModel: (model: Model) => void;
 }
 
-const defaultModel =  Model.fromJson({
+const defaultModel = Model.fromJson({
   global: {
-    tabEnableClose: true,
-    tabEnableRename: true,
-    tabSetEnableMaximize: true,
+    tabEnablePopout: false,
+    splitterEnableHandle: true,
+    tabSetMinWidth: 150,
+    tabSetMinHeight: 150,
+    borderMinSize: 100,
+    tabSetEnableTabScrollbar: true,
+    borderEnableTabScrollbar: true,
   },
+  borders: [
+    {
+      type: 'border',
+      location: 'right',
+      children: [
+        {
+          type: 'tab',
+          name: 'Filters',
+          component: 'filters',
+          enableClose: true,
+        },
+      ],
+    },
+  ],
   layout: {
-    type: "row",
+    type: 'row',
     weight: 100,
     children: [
       {
-        type: "row",
+        type: 'column',
         weight: 70,
         children: [
           {
-            type: "tabset",
-            weight: 100,
+            type: 'tabset',
+            weight: 75,
             children: [
               {
-                type: "tab",
-                name: "Graph",
-                component: "graph"
+                type: 'tab',
+                name: 'Graph',
+                component: 'graph',
+              },
+            ],
+          },
+          {
+            type: 'tabset',
+            weight: 25,
+            children: [
+              {
+                type: 'tab',
+                name: 'Timeline',
+                component: 'timeline',
               }
-            ]
-          }
-        ]
+            ],
+          },
+        ],
       },
       {
-        type: "column",
+        type: 'column',
         weight: 30,
         children: [
           {
-            type: "tabset",
+            type: 'tabset',
             weight: 50,
             children: [
               {
-                type: "tab",
-                name: "Filters",
-                component: "filters"
-              }
-            ]
+                type: 'tab',
+                name: 'Graph2',
+                component: 'placeholder',
+              },
+            ],
           },
           {
-            type: "tabset",
+            type: 'tabset',
             weight: 50,
             children: [
               {
-                type: "tab",
-                name: "Timeline",
-                component: "timeline"
+                type: 'tab',
+                name: 'Graph RAG',
+                component: 'graph-rag',
               }
-            ]
-          }
-        ]
-      }
-    ]
-  }
+            ],
+          },
+        ],
+      },
+    ],
+  },
 });
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -70,11 +99,7 @@ const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 export function LayoutProvider({ children }: { children: ReactNode }) {
   const [model, setModel] = useState<Model>(defaultModel);
 
-  return (
-    <LayoutContext.Provider value={{ model, setModel }}>
-      {children}
-    </LayoutContext.Provider>
-  );
+  return <LayoutContext.Provider value={{ model, setModel }}>{children}</LayoutContext.Provider>;
 }
 
 export function useLayout() {
@@ -83,4 +108,4 @@ export function useLayout() {
     throw new Error('useLayout must be used within a LayoutProvider');
   }
   return context;
-} 
+}
