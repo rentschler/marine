@@ -31,6 +31,7 @@ export const MyGraph = ({
   hoveredNode,
   setHoveredNode,
   data,
+  currentNode,
 }: MyGraphProps) => {
   const loadGraph = useLoadGraph();
 
@@ -172,7 +173,7 @@ export const MyGraph = ({
         return newData;
       },
     });
-  }, [hoveredNode, setSettings, sigma, disableHoverEffect]);
+  }, [hoveredNode, setSettings, sigma, disableHoverEffect, currentNode.getRect()]);
 
 
   if (!data) {
