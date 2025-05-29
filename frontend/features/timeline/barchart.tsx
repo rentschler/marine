@@ -1,18 +1,18 @@
-import { useDimensions } from '@/hooks/use-dimension';
 import { DayBin } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { useFilterContext } from '@/context/filter-context';
+import { Dimensions } from '@/types/dimension-type';
 interface BarchartProps {
   data?: DayBin[];
   numberOfBins: number;
+  dimensions: Dimensions;
 }
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const Barchart = ({ data, numberOfBins }: BarchartProps) => {
-  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { width, height } = useDimensions(boxRef);
+  const { width, height } = dimensions;
   const { selectedDateRange, setSelectedDateRange } = useFilterContext();
 
   useEffect(() => {
@@ -65,7 +65,10 @@ const Barchart = ({ data, numberOfBins }: BarchartProps) => {
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
       .attr('fill', 'steelblue')
       .append('title')
-      .text((d) => d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end));
+      .text(
+        (d) =>
+          d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end)
+      );
 
     // add the axes
     const xAxis = d3
@@ -178,7 +181,7 @@ const Barchart = ({ data, numberOfBins }: BarchartProps) => {
   }, [data, width, height]);
 
   return (
-    <div ref={boxRef} className="w-full h-full">
+    <div className="w-full h-full">
       <svg ref={svgRef}></svg>
     </div>
   );

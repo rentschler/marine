@@ -1,4 +1,4 @@
-import { useDimensions } from '@/hooks/use-dimension';
+import { Dimensions } from '@/types/dimension-type';
 import { StackedSeries } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
@@ -7,18 +7,18 @@ interface BarchartProps {
   bars?: string[];
   segments?: string[];
   numberOfBins: number;
+  dimensions: Dimensions;
 }
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const StackedBarChart = ({ data, bars, segments, numberOfBins }: BarchartProps) => {
-  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+const StackedBarChart = ({ data, bars, segments, numberOfBins, dimensions }: BarchartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { width, height } = useDimensions(boxRef);
+  const { width, height } = dimensions;
 
   useEffect(() => {
     if (!data || !svgRef.current || !bars || !segments) return;
     console.log('stacked barchart data', data);
-    
+
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
     const svg = d3.select(svgRef.current).attr('width', width).attr('height', height);
@@ -102,7 +102,7 @@ const StackedBarChart = ({ data, bars, segments, numberOfBins }: BarchartProps) 
   }, [data, width, height]);
 
   return (
-    <div ref={boxRef} className="w-full h-full">
+    <div className="w-full h-full">
       <svg width={width} height={height} ref={svgRef}></svg>
     </div>
   );
