@@ -22,6 +22,7 @@ import GraphTooltip from './graph-tooltip';
 import { useEffect } from 'react';
 import { useDimensions } from '@/hooks/use-dimension';
 import { useFilterContext } from '@/context/filter-context';
+import { TabNode } from 'flexlayout-react';
 
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
@@ -29,13 +30,19 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 export interface GraphWrapperProps {
   layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random';
   limit?: number;
+  currentNode: TabNode;
 }
 
+
+
 // Component that display the graph
-export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
+export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   // get the dimensions of the box + update when the screen size changes
-  const { width, height } = useDimensions(boxRef);
+  const { width, height } = {
+    width: currentNode.getRect().width - 10,
+    height: currentNode.getRect().height - 10,
+  };
 
   // filter options
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
@@ -44,7 +51,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
   const { currentData, setCurrentData } = useFilterContext();  
   const [error, setError] = useState<string | null>(null);
 
-  const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
+  // const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
 
   // state management for userinteraction
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -75,13 +82,14 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
 
   useEffect(() => {
     const fetchData = async () => {
+      
       try {
         // Create filter request body based on selected filters
         const filterBody: FilterRequestBody = {
           minDegree: selectedNodeDegrees?.[0] ?? 0,
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
-          nodeTypes: selectedNodeTypes,
-          edgeTypes: selectedEdgeTypes,
+          nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
+          edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
           startDate: selectedDateRange?.[0] ?? null,
           endDate: selectedDateRange?.[1] ?? null,
         };
@@ -126,7 +134,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
-        <SigmaContainer style={sigmaStyle} settings={{ allowInvalidContainer: true }}>
+        <SigmaContainer style={{ width, height }}>
           {/* Graph component */}
           <MyGraph
             layout={layout}
@@ -134,6 +142,7 @@ export const GraphWrapper = ({ layout, limit }: GraphWrapperProps) => {
             hoveredNode={hoveredNode}
             setHoveredNode={setHoveredNode}
             data={currentData}
+            currentNode={currentNode}
           />
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
