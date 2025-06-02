@@ -2,7 +2,7 @@ from models.Graph import GraphData, Graph, Node, Link, EDefault
 
 async def get_graph_with_timestamps(session) -> GraphData:
     nodes_result = await session.run(
-        """MATCH (n: Node)     
+        """MATCH (n)     
         WHERE n.timestamp IS NOT NULL
         RETURN n"""
     )

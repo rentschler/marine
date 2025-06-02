@@ -1,11 +1,10 @@
-import random
-from nl_querying.query_utils import query_pipeline
-from nl_querying.community_utils import add_graph_communities
+from nl_querying.query_service import QueryService
+from nl_querying.indexing_service import IndexingService
+from nl_querying.init_llm import LLM
 from database_utils.get_filtered_graph import get_filtered_graph
 from models.filter_request_body import FilterRequestBody
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
-from models.Graph import GraphData
 from database_utils.get_hole_graph import get_hole_graph
 from database_utils.get_node_count import get_node_count_in_db
 from database_utils.import_edges import import_edges
@@ -30,10 +29,10 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
-llm = OllamaLLM(
-            model="phi4:latest",
-            base_url="https://ollama.joos.dbvis.de",
-        )
+llm = LLM(model= "phi4:latest")
+# services
+indexing_service = IndexingService(llm=llm)
+query_service = QueryService(llm=llm)
 
 router = APIRouter()
 
@@ -51,7 +50,7 @@ async def start_up():
             if node_count == 0:
                 print("Laoding graph in DB...")
                 G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
-                G = add_graph_communities(graph=G, llm=llm)
+                G = await indexing_service.add_graph_communities(graph=G)
 
                 pos = nx.forceatlas2_layout(G)
                 pos = nx.rescale_layout_dict(pos)
@@ -123,16 +122,16 @@ async def graph_with_timestamps():
 async def websocket_nl_query(websocket: WebSocket):
     await websocket.accept()
     try:
-        while True:
-            question = await websocket.receive_text()
-            await websocket.send_text("Processing...")
+        question = await websocket.receive_text()
+        await websocket.send_text("Received question...")
 
-            result = query_pipeline(question, llm)
+        result = await query_service.pipeline_reporter(question=question, websocket=websocket)
 
-            await websocket.send_text(json.dumps(result, default=str))
+        await websocket.send_text(json.dumps(result, default=str))
     except Exception as e:
-        print(e)
+        print("Error in WebSocket:", e)
         await websocket.send_text(json.dumps({
-            "answer": "Error. \n Please try again or enter a new query."
+            "answer": "An error occurred. Please try again or enter a new query."
         }))
         await websocket.close()
+
