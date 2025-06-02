@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { Model } from 'flexlayout-react';
+import { VisType } from '@/types/vis-type';
 
 interface LayoutContextType {
   model: Model;
@@ -24,7 +25,7 @@ const defaultModel = Model.fromJson({
         {
           type: 'tab',
           name: 'Filters',
-          component: 'filters',
+          component: VisType.FILTERS,
           enableClose: true,
         },
       ],
@@ -45,7 +46,7 @@ const defaultModel = Model.fromJson({
               {
                 type: 'tab',
                 name: 'Graph',
-                component: 'graph',
+                component: VisType.GRAPH,
               },
             ],
           },
@@ -56,8 +57,8 @@ const defaultModel = Model.fromJson({
               {
                 type: 'tab',
                 name: 'Timeline',
-                component: 'timeline',
-              }
+                component: VisType.TIMELINE,
+              },
             ],
           },
         ],
@@ -72,8 +73,13 @@ const defaultModel = Model.fromJson({
             children: [
               {
                 type: 'tab',
-                name: 'Graph2',
-                component: 'placeholder',
+                name: 'Daily Graph',
+                component: VisType.DAILY_GRAPH,
+              },
+              {
+                type: 'tab',
+                name: 'RAG Graph',
+                component: VisType.RAG_GRAPH,
               },
             ],
           },
@@ -84,8 +90,8 @@ const defaultModel = Model.fromJson({
               {
                 type: 'tab',
                 name: 'Graph RAG',
-                component: 'graph-rag',
-              }
+                component: VisType.GRAPH_RAG,
+              },
             ],
           },
         ],
