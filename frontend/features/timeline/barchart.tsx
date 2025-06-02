@@ -63,7 +63,10 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       .attr('y', (d) => scaleLinear(d.count))
       .attr('width', scaleOrdinal.bandwidth())
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
-      .attr('fill', 'steelblue')
+      .attr('fill', (d) => {
+        const isSelected = d.start >= selectedDateRange?.[0] && d.end <= selectedDateRange?.[1];
+        return isSelected ? 'red' : 'steelblue';
+      })
       .append('title')
       .text(
         (d) =>
@@ -114,7 +117,7 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
         [boundsWidth, boundsHeight],
       ])
       .on('start brush', (event) => {
-        console.log('event', event);
+        // console.log('event', event);
 
         const selection = event.selection;
         if (!selection) return;
@@ -138,7 +141,7 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
           }
         });
 
-        console.log('highlightBars', highlightBars);
+        // console.log('highlightBars', highlightBars);
       })
       .on('end', (event) => {
         const selection = event.selection;

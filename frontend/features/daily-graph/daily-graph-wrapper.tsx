@@ -8,7 +8,7 @@ import {
   ZoomControl,
 } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, LinkType, NodeType } from '@/types/graph-types';
+import { GraphData, LinkType, NodeType, SubType } from '@/types/graph-types';
 import { FilterRequestBody } from '@/types/filter-types';
 import * as d3 from 'd3';
 import { ColorLegend } from '@/components/ui/color-legend';
@@ -48,6 +48,7 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
 
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
   const [dailyData, setDailyData] = useState<GraphData | null>(null);
+  const [eventCount, setEventCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
   // const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
@@ -115,12 +116,14 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
       const timestampNodes = currentData.nodes.filter((n) => {
         if (n.timestamp) {
           const date = new Date(n.timestamp);
-          return date >= selectedDateRange?.[0] && date <= selectedDateRange?.[1];
+          return date >= selectedDateRange?.[0] && date <= selectedDateRange?.[1] && n.sub_type === SubType.Communication;
         }
         return false;
       });
 
-      console.log('timestampNodes', timestampNodes, selectedDateRange);
+      setEventCount(timestampNodes.length);
+      console.log("nodes in selected date range", timestampNodes);
+      
 
       // 2. get all the edges where either the source or target node is in the filtered data
       const timestampEdges = currentData.links.filter((e) => {
@@ -195,6 +198,14 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
                 scale={edgeColorScale}
                 domain={Object.values(LinkType)}
               /> */}
+            </div>
+          </ControlsContainer>
+          {/* start, end date and number of events */}
+          <ControlsContainer position={'top-left'}>
+            <div className="flex flex-row gap-2">
+              <div className="text-sm text-muted">Start: {selectedDateRange?.[0]?.toLocaleDateString()}</div>
+              <div className="text-sm text-muted">End: {selectedDateRange?.[1]?.toLocaleDateString()}</div>
+              <div className="text-sm text-muted">Number of timed events: {eventCount} ({dailyData?.nodes.length})</div>
             </div>
           </ControlsContainer>
         </SigmaContainer>
