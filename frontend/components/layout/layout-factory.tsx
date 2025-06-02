@@ -3,6 +3,7 @@ import TimelineWrapper from '@/features/timeline/timeline-wrapper';
 import dynamic from 'next/dynamic';
 import { TabNode } from 'flexlayout-react';
 import { VisType, LayoutType } from '@/types/vis-type';
+import { ChatUI } from '@/features/chat/chat-ui';
 
 const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
   ssr: false,
@@ -28,7 +29,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
       case VisType.TIMELINE:
         return <TimelineWrapper numberOfBins={numberOfBins} currentNode={node} />;
       case VisType.GRAPH_RAG:
-        return <div>Graph RAG</div>;
+        return <div className="w-full h-full"><ChatUI/></div>;
       case VisType.PLACEHOLDER:
         return <div className="w-full h-full bg-gray-100">Placeholder</div>;
       case VisType.DAILY_GRAPH:

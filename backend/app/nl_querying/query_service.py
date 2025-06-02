@@ -46,7 +46,7 @@ class QueryService:
         )
 
         response = await self.llm.invoke_prompt(
-            system_prompt="You are a helpful assistant. ",
+            system_prompt="You are a helpful assistant. Try to use the Pipeline as often as possible.",
             user_prompt=prompt
         )
 
@@ -75,19 +75,29 @@ class QueryService:
         try:
             response = await self.llm.invoke_prompt(
                 system_prompt="""
-                    You are an information extraction assistant. Extract all PERSONS and LOCATIONS names from the text below.
-                    Combine both types into a single array called `entities`.
-                    Output ONLY a valid JSON object with the following format (no extra text, no markdown, no explanation):
+                You are a strict information extraction assistant. 
+                Given ANY text below, always respond with a single valid JSON object in the following format:
+                {
+                "entities": ["Entity A", "Entity B"]
+                }
 
-                    {
-                      "entities": ["Entity A", "Entity B"]
-                    }
+                If no PERSONS or LOCATIONS are found in the text, always respond with:
+                {
+                "entities": []
+                }
 
-                    If no names are found, return: {"entities": []}.
-                    Do NOT return a list, markdown, or anything else. Only this JSON object.
-                    """,
+                Under no circumstances should you output anything else: 
+                - No explanations
+                - No markdown
+                - No additional text
+                - No questions
+                - No instructions
+
+                Only the JSON object. Even if the text is empty or irrelevant.
+                """,
                 user_prompt=query
             )
+
             response = clean_json_string(response)
             print(response)
             data = json.loads(response)
@@ -135,7 +145,7 @@ class QueryService:
             }}
 
             Only include numbers (IDs), no explanations or text. The answer **must** be valid JSON.
-            Do not return anything else.
+            Do not return anything else. Do not justify your answer.
         """
 
         try:
