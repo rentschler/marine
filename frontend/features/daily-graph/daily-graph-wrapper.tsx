@@ -145,6 +145,10 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
     return <div className="text-red-500">{error}</div>;
   }
 
+  if (!dailyData) {
+    return <div>No data available</div>;
+  }
+
   return (
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">

@@ -122,10 +122,10 @@ export function FilterDashboard() {
           <label className="text-sm font-medium text-gray-700">Date Range</label>
           <div className="flex flex-col gap-3 w-full">
             <label className="text-sm font-medium text-gray-700">
-              Start Date {selectedDateRange[0] ? d3.timeFormat('%Y-%m-%d %H:%M')(selectedDateRange[0]) : ''}
+              Start Date {selectedDateRange[0] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[0]) : ''}
             </label>
             <label className="text-sm font-medium text-gray-700">
-              End Date {selectedDateRange[1] ? d3.timeFormat('%Y-%m-%d %H:%M')(selectedDateRange[1]) : ''}
+              End Date {selectedDateRange[1] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[1]) : ''}
             </label>
           </div>
         </div>
