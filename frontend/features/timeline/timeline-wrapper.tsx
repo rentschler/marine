@@ -11,7 +11,7 @@ import { TabNode } from 'flexlayout-react';
 
 interface TimelineWrapperProps {
   numberOfBins: number;
-  currentNode: TabNode;
+  currentNode?: TabNode;
 }
 
 export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
@@ -29,7 +29,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     useFilterContext();
 
   // get the dimensions of the current node
-  const dimensions = { width: currentNode.getRect().width, height: currentNode.getRect().height };
+  const dimensions = currentNode ? { width: currentNode.getRect().width, height: currentNode.getRect().height } : { width: 1000, height: 1000 };
 
   useEffect(() => {
     console.log('timeline dimensions', dimensions);

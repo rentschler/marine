@@ -15,6 +15,7 @@ import { useLayoutNoverlap } from '@react-sigma/layout-noverlap';
 import { useLayoutRandom } from '@react-sigma/layout-random';
 import { useLayoutCirclepack } from '@react-sigma/layout-circlepack';
 import { GraphWrapperProps } from './graph-wrapper';
+import { Dimensions } from '@/types/dimension-type';
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
@@ -22,6 +23,7 @@ interface MyGraphProps extends GraphWrapperProps {
   hoveredNode: string | null;
   setHoveredNode: (node: string | null) => void;
   data: GraphData | null;
+  dimensions: Dimensions;
 }
 
 // Component that load the graph
@@ -31,7 +33,7 @@ export const MyGraph = ({
   hoveredNode,
   setHoveredNode,
   data,
-  currentNode,
+  dimensions,
 }: MyGraphProps) => {
   const loadGraph = useLoadGraph();
 
@@ -126,11 +128,11 @@ export const MyGraph = ({
         }
       );
     });
+    // Load the graph in sigma
+    loadGraph(graph);
     if(assign){
       assign();
     }
-    // Load the graph in sigma
-    loadGraph(graph);
     // Apply the layout
     // assign();
 
@@ -173,7 +175,7 @@ export const MyGraph = ({
         return newData;
       },
     });
-  }, [hoveredNode, setSettings, sigma, disableHoverEffect, currentNode.getRect()]);
+  }, [hoveredNode, setSettings, sigma, disableHoverEffect, dimensions]);
 
 
   if (!data) {

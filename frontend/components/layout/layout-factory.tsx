@@ -32,7 +32,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
       case VisType.PLACEHOLDER:
         return <div className="w-full h-full bg-gray-100">Placeholder</div>;
       case VisType.DAILY_GRAPH:
-        return <DailyGraphWrapper currentNode={node} />;
+        return <DailyGraphWrapper currentNode={node} layout={layout as LayoutType} />;
       case VisType.RAG_GRAPH:
         return <div>RAG Graph</div>;
       default:

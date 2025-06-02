@@ -23,6 +23,7 @@ import { useEffect } from 'react';
 import { useDimensions } from '@/hooks/use-dimension';
 import { useFilterContext } from '@/context/filter-context';
 import { TabNode } from 'flexlayout-react';
+import { Dimensions } from '@/types/dimension-type';
 
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
@@ -30,7 +31,7 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 export interface GraphWrapperProps {
   layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random';
   limit?: number;
-  currentNode: TabNode;
+  currentNode?: TabNode;
 }
 
 
@@ -38,11 +39,8 @@ export interface GraphWrapperProps {
 // Component that display the graph
 export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-  // get the dimensions of the box + update when the screen size changes
-  const { width, height } = {
-    width: currentNode.getRect().width - 10,
-    height: currentNode.getRect().height - 10,
-  };
+
+  let dimensions:Dimensions = currentNode ? {width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10} : useDimensions(boxRef);
 
   // filter options
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
@@ -90,8 +88,8 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          startDate: selectedDateRange?.[0] ?? null,
-          endDate: selectedDateRange?.[1] ?? null,
+          startDate: undefined,
+          endDate: undefined,
         };
 
         const response = await fetch('/api/filter', {
@@ -124,7 +122,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
@@ -134,7 +132,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
-        <SigmaContainer style={{ width, height }}>
+        <SigmaContainer style={{ width: dimensions.width, height: dimensions.height }}>
           {/* Graph component */}
           <MyGraph
             layout={layout}
@@ -142,7 +140,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
             hoveredNode={hoveredNode}
             setHoveredNode={setHoveredNode}
             data={currentData}
-            currentNode={currentNode}
+            dimensions={dimensions}
           />
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
@@ -165,7 +163,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
 
           {/* Container for the tooltip component */}
           <ControlsContainer>
-            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={width * 0.66} />
+            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={dimensions.width * 0.66} />
           </ControlsContainer>
           <ControlsContainer position={'bottom-right'}>
             <div className="flex flex-row gap-2">

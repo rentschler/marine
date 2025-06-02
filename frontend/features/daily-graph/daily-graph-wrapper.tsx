@@ -22,6 +22,8 @@ import { useEffect } from 'react';
 import { useFilterContext } from '@/context/filter-context';
 import { TabNode } from 'flexlayout-react';
 import { MyGraph } from '@/features/graph/my-graph';
+import { useDimensions } from '@/hooks/use-dimension';
+import { Dimensions } from '@/types/dimension-type';
 
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
@@ -29,23 +31,23 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 export interface GraphWrapperProps {
   layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random';
   limit?: number;
-  currentNode: TabNode;
+  currentNode?: TabNode;
 }
 
 // Component that display the graph
 export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   // get the dimensions of the box + update when the screen size changes
-  const { width, height } = {
-    width: currentNode.getRect().width - 10,
-    height: currentNode.getRect().height - 10,
-  };
+  let dimensions: Dimensions = currentNode
+    ? { width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10 }
+    : useDimensions(boxRef);
 
   // filter options
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
     useFilterContext();
 
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
+  const [dailyData, setDailyData] = useState<GraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
@@ -97,24 +99,7 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
         const data: GraphData = await response.json();
         console.log('complete graph data:', data);
 
-        // filter out the nodes with a timestamp outside the selected date range
-        const filteredData = data.nodes.filter((n) => {
-          if (n.timestamp) {
-            const date = new Date(n.timestamp);
-            return date >= selectedDateRange?.[0] && date <= selectedDateRange?.[1];
-          }
-          return true;
-        });
-
-        // filter out edges that either dont have a source or target node in the filtered data
-        const filteredEdges = data.links.filter((e) => {
-          return (
-            filteredData.some((n) => n.id === e.source) &&
-            filteredData.some((n) => n.id === e.target)
-          );
-        });
-
-        setCurrentData({ ...data, nodes: filteredData, links: filteredEdges });
+        setCurrentData(data);
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -122,7 +107,36 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange]);
+  }, []);
+
+  useEffect(() => {
+    if (currentData) {
+      // 1. get all the nodes with a timestamp in the selected date range (Node type event only)
+      const timestampNodes = currentData.nodes.filter((n) => {
+        if (n.timestamp) {
+          const date = new Date(n.timestamp);
+          return date >= selectedDateRange?.[0] && date <= selectedDateRange?.[1];
+        }
+        return false;
+      });
+
+      console.log('timestampNodes', timestampNodes, selectedDateRange);
+
+      // 2. get all the edges where either the source or target node is in the filtered data
+      const timestampEdges = currentData.links.filter((e) => {
+        return timestampNodes.some((n) => n.id === e.source) || timestampNodes.some((n) => n.id === e.target) 
+      });
+
+      // 3. return all nodes that are in the filtered edge list
+      const relevantNodes = currentData.nodes.filter((n) => {
+        const exists = timestampEdges.some((e) => e.source === n.id || e.target === n.id);
+        // const hasTimestamp = n.timestamp ?  new Date(n.timestamp) >= selectedDateRange?.[0] && new Date(n.timestamp) <= selectedDateRange?.[1] : true;
+        return exists;
+      });
+
+      setDailyData({ ...currentData, nodes: relevantNodes, links: timestampEdges });
+    }
+  }, [currentData, selectedDateRange]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
@@ -132,15 +146,15 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
-        <SigmaContainer style={{ width, height }}>
+        <SigmaContainer style={{ width: dimensions.width, height: dimensions.height }}>
           {/* Graph component */}
           <MyGraph
             layout={layout}
             limit={limit}
             hoveredNode={hoveredNode}
             setHoveredNode={setHoveredNode}
-            data={currentData}
-            currentNode={currentNode}
+            data={dailyData}
+            dimensions={dimensions}
           />
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
@@ -163,7 +177,10 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
 
           {/* Container for the tooltip component */}
           <ControlsContainer>
-            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={width * 0.66} />
+            <GraphTooltip
+              node={hoveredNode ?? focusNode ?? selectedNode}
+              width={dimensions.width * 0.66}
+            />
           </ControlsContainer>
           <ControlsContainer position={'bottom-right'}>
             <div className="flex flex-row gap-2">
