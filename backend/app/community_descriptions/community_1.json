@@ -1,4 +1,0 @@
-{
-  "community": 1,
-  "summary": "This data represents a network of relationships between various entities, including people (Rodriguez, Davis), locations (Coral Point, Castaway Cove, Dolphin Bay), vessels (Mako), and events (Assessments, Monitoring, Tour Activities, Vessel Movements). Communication events frequently link these entities, often providing evidence for other events or relationships. For example, numerous communications support the idea of vessel movements or tour activities occurring at specific locations. Several communications also indicate access permissions are being granted or discussed, and there's a notable connection between communications and the vessel ‘Mako’ – suggesting it’s a central point of interest. Overall, the data appears to chronicle interactions and events related to maritime activities, potentially involving monitoring, tours, and access control within a specific geographic area."
-}

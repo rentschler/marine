@@ -126,11 +126,10 @@ class IndexingService:
         prompt = f"""
             You are given a group of related nodes and edges from a knowledge graph.
 
-            Summarize what this group is about in natural language in 4–7 sentences.
+            Summarize what this group is about in natural language in up to 12 sentences.
             
             Keep in mind the diffent Types of Entities: Person, Vessel, Organization, Group, Location.
             And how such diffent Entities interact.
-
 
             Graph Section:
             {description}

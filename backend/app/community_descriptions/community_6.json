@@ -1,4 +1,0 @@
-{
-  "community": 6,
-  "summary": "This data represents a network of relationships between various entities such as ships (Serenity, Northern Light, Recreational Fishing Boats, Marlin), locations (Himark Harbor, Eastern quadrant, Eastern Islands), and events (fishing, communication, monitoring, criticism, enforcement, vessel movements). Communications frequently serve as evidence for or trigger other events, particularly vessel movements and reports. Many entities have access permissions linked to them, often associated with locations like Himark Harbor, and these permissions are often established or evidenced through communications. The data reveals a complex interplay of activity, with ships communicating with each other and responding to events in their environment, often impacting or being impacted by vessel movements and access permissions."
-}

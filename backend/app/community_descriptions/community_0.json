@@ -1,4 +1,0 @@
-{
-  "community": 0,
-  "summary": "This data represents a network of relationships between communications, events, and entities like ships (Remora, Neptune) and companies (V. Miesel Shipping). Many communications serve as evidence for events—for example, a communication might support an event of vessel movement. Relationships also indicate ownership or operational connections—ships are “operated” by entities, and communications often connect to specific ships or companies. Several communications are also linked to access permissions and coordinates, suggesting a system for tracking and authorizing actions related to these entities and events. The data highlights a dynamic environment where information flows to support operational events and maintain relationships between different actors within a maritime or logistical context."
-}

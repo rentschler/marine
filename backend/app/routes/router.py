@@ -29,7 +29,7 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
-llm = LLM(model= "gemma3:27b")
+llm = LLM(model= "phi4:latest")
 
 # services
 indexing_service = IndexingService(llm=llm)
