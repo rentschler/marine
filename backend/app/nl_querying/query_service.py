@@ -46,21 +46,21 @@ class QueryService:
         )
 
         response = await self.llm.invoke_prompt(
-            system_prompt="You are a helpful assistant. Try to use the Pipeline as often as possible.",
+            system_prompt="You are a helpful assistant. Try to use the Pipeline as often as possible. We just dont need it for prompts simar to: 'Hi' or 'How are you?' ",
             user_prompt=prompt
         )
 
         result = response.strip().lower()
-        needs_pipeline = result == "pipeline"
+        general = result == "general"
 
         reminder = ""
-        if not needs_pipeline:
+        if general:
             reminder = (
                 "Note: This question might not be well-suited for the retrieval pipeline. "
                 "Please consider asking questions that involve our knowledge base or require deeper context."
             )
 
-        return needs_pipeline, reminder
+        return general, reminder
 
     async def extract_all_entities_from_query(self, query: str) -> List[str]:
         """
@@ -81,7 +81,7 @@ class QueryService:
                 "entities": ["Entity A", "Entity B"]
                 }
 
-                If no PERSONS or LOCATIONS are found in the text, always respond with:
+                If no PERSONS, LOCATIONS, GROUPS or ORGANIZATIONS are found in the text, always respond with:
                 {
                 "entities": []
                 }
@@ -137,7 +137,7 @@ class QueryService:
             And here are summaries of communities in the graph:
             {summary_text}
 
-            Which of these communities are relevant for answering the question?
+            Which of these communities  provides important information to answer the question?
 
             Return only a valid JSON object in the following format:
             {{
@@ -183,11 +183,11 @@ class QueryService:
         summary_text = "\n\n".join(summaries)
 
         prompt = f"""
-            Given the following summaries from a knowledge graph:
+            Given the following summaries from a knowledge graph communities:
 
-            {summary_text}
+            {summary_text}            
 
-            Extract all named entities that appear in these summaries.
+            Extract all entities that appear in these summaries. Dont forget an entity.
 
             Keep in mind the different types of Entities: Person, Vessel, Organization, Group, Location.
 
@@ -325,11 +325,11 @@ class QueryService:
 
         prompt = f"""
             You are given multiple paths from a knowledge graph and a user question.
-            Summarize the paths in natural language (Use up to 6 Sentences to discribe the paths) and assess whether they are relevant to answering the user's question.
+            Summarize the paths in natural language (Use up to 8 Sentences to discribe the paths) and assess whether they are relevant to answering the user's question.
 
             Summarize all paths at once, dont make multipal summaries.
 
-            Keep in mind the diffent Types of Entities: Person, Vessel, Organization, Group, Location
+            Keep in mind the diffent Types of Entities: Person, Vessel, Organization, Group, Location. And how they interact.
 
             Question: {question}
 
@@ -401,7 +401,7 @@ class QueryService:
 
             Please answer the user's question in fluent, informative natural English.
 
-            Only use Information provided in the paths.
+            Only use Information provided in the paths. Do not make some thing up!
         """
 
         response = await self.llm.invoke_prompt(
@@ -444,8 +444,8 @@ class QueryService:
                 If any step in the pipeline fails, the exception is propagated. The caller is responsible
                 for error handling and user notification.
         """
-        needs_pipeline, reminder = await self.classify_question(question)
-        if not needs_pipeline:
+        general, reminder = await self.classify_question(question)
+        if general:
             return{
                 "answer": reminder
             }
@@ -469,21 +469,25 @@ class QueryService:
         current_path = 1
         overall_calls = 0
         path_summaries = []
+        relevant_paths: Dict[Tuple[str, str], List[PathResult]] = {}
 
-        for path_list in paths.values():
+        for key, path_list in paths.items():
             sub_paths = len(path_list)
             overall_calls += 1
             await websocket.send_text(f"Processing path group {current_path}/{number_of_paths} with {sub_paths} sub-paths...")
+
             path_summary = await self.summarize_and_score_paths(path_list, question)
             if path_summary.get("relevant", False):
                 path_summaries.append(path_summary)
+                relevant_paths[key] = path_list 
+
             current_path += 1
 
         await websocket.send_text("Generating final answer...")
         answer = await self.answer_question(question=question, path_summaries=path_summaries)
 
         await websocket.send_text("Building answer graph...")
-        graph = construct_answer_graph(paths)
+        graph = construct_answer_graph(relevant_paths)
 
         await websocket.send_text("Pipeline completed successfully.")
         return {
