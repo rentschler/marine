@@ -124,18 +124,34 @@ class IndexingService:
         description = self.describe_community(graph, community_nodes)
 
         prompt = f"""
-            You are given a group of related nodes and edges from a knowledge graph.
+        Context:
+        The community of Oceanus has undergone a transformation in recent years, moving from a fishing-centric economy to increased investments in ocean tourism. 
+        This shift has created tensions between local families, officials, and conservation groups like The Green Guardians. 
+        International pop star Sailor Shift recently announced plans to film a music video on Oceanus, sparking controversy and interest. 
+        Clepper Jessen, an investigative journalist, has uncovered evidence of expedited approvals and hidden logistics involving high-level Oceanus officials, Sailor Shift’s team, and local families. 
+        This context is important for understanding the relationships and interactions within the graph.
 
-            Summarize what this group is about in natural language in up to 12 sentences.
-            
-            Keep in mind the diffent Types of Entities: Person, Vessel, Organization, Group, Location.
-            And how such diffent Entities interact.
+        Clepper diligently recorded all intercepted radio communications over the last two weeks. 
+        With the help of his intern, they analyzed their content to identify important events and relationships between key players. The result is a knowledge graph describing the last two weeks on Oceanus.
 
-            Graph Section:
-            {description}
+        You are given a group of related nodes and edges from this knowledge graph.
 
-            Only respond with a paragraph of natural language. Do not include code or metadata.
+        Your task:
+        - Write a natural language summary that describes everything shown in this graph section.
+        - Include all Entities mentioned in the graph, explicitly mentioning their names and sub_type where available (e.g., “Sailor Shift (sub_type: Person)”).
+        - Clearly describe the relationships and interactions between these Entities as shown in the graph.
+        - Do not add or invent any information that is not present in the graph.
+        - Do not omit any relevant information from the graph.
+        - Focus on accuracy and completeness.
+        - Write in up to 12 sentences.
+
+        Graph Section:
+        {description}
+
+        Only respond with a single paragraph of natural language. Do not include code, metadata, or any other elements.
         """
+
+
 
         return await self.llm.invoke_prompt(
             system_prompt="You are a helpfull assistent.",
