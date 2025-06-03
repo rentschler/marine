@@ -1,6 +1,7 @@
 import { useSigma } from '@react-sigma/core';
 import { useEffect, useState } from 'react';
 import { Node } from '@/types/graph-types';
+import * as d3 from 'd3';
 
 interface GraphTooltipProps {
   node: string | null;
@@ -30,7 +31,7 @@ const GraphTooltip = ({ node, width }: GraphTooltipProps) => {
             .filter(([key]) => !['x', 'y', 'label'].includes(key))
             .map(([key, value]) => (
               <p key={key}>
-                {key}: {value}
+                {key}: {key === 'timestamp' ? d3.timeFormat('%Y-%m-%d %H:%M')(new Date(value)) : value}
               </p>
             ))}
         </div>

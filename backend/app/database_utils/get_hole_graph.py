@@ -3,7 +3,7 @@ from models.Graph import GraphData, Graph, Node, Link, EDefault
 
 async def get_hole_graph(session) -> GraphData:
     nodes_result = await session.run(
-        "MATCH (n: Node) RETURN n"
+        "MATCH (n) RETURN n"
     )
     nodes = []
     async for record in nodes_result:

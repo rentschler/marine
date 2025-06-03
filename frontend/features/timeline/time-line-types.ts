@@ -2,7 +2,8 @@ import { Node } from '@/types/graph-types';
 import * as d3 from 'd3';
 
 export interface DayBin {
-  day: Date;
+  start: Date;
+  end: Date;
   nodes: Node[];
   count: number;
 }

@@ -13,18 +13,19 @@ def build_edge_filters(filters: FilterRequestBody) -> str:
 def build_node_date_filter(filters: FilterRequestBody) -> str:
     if not filters.startDate or not filters.endDate:
         return "true"
-    
-    # Convert ISO format dates to datetime objects
+
+    # Convert ISO 8601 format to datetime objects
     start_date = datetime.fromisoformat(filters.startDate.replace('Z', '+00:00'))
-    end_date = datetime.fromisoformat(filters.endDate.replace('Z', '+00:00')) + timedelta(days=1)
-    
-    # Format dates for Neo4j
-    start_str = start_date.strftime('%Y-%m-%dT%H:%M:%S')
-    end_str = end_date.strftime('%Y-%m-%dT%H:%M:%S')
+    end_date = datetime.fromisoformat(filters.endDate.replace('Z', '+00:00'))
 
+    # Format to match Neo4j's timestamp format: 'YYYY-MM-DD HH:MM:SS'
+    start_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
+    end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
+    print("start_str", start_str)
+    print("end_str", end_str)
 
-    
-    return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_str}' AND c.timestamp <= '{end_str}')"
+    # Return a clause that can be added to a Cypher WHERE condition
+    return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_str}' AND c.timestamp < '{end_str}')"
 
 async def get_filtered_graph(session, filters: FilterRequestBody):
     nodes_dict = {}
@@ -61,7 +62,10 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             AND {date_filter}
             RETURN DISTINCT c
         """
+        print(event_query)
         records_events = await session.run(event_query, entity_ids=list(entity_ids))
+
+        event_count = 0
         async for record in records_events:
             c = record["c"]
             node_data = {**c._properties}
@@ -70,6 +74,9 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             if c.element_id not in node_ids:
                 node_ids.add(c.element_id)
                 event_ids.add(c.element_id)
+                event_count += 1
+
+        print(f"Found {event_count} events within the specified time range")
 
     if filters.nodeTypes and "Relationship" in filters.nodeTypes:
         relationship_query = f"""
@@ -123,6 +130,18 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
     nodes = list(nodes_dict.values())
     nodes = [node for node in nodes if node.id in connected_node_ids]
 
+    # Get nodes with timestamps
+    nodes_with_timestamps = [node for node in nodes if hasattr(node, "timestamp") and node.timestamp is not None]
+
+    if nodes_with_timestamps:
+        # Convert timestamps to datetime objects
+        timestamps = [node.timestamp for node in nodes_with_timestamps]
+        min_date = min(timestamps)
+        max_date = max(timestamps)
+
+        print(f"Min date in graph: {min_date}")
+        print(f"Max date in graph: {max_date}")
+
 
     graph_meta = Graph(
         mode="default",  
@@ -136,5 +155,5 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
         multigraph=False,
         graph=graph_meta,
         nodes=nodes,
-        links=links
+        links=links,
     )

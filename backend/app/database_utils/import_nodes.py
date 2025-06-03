@@ -11,11 +11,15 @@ async def import_nodes(session, nodes, pos):
             node_attrs["x"] = float(x)
             node_attrs["y"] = float(y)
 
-        await session.run(
-            """
-            MERGE (n:Node {id: $id})
+        node_type = node_attrs.get("type", "Node")  
+
+        cypher_query = f"""
+            MERGE (n:{node_type} {{id: $id}})
             SET n += $props
-            """,
+        """
+
+        await session.run(
+            cypher_query,
             id=node_id,
             props=node_attrs
         )

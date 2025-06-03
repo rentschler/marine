@@ -2,12 +2,15 @@ async def import_edges(session, edges):
     print("Importing edges ...")
     for u, v, edge_attrs in edges:
         edge_attrs = flatten_attrs(edge_attrs)
+        rel_type = edge_attrs.get("type", "MISSING")
+        query = f"""
+        MATCH (a {{id: $u}}), (b {{id: $v}})
+        MERGE (a)-[r:{rel_type}]->(b)
+        SET r += $props
+        """
+
         await session.run(
-            """
-            MATCH (a:Node {id: $u}), (b:Node {id: $v})
-            MERGE (a)-[r:RELATED]->(b)
-            SET r += $props
-            """,
+            query,
             u=u,
             v=v,
             props=edge_attrs

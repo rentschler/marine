@@ -1,21 +1,23 @@
-import { useDimensions } from '@/hooks/use-dimension';
 import { DayBin } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { useFilterContext } from '@/context/filter-context';
+import { Dimensions } from '@/types/dimension-type';
 interface BarchartProps {
   data?: DayBin[];
+  numberOfBins: number;
+  dimensions: Dimensions;
 }
 
-const MARGIN = { top: 25, right: 10, bottom: 40, left: 50 };
-const Barchart = ({ data }: BarchartProps) => {
-  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
+const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { width, height } = useDimensions(boxRef);
+  const { width, height } = dimensions;
   const { selectedDateRange, setSelectedDateRange } = useFilterContext();
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
+    console.log('barchart data', data);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -39,7 +41,7 @@ const Barchart = ({ data }: BarchartProps) => {
     // scale the x axis
     const scaleOrdinal = d3
       .scaleBand()
-      .domain(data.map((d) => d.day.toISOString()))
+      .domain(data.map((d) => d.start.toISOString()))
       .range([0, boundsWidth])
       .padding(0.2);
 
@@ -57,28 +59,46 @@ const Barchart = ({ data }: BarchartProps) => {
       .enter()
       .append('rect')
       .classed('bar', true)
-      .attr('x', (d) => scaleOrdinal(d.day.toISOString()) || 0)
+      .attr('x', (d) => scaleOrdinal(d.start.toISOString()) || 0)
       .attr('y', (d) => scaleLinear(d.count))
       .attr('width', scaleOrdinal.bandwidth())
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
-      .attr('fill', 'steelblue');
+      .attr('fill', (d) => {
+        const isSelected = d.start >= selectedDateRange?.[0] && d.end <= selectedDateRange?.[1];
+        return isSelected ? 'red' : 'steelblue';
+      })
+      .append('title')
+      .text(
+        (d) =>
+          d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end)
+      );
 
     // add the axes
     const xAxis = d3
       .axisBottom(scaleOrdinal)
-      .tickFormat((d) => d3.timeFormat('%Y-%m-%d')(new Date(d)));
+      .tickFormat((d) => {
+        const date = new Date(d);
+        return d3.timeFormat('%Y-%m-%d %H:%M')(date);
+      })
+      .ticks(Math.min(10, data.length));
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
     g.append('g')
       .attr('transform', `translate(0, ${boundsHeight})`)
       .call(xAxis)
-      .append('text')
-      .attr('x', boundsWidth / 2)
-      .attr('y', 35)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'currentColor')
-      .text('Date');
+      .classed('x-axis', true)
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em')
+      .attr('transform', 'rotate(-45)');
+    // .append('text')
+    // .attr('x', boundsWidth / 2)
+    // .attr('y', 35)
+    // .attr('text-anchor', 'middle')
+    // .attr('fill', 'currentColor')
+    // .text('Date');
 
     g.append('g')
       .call(yAxis)
@@ -97,7 +117,7 @@ const Barchart = ({ data }: BarchartProps) => {
         [boundsWidth, boundsHeight],
       ])
       .on('start brush', (event) => {
-        console.log('event', event);
+        // console.log('event', event);
 
         const selection = event.selection;
         if (!selection) return;
@@ -121,7 +141,7 @@ const Barchart = ({ data }: BarchartProps) => {
           }
         });
 
-        console.log('highlightBars', highlightBars);
+        // console.log('highlightBars', highlightBars);
       })
       .on('end', (event) => {
         const selection = event.selection;
@@ -149,8 +169,8 @@ const Barchart = ({ data }: BarchartProps) => {
         });
 
         console.log('highlightBars', highlightBars);
-        const startDate = d3.min(highlightBars, (d) => d.day);
-        const endDate = d3.max(highlightBars, (d) => d.day);
+        const startDate = d3.min(highlightBars, (d) => d.start);
+        const endDate = d3.max(highlightBars, (d) => d.end);
 
         console.log('Selected date range:', {
           start: startDate,
@@ -164,7 +184,7 @@ const Barchart = ({ data }: BarchartProps) => {
   }, [data, width, height]);
 
   return (
-    <div ref={boxRef} className="w-full h-full">
+    <div className="w-full h-full">
       <svg ref={svgRef}></svg>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useDimensions } from '@/hooks/use-dimension';
+import { Dimensions } from '@/types/dimension-type';
 import { StackedSeries } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
@@ -6,16 +6,18 @@ interface BarchartProps {
   data?: StackedSeries;
   bars?: string[];
   segments?: string[];
+  numberOfBins: number;
+  dimensions: Dimensions;
 }
 
-const MARGIN = { top: 25, right: 10, bottom: 40, left: 50 };
-const StackedBarChart = ({ data, bars, segments }: BarchartProps) => {
-  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
+const StackedBarChart = ({ data, bars, segments, numberOfBins, dimensions }: BarchartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { width, height } = useDimensions(boxRef);
+  const { width, height } = dimensions;
 
   useEffect(() => {
     if (!data || !svgRef.current || !bars || !segments) return;
+    console.log('stacked barchart data', data);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -71,21 +73,22 @@ const StackedBarChart = ({ data, bars, segments }: BarchartProps) => {
       .attr('width', scaleOrdinal.bandwidth());
 
     // add the axes
-    const xAxis = d3
-      .axisBottom(scaleOrdinal)
-      .tickFormat((d) => d3.timeFormat('%Y-%m-%d')(new Date(d)));
+    const xAxis = d3.axisBottom(scaleOrdinal).tickFormat((d) => {
+      const date = new Date(d);
+      return d3.timeFormat('%Y-%m-%d %H:%M')(date);
+    });
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
     g.append('g')
       .attr('transform', `translate(0, ${boundsHeight})`)
       .call(xAxis)
-      .append('text')
-      .attr('x', boundsWidth / 2)
-      .attr('y', 35)
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'currentColor')
-      .text('Date');
+      .classed('x-axis', true)
+      .selectAll('text')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em')
+      .attr('transform', 'rotate(-45)');
 
     g.append('g')
       .call(yAxis)
@@ -99,7 +102,7 @@ const StackedBarChart = ({ data, bars, segments }: BarchartProps) => {
   }, [data, width, height]);
 
   return (
-    <div ref={boxRef} className="w-full h-full">
+    <div className="w-full h-full">
       <svg width={width} height={height} ref={svgRef}></svg>
     </div>
   );

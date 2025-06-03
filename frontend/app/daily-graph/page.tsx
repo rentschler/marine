@@ -5,8 +5,9 @@ import { useSearchParams } from 'next/navigation';
 // import OverviewGraph from '@/features/graph/overview-graph';
 
 import dynamic from 'next/dynamic';
+import TimelineWrapper from '@/features/timeline/timeline-wrapper';
 
-const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
+const DailyGraphWrapper = dynamic(() => import('@/features/daily-graph/daily-graph-wrapper'), {
   // special import to ensure that the component is not rendered on the server
   ssr: false,
 });
@@ -18,7 +19,7 @@ function Page() {
   const limit = searchParams.get('limit');
   return (
     <div className="w-screen h-screen">
-      <GraphWrapper
+      <DailyGraphWrapper
         layout={
           layout as
             | 'force'
@@ -32,6 +33,7 @@ function Page() {
         limit={limit ? +limit : undefined}
         currentNode={undefined}
       />
+      <TimelineWrapper numberOfBins={10} currentNode={undefined} />
     </div>
   );
 }

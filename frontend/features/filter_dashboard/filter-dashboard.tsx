@@ -12,6 +12,7 @@ import {
   Spinner,
 } from '@heroui/react';
 import { useFilterContext } from '@/context/filter-context';
+import * as d3 from 'd3';
 
 export function FilterDashboard() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -119,12 +120,12 @@ export function FilterDashboard() {
           </div>
           <Divider />
           <label className="text-sm font-medium text-gray-700">Date Range</label>
-          <div className="flex flex-wrap gap-3 w-full">
+          <div className="flex flex-col gap-3 w-full">
             <label className="text-sm font-medium text-gray-700">
-              Start Date {selectedDateRange[0]?.toLocaleDateString()}
+              Start Date {selectedDateRange[0] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[0]) : ''}
             </label>
             <label className="text-sm font-medium text-gray-700">
-              End Date {selectedDateRange[1]?.toLocaleDateString()}
+              End Date {selectedDateRange[1] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[1]) : ''}
             </label>
           </div>
         </div>

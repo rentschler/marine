@@ -23,3 +23,5 @@ package-lock.json
 
 # NextJS
 */.next/*
+
+*/community_descriptions/*

@@ -1,25 +1,39 @@
 'use client';
 
 import { useFilterContext } from '@/context/filter-context';
-import { GraphData, Node } from '@/types/graph-types';
+import { GraphData } from '@/types/graph-types';
 import { useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
-import { Button } from '@heroui/react';
 import { DayBin, StackedBarChartData } from './time-line-types';
+import { TabNode } from 'flexlayout-react';
 
-export default function TimelineWrapper() {
+interface TimelineWrapperProps {
+  numberOfBins: number;
+  currentNode?: TabNode;
+}
+
+export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isStacked, setIsStacked] = useState(true);
+  const [isStacked, setIsStacked] = useState(false);
+  const n_bins = numberOfBins;
 
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
   const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(
     undefined
   );
 
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } = useFilterContext();
+  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
+    useFilterContext();
+
+  // get the dimensions of the current node
+  const dimensions = currentNode ? { width: currentNode.getRect().width, height: currentNode.getRect().height } : { width: 1000, height: 1000 };
+
+  useEffect(() => {
+    console.log('timeline dimensions', dimensions);
+  }, [dimensions]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,7 +54,7 @@ export default function TimelineWrapper() {
         const nodes = data.nodes.map((d) => {
           return {
             timestamp: d.timestamp ? new Date(d.timestamp) : null,
-            day: d.timestamp ? new Date(d.timestamp).toDateString() : null,
+            day: d.timestamp ? new Date(d.timestamp) : null,
             type: d.type,
             label: d.label,
             sub_type: d.sub_type,
@@ -48,47 +62,61 @@ export default function TimelineWrapper() {
           };
         });
 
-        // data preprocessing
-        // bin the data into one bin for each year
-        const binnedData = new Map<string, Node[]>();
+        // Find the min and max dates
+        const dates = nodes.filter((n) => n.timestamp).map((n) => n.timestamp as Date);
+        const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
+        const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
 
-        nodes.forEach((node) => {
-          if (node.timestamp) {
-            const day = new Date(node.timestamp).toDateString();
-            if (!binnedData.has(day)) {
-              binnedData.set(day, []);
-            }
-            binnedData.get(day)?.push(node);
-          }
+        console.log('start date', minDate);
+        console.log('end date', maxDate);
+
+        // Calculate bin size in milliseconds
+        const binSize = (maxDate.getTime() - minDate.getTime()) / n_bins;
+
+        // Create bins
+        const bins: DayBin[] = Array.from({ length: n_bins }, (_, i) => {
+          const binStart = new Date(minDate.getTime() + i * binSize);
+          const binEnd = new Date(minDate.getTime() + (i + 1) * binSize);
+
+          const binNodes = nodes.filter(
+            (node) =>
+              node.timestamp &&
+              node.timestamp >= binStart &&
+              node.timestamp < binEnd &&
+              node.sub_type === 'Communication'
+          );
+
+          return {
+            start: binStart,
+            end: binEnd,
+            nodes: binNodes,
+            count: binNodes.length,
+          };
         });
 
-        // Convert Map to array of year bins
-        const dayBins: DayBin[] = Array.from(binnedData.entries()).map(([day, nodes]) => ({
-          day: new Date(day),
-          nodes,
-          count: nodes.length,
-        }));
-
-        // Sort bins by year
-        dayBins.sort((a, b) => new Date(a.day).getTime() - new Date(b.day).getTime());
-
-        setCurrentData(dayBins);
+        setCurrentData(bins);
+        console.log('bins', bins);
 
         setLoading(false);
 
-        // Aggregate the data by day and sub_type before indexing
+        // Aggregate the data by bin and sub_type before indexing
         const aggregatedData = d3.rollup(
           nodes,
-          (v) => v.length, // Count the number of events in each group
-          (d) => d.day,
+          (v) => v.length,
+          (d) =>
+            d.timestamp ? Math.floor((d.timestamp.getTime() - minDate.getTime()) / binSize) : -1,
           (d) => d.sub_type
         );
 
         const groups = d3.union(nodes.map((d) => d.sub_type));
-        const days = Array.from(binnedData.keys());
+        const binIndices = Array.from({ length: n_bins }, (_, i) => i);
+
         // Convert the Map to an array of objects
-        const aggregatedArray = Array.from(aggregatedData, ([day, subTypes]) => {
-          const obj: { [key: string]: any } = { day };
+        const aggregatedArray = Array.from(aggregatedData, ([binIndex, subTypes]) => {
+          const obj: { [key: string]: any } = {
+            start: new Date(minDate.getTime() + binIndex * binSize),
+            end: new Date(minDate.getTime() + (binIndex + 1) * binSize),
+          };
           // initialize the counts to 0
           Array.from(groups).forEach((subType) => {
             obj[subType] = 0;
@@ -99,13 +127,15 @@ export default function TimelineWrapper() {
           return obj;
         });
 
+        console.log('aggregatedArray', aggregatedArray);
+
         // stack the data using the subtype and the day
         const series = d3.stack().keys(groups).order(d3.stackOrderDescending)(aggregatedArray);
 
         console.log('series', series);
         setCurrentStackedData({
           data: series,
-          bars: days,
+          bars: binIndices.map((i) => new Date(minDate.getTime() + i * binSize).toString()),
           segments: Array.from(groups),
         });
       } catch (error) {
@@ -133,12 +163,14 @@ export default function TimelineWrapper() {
           data={currentStackedData?.data}
           bars={currentStackedData?.bars}
           segments={currentStackedData?.segments}
+          numberOfBins={numberOfBins}
+          dimensions={dimensions}
         />
       ) : (
-        <BarChart data={currentData} />
+        <BarChart data={currentData} numberOfBins={numberOfBins} dimensions={dimensions} />
       )}
 
-      <Button
+      {/* <Button
         color="primary"
         variant={isStacked ? 'solid' : 'bordered'}
         onPress={() => {
@@ -146,7 +178,7 @@ export default function TimelineWrapper() {
         }}
       >
         {'Stacked'}
-      </Button>
+      </Button> */}
     </div>
   );
 }

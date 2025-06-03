@@ -8,7 +8,7 @@ import {
   ZoomControl,
 } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, LinkType, NodeType } from '@/types/graph-types';
+import { GraphData, LinkType, NodeType, SubType } from '@/types/graph-types';
 import { FilterRequestBody } from '@/types/filter-types';
 import * as d3 from 'd3';
 import { ColorLegend } from '@/components/ui/color-legend';
@@ -16,13 +16,13 @@ import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
 import { GraphSearch, GraphSearchOption } from '@react-sigma/graph-search';
 import '@react-sigma/graph-search/lib/style.css';
-import { FocusOnNode } from './focus-on-node';
-import { MyGraph } from './my-graph';
-import GraphTooltip from './graph-tooltip';
+import { FocusOnNode } from '@/features/graph/focus-on-node';
+import GraphTooltip from '@/features/graph/graph-tooltip';
 import { useEffect } from 'react';
-import { useDimensions } from '@/hooks/use-dimension';
 import { useFilterContext } from '@/context/filter-context';
 import { TabNode } from 'flexlayout-react';
+import { MyGraph } from '@/features/graph/my-graph';
+import { useDimensions } from '@/hooks/use-dimension';
 import { Dimensions } from '@/types/dimension-type';
 
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
@@ -34,19 +34,21 @@ export interface GraphWrapperProps {
   currentNode?: TabNode;
 }
 
-
-
 // Component that display the graph
-export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) => {
+export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-
-  let dimensions:Dimensions = currentNode ? {width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10} : useDimensions(boxRef);
+  // get the dimensions of the box + update when the screen size changes
+  let dimensions: Dimensions = currentNode
+    ? { width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10 }
+    : useDimensions(boxRef);
 
   // filter options
   const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
     useFilterContext();
 
-  const { currentData, setCurrentData } = useFilterContext();  
+  const [currentData, setCurrentData] = useState<GraphData | null>(null);
+  const [dailyData, setDailyData] = useState<GraphData | null>(null);
+  const [eventCount, setEventCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
   // const sigmaStyle = width && height ? { height, width } : { height: '1000px', width: '1000px' };
@@ -80,24 +82,15 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
 
   useEffect(() => {
     const fetchData = async () => {
-      
       try {
-        // Create filter request body based on selected filters
-        const filterBody: FilterRequestBody = {
-          minDegree: selectedNodeDegrees?.[0] ?? 0,
-          maxDegree: selectedNodeDegrees?.[1] ?? 1000,
-          nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
-          edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          startDate: undefined,
-          endDate: undefined,
-        };
+        // query the whole graph first and apply the date filter in the frontend
+        // http://localhost:8080/graph-data
 
-        const response = await fetch('/api/filter', {
-          method: 'POST',
+        const response = await fetch('/api/graph-data', {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(filterBody),
         });
 
         if (!response.ok) {
@@ -105,14 +98,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
         }
 
         const data: GraphData = await response.json();
-        // console.log('Filtered data:', data);
-
-        // Find the min and max dates
-        // const dates = data.nodes.filter((n) => n.timestamp).map((n) => n.timestamp as Date);
-        //const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
-        //const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
-
-        // console.log('dates', dates);
+        console.log('complete graph data:', data);
 
         setCurrentData(data);
       } catch (error) {
@@ -122,10 +108,45 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
+  }, []);
+
+  useEffect(() => {
+    if (currentData) {
+      // 1. get all the nodes with a timestamp in the selected date range (Node type event only)
+      const timestampNodes = currentData.nodes.filter((n) => {
+        if (n.timestamp) {
+          const date = new Date(n.timestamp);
+          return date >= selectedDateRange?.[0] && date <= selectedDateRange?.[1] && n.sub_type === SubType.Communication;
+        }
+        return false;
+      });
+
+      setEventCount(timestampNodes.length);
+      console.log("nodes in selected date range", timestampNodes);
+      
+
+      // 2. get all the edges where either the source or target node is in the filtered data
+      const timestampEdges = currentData.links.filter((e) => {
+        return timestampNodes.some((n) => n.id === e.source) || timestampNodes.some((n) => n.id === e.target) 
+      });
+
+      // 3. return all nodes that are in the filtered edge list
+      const relevantNodes = currentData.nodes.filter((n) => {
+        const exists = timestampEdges.some((e) => e.source === n.id || e.target === n.id);
+        // const hasTimestamp = n.timestamp ?  new Date(n.timestamp) >= selectedDateRange?.[0] && new Date(n.timestamp) <= selectedDateRange?.[1] : true;
+        return exists;
+      });
+
+      setDailyData({ ...currentData, nodes: relevantNodes, links: timestampEdges });
+    }
+  }, [currentData, selectedDateRange]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
+  }
+
+  if (!dailyData) {
+    return <div>No data available</div>;
   }
 
   return (
@@ -139,7 +160,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
             limit={limit}
             hoveredNode={hoveredNode}
             setHoveredNode={setHoveredNode}
-            data={currentData}
+            data={dailyData}
             dimensions={dimensions}
           />
           {/* Focus on node component */}
@@ -163,7 +184,10 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
 
           {/* Container for the tooltip component */}
           <ControlsContainer>
-            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={dimensions.width * 0.66} />
+            <GraphTooltip
+              node={hoveredNode ?? focusNode ?? selectedNode}
+              width={dimensions.width * 0.66}
+            />
           </ControlsContainer>
           <ControlsContainer position={'bottom-right'}>
             <div className="flex flex-row gap-2">
@@ -180,10 +204,18 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
               /> */}
             </div>
           </ControlsContainer>
+          {/* start, end date and number of events */}
+          <ControlsContainer position={'top-left'}>
+            <div className="flex flex-row gap-2">
+              <div className="text-sm text-muted">Start: {selectedDateRange?.[0]?.toLocaleDateString()}</div>
+              <div className="text-sm text-muted">End: {selectedDateRange?.[1]?.toLocaleDateString()}</div>
+              <div className="text-sm text-muted">Number of timed events: {eventCount} ({dailyData?.nodes.length})</div>
+            </div>
+          </ControlsContainer>
         </SigmaContainer>
       </div>
     </div>
   );
 };
 
-export default GraphWrapper;
+export default DailyGraphWrapper;
