@@ -64,7 +64,7 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
         """
         print(event_query)
         records_events = await session.run(event_query, entity_ids=list(entity_ids))
-       
+
         event_count = 0
         async for record in records_events:
             c = record["c"]
@@ -74,6 +74,9 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             if c.element_id not in node_ids:
                 node_ids.add(c.element_id)
                 event_ids.add(c.element_id)
+                event_count += 1
+
+        print(f"Found {event_count} events within the specified time range")
 
     if filters.nodeTypes and "Relationship" in filters.nodeTypes:
         relationship_query = f"""
@@ -129,13 +132,13 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
 
     # Get nodes with timestamps
     nodes_with_timestamps = [node for node in nodes if hasattr(node, "timestamp") and node.timestamp is not None]
-    
+
     if nodes_with_timestamps:
         # Convert timestamps to datetime objects
         timestamps = [node.timestamp for node in nodes_with_timestamps]
         min_date = min(timestamps)
         max_date = max(timestamps)
-        
+
         print(f"Min date in graph: {min_date}")
         print(f"Max date in graph: {max_date}")
 
