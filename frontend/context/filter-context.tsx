@@ -1,16 +1,20 @@
 'use client';
 
-import { FilterContextType } from '@/types/filter-context-type';
+import { DateRangeFilter, FilterContextType } from '@/types/filter-context-type';
 import { GraphData } from '@/types/graph-types';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
+
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [selectedNodeTypes, setSelectedNodeTypes] = useState<string[]>([]);
   const [selectedNodeDegrees, setSelectedNodeDegrees] = useState<number[]>([]);
   const [selectedEdgeTypes, setSelectedEdgeTypes] = useState<string[]>([]);
-  const [selectedDateRange, setSelectedDateRange] = useState<Date[]>([]);
+  const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>({
+    dateRangeA: undefined,
+    dateRangeB: undefined,
+  });
 
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
 
@@ -27,8 +31,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setSelectedNodeDegrees,
         selectedEdgeTypes,
         setSelectedEdgeTypes,
-        selectedDateRange,
-        setSelectedDateRange,
+        dateRangeFilter,
+        setDateRangeFilter,
         currentData,
         setCurrentData,
       }}

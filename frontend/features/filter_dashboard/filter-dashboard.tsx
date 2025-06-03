@@ -27,8 +27,8 @@ export function FilterDashboard() {
     setSelectedNodeDegrees,
     selectedEdgeTypes,
     setSelectedEdgeTypes,
-    selectedDateRange,
-    setSelectedDateRange,
+    dateRangeFilter,
+    setDateRangeFilter,
   } = useFilterContext();
 
   useEffect(() => {
@@ -122,10 +122,10 @@ export function FilterDashboard() {
           <label className="text-sm font-medium text-gray-700">Date Range</label>
           <div className="flex flex-col gap-3 w-full">
             <label className="text-sm font-medium text-gray-700">
-              Start Date {selectedDateRange[0] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[0]) : ''}
+              Start Date {dateRangeFilter.dateRangeA?.[0] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(dateRangeFilter.dateRangeA?.[0]) : ''}
             </label>
             <label className="text-sm font-medium text-gray-700">
-              End Date {selectedDateRange[1] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[1]) : ''}
+              End Date {dateRangeFilter.dateRangeA?.[1] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(dateRangeFilter.dateRangeA?.[1]) : ''}
             </label>
           </div>
         </div>

@@ -24,27 +24,44 @@ import { TabNode } from 'flexlayout-react';
 import { MyGraph } from '@/features/graph/my-graph';
 import { useDimensions } from '@/hooks/use-dimension';
 import { Dimensions } from '@/types/dimension-type';
+import { DateRangeFilter } from '@/types/filter-context-type';
 
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
-export interface GraphWrapperProps {
+interface DailyGraphWrapperProps {
   layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random';
   limit?: number;
   currentNode?: TabNode;
+  dateRange?: [Date, Date];
+  dimensions?: {
+    width: number;
+    height: number;
+  };
+  id: string;
 }
 
 // Component that display the graph
-export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) => {
+export const DailyGraphWrapper = ({ 
+  layout, 
+  limit, 
+  currentNode, 
+  dateRange, 
+  dimensions: propsDimensions,
+  id 
+}: DailyGraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-  // get the dimensions of the box + update when the screen size changes
-  let dimensions: Dimensions = currentNode
-    ? { width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10 }
-    : useDimensions(boxRef);
+ // get the dimensions of the box + update when the screen size changes
+ let dimensions: Dimensions = currentNode
+ ? { width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10 }
+ : useDimensions(boxRef);
 
   // filter options
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
-    useFilterContext();
+  const { dateRangeFilter } = useFilterContext();
+
+  if (!dateRange && dateRangeFilter.dateRangeA) {
+    dateRange = dateRangeFilter.dateRangeA;
+  }
 
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
   const [dailyData, setDailyData] = useState<GraphData | null>(null);
@@ -114,9 +131,9 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
     if (currentData) {
       // 1. get all the nodes with a timestamp in the selected date range (Node type event only)
       const timestampNodes = currentData.nodes.filter((n) => {
-        if (n.timestamp) {
+        if (n.timestamp && dateRange?.[0] && dateRange?.[1]) {
           const date = new Date(n.timestamp);
-          return date >= selectedDateRange?.[0] && date <= selectedDateRange?.[1] && n.sub_type === SubType.Communication;
+          return date >= dateRange[0] && date <= dateRange[1] && n.sub_type === SubType.Communication;
         }
         return false;
       });
@@ -139,7 +156,7 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
 
       setDailyData({ ...currentData, nodes: relevantNodes, links: timestampEdges });
     }
-  }, [currentData, selectedDateRange]);
+  }, [currentData, dateRange]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
@@ -153,7 +170,7 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
-        <SigmaContainer style={{ width: dimensions.width, height: dimensions.height }}>
+        <SigmaContainer style={{ width: dimensions.width, height: dimensions.height }} id={`sigma-container-${id}`}>
           {/* Graph component */}
           <MyGraph
             layout={layout}
@@ -197,18 +214,13 @@ export const DailyGraphWrapper = ({ layout, limit, currentNode }: GraphWrapperPr
                 scale={nodeColorScale}
                 domain={Object.values(NodeType)}
               />
-              {/* <ColorLegend
-                title="Edge Types"
-                scale={edgeColorScale}
-                domain={Object.values(LinkType)}
-              /> */}
             </div>
           </ControlsContainer>
           {/* start, end date and number of events */}
           <ControlsContainer position={'top-left'}>
             <div className="flex flex-row gap-2">
-              <div className="text-sm text-muted">Start: {selectedDateRange?.[0]?.toLocaleDateString()}</div>
-              <div className="text-sm text-muted">End: {selectedDateRange?.[1]?.toLocaleDateString()}</div>
+              <div className="text-sm text-muted">Start: {dateRange?.[0] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(dateRange?.[0]) : ''}</div>
+              <div className="text-sm text-muted">End: {dateRange?.[1] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(dateRange?.[1]) : ''}</div>
               <div className="text-sm text-muted">Number of timed events: {eventCount} ({dailyData?.nodes.length})</div>
             </div>
           </ControlsContainer>

@@ -1,19 +1,12 @@
-import { DayBin } from './time-line-types';
+import { BarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { useFilterContext } from '@/context/filter-context';
-import { Dimensions } from '@/types/dimension-type';
-interface BarchartProps {
-  data?: DayBin[];
-  numberOfBins: number;
-  dimensions: Dimensions;
-}
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
+const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, selectionB }: BarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const { width, height } = dimensions;
-  const { selectedDateRange, setSelectedDateRange } = useFilterContext();
+  const boxRef = useRef<HTMLDivElement>(null);
+  const { width, height } = dimensions 
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -63,9 +56,10 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       .attr('y', (d) => scaleLinear(d.count))
       .attr('width', scaleOrdinal.bandwidth())
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
-      .attr('fill', (d) => {
-        const isSelected = d.start >= selectedDateRange?.[0] && d.end <= selectedDateRange?.[1];
-        return isSelected ? 'red' : 'steelblue';
+      .attr('fill', (d, i) => {
+        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
+        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
+        return 'steelblue';
       })
       .append('title')
       .text(
@@ -93,12 +87,6 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       .attr('dx', '-.8em')
       .attr('dy', '.15em')
       .attr('transform', 'rotate(-45)');
-    // .append('text')
-    // .attr('x', boundsWidth / 2)
-    // .attr('y', 35)
-    // .attr('text-anchor', 'middle')
-    // .attr('fill', 'currentColor')
-    // .text('Date');
 
     g.append('g')
       .call(yAxis)
@@ -117,8 +105,6 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
         [boundsWidth, boundsHeight],
       ])
       .on('start brush', (event) => {
-        // console.log('event', event);
-
         const selection = event.selection;
         if (!selection) return;
 
@@ -127,26 +113,28 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
 
         let highlightBars: any[] = [];
 
-        bars.each(function (d) {
+        bars.each(function (d, i) {
           const bar = d3.select(this);
           const xMin = +bar.attr('x');
           const xMax = xMin + scaleOrdinal.bandwidth();
 
           // check if the bar is intersect with the selection
           const isBrushed = x0 <= xMax && x1 >= xMin;
-          bar.attr('fill', isBrushed ? 'red' : 'steelblue');
+          bar.attr('fill', isBrushed ? 'grey' : 'steelblue');
 
           if (isBrushed) {
             highlightBars.push(bar.data());
           }
         });
 
-        // console.log('highlightBars', highlightBars);
+        // if (highlightBars.length > 0 && onSelection) {
+        //   onSelection(Math.min(...highlightBars), Math.max(...highlightBars));
+        // }
       })
       .on('end', (event) => {
         const selection = event.selection;
         if (!selection) {
-          setSelectedDateRange([]);
+          onSelection?.(null, null);
           return;
         }
 
@@ -177,14 +165,14 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
           end: endDate,
         });
 
-        setSelectedDateRange([startDate, endDate]);
+        onSelection?.(startDate, endDate);
       });
 
     g.call(brush);
-  }, [data, width, height]);
+  }, [data, width, height, onSelection, selectionA, selectionB]);
 
   return (
-    <div className="w-full h-full">
+    <div ref={boxRef} className="w-full h-full">
       <svg ref={svgRef}></svg>
     </div>
   );

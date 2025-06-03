@@ -2,22 +2,31 @@
 
 import { useFilterContext } from '@/context/filter-context';
 import { GraphData } from '@/types/graph-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
 import { DayBin, StackedBarChartData } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
+import { Button, Divider } from '@heroui/react';
+import { DateRangeFilter } from '@/types/filter-context-type';
+import { DailyGraphWrapper } from '../daily-graph/daily-graph-wrapper';
 
 interface TimelineWrapperProps {
   numberOfBins: number;
   currentNode?: TabNode;
 }
 
+type InteractionMode = 'single' | 'diff';
+type ChartType = 'bar' | 'stacked';
+
 export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isStacked, setIsStacked] = useState(false);
+  const [chartType, setChartType] = useState<ChartType>('bar');
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>('single');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [currentTimeStep, setCurrentTimeStep] = useState(0);
   const n_bins = numberOfBins;
 
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
@@ -25,15 +34,55 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     undefined
   );
 
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
-    useFilterContext();
+  const {
+    selectedNodeTypes,
+    selectedNodeDegrees,
+    selectedEdgeTypes,
+    dateRangeFilter,
+    setDateRangeFilter,
+  } = useFilterContext();
 
   // get the dimensions of the current node
-  const dimensions = currentNode ? { width: currentNode.getRect().width, height: currentNode.getRect().height } : { width: 1000, height: 1000 };
+  const dimensions = currentNode
+    ? { width: currentNode.getRect().width, height: currentNode.getRect().height }
+    : { width: 1000, height: 1000 };
 
+  // Animation control
   useEffect(() => {
-    console.log('timeline dimensions', dimensions);
-  }, [dimensions]);
+    let animationInterval: NodeJS.Timeout;
+
+    if (isAnimating) {
+      animationInterval = setInterval(() => {
+        setCurrentTimeStep((prev) => {
+          const next = (prev + 1) % n_bins;
+          // Update the time range in the filter context
+          if (currentData) {
+            const bin = currentData[next];
+            console.log('timerange updated', bin.start, bin.end);
+            setDateRangeFilter({
+              dateRangeA: [bin.start, bin.end],
+              dateRangeB: undefined,
+            });
+          }
+          return next;
+        });
+      }, 3000);
+    }
+
+    return () => {
+      if (animationInterval) {
+        clearInterval(animationInterval);
+      }
+    };
+  }, [isAnimating, n_bins, currentData]);
+
+  // Reset selections when interaction mode changes
+  useEffect(() => {
+    setDateRangeFilter({
+      dateRangeA: undefined,
+      dateRangeB: undefined,
+    });
+  }, [interactionMode]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,6 +196,41 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     fetchData();
   }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
 
+  const resetSelections = useCallback(() => {
+    setDateRangeFilter({
+      dateRangeA: undefined,
+      dateRangeB: undefined,
+    });
+  }, [setDateRangeFilter]);
+
+  const handleSelection = useCallback(
+    (start: Date | null, end: Date | null) => {
+      if (!start || !end) {
+        resetSelections();
+        return;
+      }
+      if (interactionMode === 'single') {
+        setDateRangeFilter({
+          dateRangeA: [start, end],
+          dateRangeB: undefined,
+        });
+      } else {
+        if (!dateRangeFilter.dateRangeA) {
+          setDateRangeFilter({
+            dateRangeA: [start, end],
+            dateRangeB: undefined,
+          });
+        } else {
+          setDateRangeFilter((prev) => ({
+            ...prev,
+            dateRangeB: [start, end],
+          }));
+        }
+      }
+    },
+    [interactionMode, dateRangeFilter, setDateRangeFilter]
+  );
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
@@ -156,29 +240,84 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
   }
 
   return (
-    <div className="w-full h-full ">
-      {/* <BarChart data={currentData} /> */}
-      {isStacked ? (
-        <StackedBarChart
-          data={currentStackedData?.data}
-          bars={currentStackedData?.bars}
-          segments={currentStackedData?.segments}
-          numberOfBins={numberOfBins}
-          dimensions={dimensions}
-        />
-      ) : (
-        <BarChart data={currentData} numberOfBins={numberOfBins} dimensions={dimensions} />
-      )}
+    <div className="w-full h-full flex flex-col">
+      <div className="flex items-center justify-between p-4 bg-gray-100">
+        <div className="flex gap-2">
+          <Button
+            variant={chartType === 'bar' ? 'solid' : 'bordered'}
+            onPress={() => setChartType('bar')}
+          >
+            Bar Chart
+          </Button>
+          <Button
+            variant={chartType === 'stacked' ? 'solid' : 'bordered'}
+            onPress={() => setChartType('stacked')}
+          >
+            Stacked Chart
+          </Button>
+        </div>
 
-      {/* <Button
-        color="primary"
-        variant={isStacked ? 'solid' : 'bordered'}
-        onPress={() => {
-          setIsStacked(!isStacked);
-        }}
-      >
-        {'Stacked'}
-      </Button> */}
+        <Divider orientation="vertical" className="h-8" />
+
+        <div className="flex gap-2">
+          <Button
+            variant={interactionMode === 'single' ? 'solid' : 'bordered'}
+            onPress={() => setInteractionMode('single')}
+          >
+            Single Selection
+          </Button>
+          <Button
+            variant={interactionMode === 'diff' ? 'solid' : 'bordered'}
+            onPress={() => setInteractionMode('diff')}
+          >
+            Diff Selection
+          </Button>
+        </div>
+
+        <Divider orientation="vertical" className="h-8" />
+
+        <Button
+          color={isAnimating ? 'danger' : 'primary'}
+          variant="solid"
+          onPress={() => setIsAnimating(!isAnimating)}
+        >
+          {isAnimating ? 'Stop Animation' : 'Start Animation'}
+        </Button>
+
+        {interactionMode === 'diff' && (
+          <Button
+            variant="bordered"
+            onPress={resetSelections}
+            isDisabled={!dateRangeFilter.dateRangeA && !dateRangeFilter.dateRangeB}
+          >
+            Reset Selections
+          </Button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {chartType === 'stacked' ? (
+          <StackedBarChart
+            data={currentStackedData?.data}
+            bars={currentStackedData?.bars}
+            segments={currentStackedData?.segments}
+            numberOfBins={numberOfBins}
+            dimensions={{...dimensions, height: dimensions.height * 0.8}}
+            onSelection={handleSelection}
+            selectionA={dateRangeFilter.dateRangeA}
+            selectionB={dateRangeFilter.dateRangeB}
+          />
+        ) : (
+          <BarChart
+            data={currentData}
+            numberOfBins={numberOfBins}
+            dimensions={{...dimensions, height: dimensions.height * 0.8}}
+            onSelection={handleSelection}
+            selectionA={dateRangeFilter.dateRangeA}
+            selectionB={dateRangeFilter.dateRangeB}
+          />
+        )}
+      </div>
     </div>
   );
 }
