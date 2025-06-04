@@ -38,9 +38,9 @@ class QueryService:
 
         prompt = (
             "Given a user question, classify it as either:\n"
-            "- 'pipeline' if it needs retrieval-augmented generation (like database queries),\n"
-            "- or 'general' if it can be answered directly by the language model.\n\n"
-            "Respond with just 'pipeline' or 'general' (case-insensitive).\n\n"
+            " 'True' if it needs retrieval-augmented generation,\n"
+            "or 'False' for random questions or promts.\n\n"
+            "Respond with just 'True' or 'False' (case-insensitive).\n\n"
             "Question:\n"
             f"{question}"
         )
@@ -51,16 +51,16 @@ class QueryService:
         )
 
         result = response.strip().lower()
-        general = result == "general"
-
+        pipeline = (result == "True") or (result == True)
+        print(pipeline)
         reminder = ""
-        if general:
+        if not pipeline:
             reminder = (
                 "Note: This question might not be well-suited for the retrieval pipeline. "
                 "Please consider asking questions that involve our knowledge base or require deeper context."
             )
 
-        return general, reminder
+        return reminder
 
     async def extract_all_entities_from_query(self, query: str) -> List[str]:
         """
@@ -444,11 +444,11 @@ class QueryService:
                 If any step in the pipeline fails, the exception is propagated. The caller is responsible
                 for error handling and user notification.
         """
-        general, reminder = await self.classify_question(question)
-        if general:
+        """reminder = await self.classify_question(question)
+        if reminder != "":
             return{
                 "answer": reminder
-            }
+            }"""
         await websocket.send_text("Starting RAG pipeline...")
 
         await websocket.send_text("Extracting entities from the question...")
