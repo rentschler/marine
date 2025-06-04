@@ -183,21 +183,29 @@ class IndexingService:
         Tuple[nx.Graph, List[Tuple[int, str]]]
             A tuple containing:
                 - The updated graph with node-level community labels assigned.
-                - A list of tuples, each consisting of a community index and its corresponding
-                natural language summary.
+                - A list of triples, each consisting of a community index and its corresponding
+                natural language summary and the entities of the community.
         """
         communities = self.detect_communities(graph)
         summaries = []
 
         for i, community in enumerate(communities):
             matched_nodes = []
+            community_entities = []
             for node in community:
                 if node in graph.nodes:
                     graph.nodes[node]["community"] = i
                     matched_nodes.append(node)
 
+                    if graph.nodes[node]["type"] == "Entity":
+                        entity = {
+                            "name" : graph.nodes[node]["id"],
+                            "type": graph.nodes[node]["sub_type"]
+                        }
+                        community_entities.append(entity)
+
             summary = await self.summarize_community_nl(graph, matched_nodes)
-            summaries.append((i, summary))
+            summaries.append((i, summary, community_entities))
 
         return graph, summaries
     
@@ -218,12 +226,13 @@ class IndexingService:
         """
         os.makedirs(self.community_path, exist_ok=True)
 
-        for i, summary in summaries:
+        for i, summary, community_entities in summaries:
             file_path = os.path.join(self.community_path, f"community_{i}.json")
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump({
                     "community": i,
-                    "summary": summary
+                    "summary": summary,
+                    "entities":community_entities
                 }, f, ensure_ascii=False, indent=2)
 
     async def add_graph_communities(self, graph: nx.Graph):
