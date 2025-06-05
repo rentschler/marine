@@ -115,3 +115,41 @@ def construct_answer_graph(
         nodes=nodes,
         links=links
     )
+
+def describe_node(node: dict) -> str:
+    node_type = node.get("sub_type", "Node")
+    node_id = node.get("id", "UnknownID")
+    props = ", ".join(f"{k}: {v}" for k, v in node.items() if k not in ["x", "y", "sub_type"])
+    desc = f"{node_type}({node_id})"
+    if props:
+        desc += f" [{props}]"
+    return desc
+
+def describe_edge(source: str, target: str, edge: dict) -> str:
+    rel_type = edge.get("edge_type") or edge.get("label", "MISSING")
+    props = ", ".join(f"{k}: {v}" for k, v in edge.items() if k not in ["edge_type", "label", "source", "target", "id"])
+    desc = f"{source} -[{rel_type}]-> {target}"
+    if props:
+        desc += f" [{props}]"
+    return desc
+
+def estimate_tokens( text: str) -> int:
+    return len(text) // 4
+
+def _community_id(community_nodes: List) -> str:
+    """Generates a unique ID for a community based on sorted node IDs."""
+    if all(isinstance(node, str) for node in community_nodes):
+        return "_".join(sorted(community_nodes))
+    else:
+        nested_ids = [_community_id(sub) for sub in community_nodes]
+        return "_".join(sorted(nested_ids))
+
+def _flatten_nodes(community_structure: List) -> List[str]:
+    """Recursively flattens a hierarchical community structure to a list of node IDs."""
+    flat_nodes = []
+    for item in community_structure:
+        if isinstance(item, str):
+            flat_nodes.append(item)
+        else:
+            flat_nodes.extend(_flatten_nodes(item))
+    return flat_nodes

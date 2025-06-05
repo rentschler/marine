@@ -1,3 +1,4 @@
+from nl_querying.indexing_service2 import IndexService2
 from models.Graph import Node
 from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
@@ -340,6 +341,36 @@ async def test_node_desc():
                     })
         return entities
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/test_indexing")
+async def index():
+    try:
+        # 1. Graph laden
+        if not os.path.exists('data/MC3_graph.json'):
+            raise HTTPException(status_code=404, detail="Graph file not found")
+            
+        with open('data/MC3_graph.json', 'r') as f:
+            json_data = json.load(f)
+        
+        G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
+        
+        # 2. Indexierung durchführen
+        index_service = IndexService2(llm=llm)
+        
+        # Annahme: Sie fügen diese Methode zu IndexService2 hinzu
+        result = await index_service.indexing(graph=G)
+        
+        return {
+            "status": "success",
+            "communities_detected": len(result["communities"]),
+            "summaries_generated": len(result["summaries"]),
+            "output_dir": index_service.community_path
+        }
+        
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON format")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

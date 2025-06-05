@@ -91,7 +91,6 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             node_ids.add(r.element_id)
     
     links_dict = {}
-    connected_node_ids = set()
     
     if len(filters.edgeTypes) > 0:
         edge_filter = build_edge_filters(filters)

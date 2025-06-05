@@ -19,7 +19,7 @@ async def get_node_edges_filter_options(session):
     edge_query = "MATCH ()-[r]->() WHERE r.type IS NOT NULL RETURN DISTINCT r.type AS type"
     edge_result = await session.run(edge_query)
     edge_types = [record["type"] async for record in edge_result]
-    edge_types.append("missing")
+    edge_types.append("MISSING")
 
     result["edge_types"] = sorted(edge_types)
 

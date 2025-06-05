@@ -1,3 +1,4 @@
+from nl_querying.query_utils import clean_json_string
 from openai import AsyncOpenAI
 
 class LLM:
@@ -54,5 +55,5 @@ class LLM:
                 {"role": "user", "content": user_prompt}
             ]
         )
-        return response.choices[0].message.content
+        return clean_json_string(response.choices[0].message.content)
     
