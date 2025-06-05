@@ -67,6 +67,10 @@ export interface Node {
     y?:                 number;
 }
 
+export interface DiffNode extends Node {
+    subset?: "A" | "B" | "AB";
+}
+
 export enum AssessmentType {
     Documentation = "documentation",
     EnvironmentalAssessment = "environmental assessment",

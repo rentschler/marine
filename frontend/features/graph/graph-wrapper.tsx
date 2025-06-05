@@ -43,7 +43,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
   let dimensions:Dimensions = currentNode ? {width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10} : useDimensions(boxRef);
 
   // filter options
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
+  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } =
     useFilterContext();
 
   const { currentData, setCurrentData } = useFilterContext();  

@@ -1,37 +1,21 @@
 'use client';
 
-import { useCallback, useState, useRef } from 'react';
-import {
-  ControlsContainer,
-  FullScreenControl,
-  SigmaContainer,
-  ZoomControl,
-} from '@react-sigma/core';
+import { useState } from 'react';
+import { SigmaContainer } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, LinkType, NodeType, SubType } from '@/types/graph-types';
-import { FilterRequestBody } from '@/types/filter-types';
+import { GraphData, LinkType, NodeType } from '@/types/graph-types';
 import * as d3 from 'd3';
-import { ColorLegend } from '@/components/ui/color-legend';
-import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
-import { GraphSearch, GraphSearchOption } from '@react-sigma/graph-search';
 import '@react-sigma/graph-search/lib/style.css';
-import { FocusOnNode } from '@/features/graph/focus-on-node';
-import GraphTooltip from '@/features/graph/graph-tooltip';
-import { useEffect } from 'react';
-import { useFilterContext } from '@/context/filter-context';
-import { TabNode } from 'flexlayout-react';
-import { MyGraph } from '@/features/graph/my-graph';
-import { useDimensions } from '@/hooks/use-dimension';
-import { Dimensions } from '@/types/dimension-type';
-import { DateRangeFilter } from '@/types/filter-context-type';
 
-const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
-const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
+import { useEffect } from 'react';
+import { DiffGraph } from './diff-graph';
+import { NodeCircleProgram } from 'sigma/rendering';
+// import { NodeImageProgram } from '@sigma/node-image';
 
 interface DiffGraphWrapperProps {
-  dateRangeA: [Date, Date];
-  dateRangeB: [Date, Date];
+  dateRangeA?: [Date, Date];
+  dateRangeB?: [Date, Date];
   dimensions: {
     width: number;
     height: number;
@@ -81,7 +65,7 @@ export const DiffGraphWrapper = ({
   }, []);
 
   useEffect(() => {
-    if (currentData) {
+    if (currentData && dateRangeA && dateRangeB) {
       // 1. get all the nodes with a timestamp in the selected date range (Node type event only)
       const filterNodesByDateRange = (range: [Date, Date]) => {
         return currentData.nodes.filter((n) => {
@@ -107,24 +91,25 @@ export const DiffGraphWrapper = ({
         }
       });
 
-      console.log('nodes in selected date range', nodeMap);
+      const relevantNodes = Array.from(nodeMap.values());
+      // console.log('nodes in selected date range', nodeMap);
 
-        // 2. get all the edges where either the source or target node is in the filtered data
-        const timestampEdges = currentData.links.filter((e) => {
-          return (
-            nodeMap.has(e.source) ||
-            nodeMap.has(e.target)
-          );
-        });
+      //   // 2. get all the edges where either the source or target node is in the filtered data
+      //   const timestampEdges = currentData.links.filter((e) => {
+      //     return (
+      //       nodeMap.has(e.source) ||
+      //       nodeMap.has(e.target)
+      //     );
+      //   });
 
-        // 3. return all nodes that are in the filtered edge list
-        const relevantNodes = currentData.nodes.filter((n) => {
-          const exists = timestampEdges.some((e) => e.source === n.id || e.target === n.id);
-          // const hasTimestamp = n.timestamp ?  new Date(n.timestamp) >= selectedDateRange?.[0] && new Date(n.timestamp) <= selectedDateRange?.[1] : true;
-          return exists;
-        });
+      //   // 3. return all nodes that are in the filtered edge list
+      //   const relevantNodes = currentData.nodes.filter((n) => {
+      //     const exists = timestampEdges.some((e) => e.source === n.id || e.target === n.id);
+      //     // const hasTimestamp = n.timestamp ?  new Date(n.timestamp) >= selectedDateRange?.[0] && new Date(n.timestamp) <= selectedDateRange?.[1] : true;
+      //     return exists;
+      //   });
 
-      setDailyData({ ...currentData, nodes: relevantNodes, links: timestampEdges });
+      setDailyData({ ...currentData, nodes: relevantNodes, links: [] });
     }
   }, [currentData, dateRangeA, dateRangeB]);
 
@@ -135,7 +120,10 @@ export const DiffGraphWrapper = ({
   if (!dailyData) {
     return <div>No data available</div>;
   }
-
+  const sigmaSettings = {
+    // defaultNodeType: 'image',
+    // nodeProgramClasses: { image: NodeImageProgram },
+  };
   return (
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full">
       <div className="relative flex flex-row items-center justify-center">
@@ -143,16 +131,10 @@ export const DiffGraphWrapper = ({
         <SigmaContainer
           style={{ width: dimensions.width, height: dimensions.height }}
           id={`sigma-container-${id}`}
+          settings={sigmaSettings}
         >
           {/* Graph component */}
-          {/* <MyGraph
-            layout={'null'}
-            // limit={limit}
-            // hoveredNode={hoveredNode}
-            // setHoveredNode={setHoveredNode}
-            data={dailyData}
-            dimensions={dimensions}
-          /> */}
+          <DiffGraph data={dailyData} dimensions={dimensions} />
         </SigmaContainer>
       </div>
     </div>
