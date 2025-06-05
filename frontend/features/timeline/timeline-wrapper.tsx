@@ -8,7 +8,7 @@ import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
 import { DayBin, StackedBarChartData } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
-import { Button, Divider } from '@heroui/react';
+import { Button, Divider, Tooltip } from '@heroui/react';
 import { DateRangeFilter } from '@/types/filter-context-type';
 import { DailyGraphWrapper } from '../daily-graph/daily-graph-wrapper';
 
@@ -243,55 +243,67 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     <div className="w-full h-full flex flex-col">
       <div className="flex items-center justify-between p-4 bg-gray-100">
         <div className="flex gap-2">
-          <Button
-            variant={chartType === 'bar' ? 'solid' : 'bordered'}
-            onPress={() => setChartType('bar')}
-          >
-            Bar Chart
-          </Button>
-          <Button
-            variant={chartType === 'stacked' ? 'solid' : 'bordered'}
-            onPress={() => setChartType('stacked')}
-          >
-            Stacked Chart
-          </Button>
+          <Tooltip content="Switch to regular bar chart view">
+            <Button
+              variant={chartType === 'bar' ? 'solid' : 'bordered'}
+              onPress={() => setChartType('bar')}
+            >
+              Bar Chart
+            </Button>
+          </Tooltip>
+          <Tooltip content="Switch to stacked bar chart view">
+            <Button
+              variant={chartType === 'stacked' ? 'solid' : 'bordered'}
+              onPress={() => setChartType('stacked')}
+            >
+              Stacked Chart
+            </Button>
+          </Tooltip>
         </div>
 
         <Divider orientation="vertical" className="h-8" />
 
         <div className="flex gap-2">
-          <Button
-            variant={interactionMode === 'single' ? 'solid' : 'bordered'}
-            onPress={() => setInteractionMode('single')}
-          >
-            Single Selection
-          </Button>
-          <Button
-            variant={interactionMode === 'diff' ? 'solid' : 'bordered'}
-            onPress={() => setInteractionMode('diff')}
-          >
-            Diff Selection
-          </Button>
+          <Tooltip content="Select a single time range to analyze">
+            <Button
+              variant={interactionMode === 'single' ? 'solid' : 'bordered'}
+              onPress={() => setInteractionMode('single')}
+            >
+              Single Selection
+            </Button>
+          </Tooltip>
+          <Tooltip content="Select two time ranges to compare">
+            <Button
+              variant={interactionMode === 'diff' ? 'solid' : 'bordered'}
+              onPress={() => setInteractionMode('diff')}
+            >
+              Diff Selection
+            </Button>
+          </Tooltip>
         </div>
 
         <Divider orientation="vertical" className="h-8" />
 
-        <Button
-          color={isAnimating ? 'danger' : 'primary'}
-          variant="solid"
-          onPress={() => setIsAnimating(!isAnimating)}
-        >
-          {isAnimating ? 'Stop Animation' : 'Start Animation'}
-        </Button>
+        <Tooltip content={isAnimating ? "Stop automatic time progression" : "Start automatic time progression (3s intervals)"}>
+          <Button
+            color={isAnimating ? 'danger' : 'primary'}
+            variant="solid"
+            onPress={() => setIsAnimating(!isAnimating)}
+          >
+            {isAnimating ? 'Stop Animation' : 'Start Animation'}
+          </Button>
+        </Tooltip>
 
         {interactionMode === 'diff' && (
-          <Button
-            variant="bordered"
-            onPress={resetSelections}
-            isDisabled={!dateRangeFilter.dateRangeA && !dateRangeFilter.dateRangeB}
-          >
-            Reset Selections
-          </Button>
+          <Tooltip content="Clear all time range selections">
+            <Button
+              variant="bordered"
+              onPress={resetSelections}
+              isDisabled={!dateRangeFilter.dateRangeA && !dateRangeFilter.dateRangeB}
+            >
+              Reset Selections
+            </Button>
+          </Tooltip>
         )}
       </div>
 
