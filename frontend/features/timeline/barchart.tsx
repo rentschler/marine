@@ -121,15 +121,9 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
           // check if the bar is intersect with the selection
           const isBrushed = x0 <= xMax && x1 >= xMin;
           bar.attr('fill', isBrushed ? 'grey' : 'steelblue');
-
-          if (isBrushed) {
-            highlightBars.push(bar.data());
-          }
         });
 
-        // if (highlightBars.length > 0 && onSelection) {
-        //   onSelection(Math.min(...highlightBars), Math.max(...highlightBars));
-        // }
+
       })
       .on('end', (event) => {
         const selection = event.selection;

@@ -1,21 +1,23 @@
-import { Dimensions } from '@/types/dimension-type';
-import { StackedSeries } from './time-line-types';
+import { StackedBarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-interface BarchartProps {
-  data?: StackedSeries;
-  bars?: string[];
-  segments?: string[];
-  numberOfBins: number;
-  dimensions: Dimensions;
-}
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const StackedBarChart = ({ data, bars, segments, numberOfBins, dimensions }: BarchartProps) => {
+const StackedBarChart = ({
+  data,
+  bars,
+  segments,
+  numberOfBins,
+  dimensions,
+  onSelection,
+  selectionA,
+  selectionB,
+}: StackedBarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = dimensions;
 
   useEffect(() => {
+    console.log('stacked barchart data', data);
     if (!data || !svgRef.current || !bars || !segments) return;
     console.log('stacked barchart data', data);
 
@@ -54,14 +56,17 @@ const StackedBarChart = ({ data, bars, segments, numberOfBins, dimensions }: Bar
       .data(data)
       .join('g')
       .attr('class', 'layer')
+      .attr('id', (d) => `bar-layer-${d.key}`)
       .attr('fill', (d) => colorScale(d.key))
       .selectAll('.bar')
       .data((D) =>
-        D.map((d) => {
-          const barId = d.data.day.toString();
+        D.map((d, i) => {
+          const barId = d.data.start?.toString() || "null"
           const segmentKey = D.key;
           const segmentId = `rect_${barId}_${segmentKey}`;
-          return { ...d, barId, segmentId };
+          const start = new Date(d.data.start);
+          const end = new Date(d.data.end);
+          return { ...d, barId, segmentId, index: i, start, end };
         })
       )
       .join('rect')
@@ -70,7 +75,13 @@ const StackedBarChart = ({ data, bars, segments, numberOfBins, dimensions }: Bar
       .attr('x', (d) => scaleOrdinal(d.barId)!)
       .attr('y', (d) => scaleLinear(d[1]))
       .attr('height', (d) => Math.abs(scaleLinear(d[0]) - scaleLinear(d[1])))
-      .attr('width', scaleOrdinal.bandwidth());
+      .attr('width', scaleOrdinal.bandwidth())
+      // .attr('fill', (d) => colorScale(d.segmentId))
+      .attr('stroke', (d) => {
+        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
+        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
+        return 'none';
+      });
 
     // add the axes
     const xAxis = d3.axisBottom(scaleOrdinal).tickFormat((d) => {
@@ -99,7 +110,35 @@ const StackedBarChart = ({ data, bars, segments, numberOfBins, dimensions }: Bar
       .attr('text-anchor', 'middle')
       .attr('fill', 'currentColor')
       .text('Count');
-  }, [data, width, height]);
+
+    const brush = d3
+      .brushX()
+      .extent([
+        [0, 0],
+        [boundsWidth, boundsHeight],
+      ])
+      .on('start brush', (event) => {
+        const selection = event.selection;
+        if (!selection) return;
+
+        const [x0, x1] = selection;
+        const bars = g.selectAll('.bar');
+
+        let highlightBars: number[] = [];
+
+        bars.each(function (d) {
+          const bar = d3.select(this);
+          const xMin = +bar.attr('x');
+          const xMax = xMin + scaleOrdinal.bandwidth();
+
+          // check if the bar is intersect with the selection
+          const isBrushed = x0 <= xMax && x1 >= xMin;
+          bar.attr('stroke', isBrushed ? 'red' : 'none');
+        });
+      });
+
+    g.call(brush);
+  }, [data, width, height, onSelection, selectionA, selectionB]);
 
   return (
     <div className="w-full h-full">

@@ -27,7 +27,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('single');
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentTimeStep, setCurrentTimeStep] = useState(0);
-  const n_bins = numberOfBins;
+  const n_bins = numberOfBins*14;
 
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
   const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(
@@ -131,8 +131,8 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             (node) =>
               node.timestamp &&
               node.timestamp >= binStart &&
-              node.timestamp < binEnd &&
-              node.sub_type === 'Communication'
+              node.timestamp < binEnd /*&&
+              node.sub_type === 'Communication'*/
           );
 
           return {
@@ -162,7 +162,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
 
         // Convert the Map to an array of objects
         const aggregatedArray = Array.from(aggregatedData, ([binIndex, subTypes]) => {
-          const obj: { [key: string]: any } = {
+          const obj: { [key: string]: any, start: Date, end: Date } = {
             start: new Date(minDate.getTime() + binIndex * binSize),
             end: new Date(minDate.getTime() + (binIndex + 1) * binSize),
           };
