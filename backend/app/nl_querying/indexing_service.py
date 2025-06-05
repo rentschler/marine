@@ -42,6 +42,7 @@ class IndexingService:
 
         return [[g.vs[v]['name'] for v in community] for community in partition]
     
+
     def describe_community(self, graph: nx.Graph, nodes: List[str]) -> str:
         """
         Generates a textual description of a subgraph (community) within a given NetworkX graph.
