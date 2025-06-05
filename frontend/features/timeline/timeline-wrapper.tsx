@@ -2,15 +2,17 @@
 
 import { useFilterContext } from '@/context/filter-context';
 import { GraphData } from '@/types/graph-types';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
 import { DayBin, StackedBarChartData } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
-import { Button, Divider, Tooltip } from '@heroui/react';
+import { Button, Divider, Slider, Tooltip } from '@heroui/react';
 import { DateRangeFilter } from '@/types/filter-context-type';
 import { DailyGraphWrapper } from '../daily-graph/daily-graph-wrapper';
+import { useDimensions } from '@/hooks/use-dimension';
+import { time } from 'console';
 
 interface TimelineWrapperProps {
   numberOfBins: number;
@@ -21,13 +23,17 @@ type InteractionMode = 'single' | 'diff';
 type ChartType = 'bar' | 'stacked';
 
 export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
+  const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+  const navBarDimensions = useDimensions(navRef);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [chartType, setChartType] = useState<ChartType>('bar');
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('single');
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentTimeStep, setCurrentTimeStep] = useState(0);
-  const n_bins = numberOfBins*14;
+  const [numberBins, setNumberBins] = useState<number>(numberOfBins * 14);
 
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
   const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(
@@ -54,7 +60,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     if (isAnimating) {
       animationInterval = setInterval(() => {
         setCurrentTimeStep((prev) => {
-          const next = (prev + 1) % n_bins;
+          const next = (prev + 1) % numberBins;
           // Update the time range in the filter context
           if (currentData) {
             const bin = currentData[next];
@@ -74,7 +80,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
         clearInterval(animationInterval);
       }
     };
-  }, [isAnimating, n_bins, currentData]);
+  }, [isAnimating, numberBins, currentData]);
 
   // Reset selections when interaction mode changes
   useEffect(() => {
@@ -120,18 +126,15 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
         console.log('end date', maxDate);
 
         // Calculate bin size in milliseconds
-        const binSize = (maxDate.getTime() - minDate.getTime()) / n_bins;
+        const binSize = (maxDate.getTime() - minDate.getTime()) / numberBins;
 
         // Create bins
-        const bins: DayBin[] = Array.from({ length: n_bins }, (_, i) => {
+        const bins: DayBin[] = Array.from({ length: numberBins }, (_, i) => {
           const binStart = new Date(minDate.getTime() + i * binSize);
           const binEnd = new Date(minDate.getTime() + (i + 1) * binSize);
 
           const binNodes = nodes.filter(
-            (node) =>
-              node.timestamp &&
-              node.timestamp >= binStart &&
-              node.timestamp < binEnd /*&&
+            (node) => node.timestamp && node.timestamp >= binStart && node.timestamp < binEnd /*&&
               node.sub_type === 'Communication'*/
           );
 
@@ -158,11 +161,11 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
         );
 
         const groups = d3.union(nodes.map((d) => d.sub_type));
-        const binIndices = Array.from({ length: n_bins }, (_, i) => i);
+        const binIndices = Array.from({ length: numberBins }, (_, i) => i);
 
         // Convert the Map to an array of objects
         const aggregatedArray = Array.from(aggregatedData, ([binIndex, subTypes]) => {
-          const obj: { [key: string]: any, start: Date, end: Date } = {
+          const obj: { [key: string]: any; start: Date; end: Date } = {
             start: new Date(minDate.getTime() + binIndex * binSize),
             end: new Date(minDate.getTime() + (binIndex + 1) * binSize),
           };
@@ -194,7 +197,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins]);
 
   const resetSelections = useCallback(() => {
     setDateRangeFilter({
@@ -241,10 +244,12 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 bg-gray-100">
+      {/* navigation bar */}
+      <div ref={navRef} className="flex items-center justify-between p-1 bg-gray-100">
         <div className="flex gap-2">
           <Tooltip content="Switch to regular bar chart view">
             <Button
+              size="sm"
               variant={chartType === 'bar' ? 'solid' : 'bordered'}
               onPress={() => setChartType('bar')}
             >
@@ -253,6 +258,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
           </Tooltip>
           <Tooltip content="Switch to stacked bar chart view">
             <Button
+              size="sm"
               variant={chartType === 'stacked' ? 'solid' : 'bordered'}
               onPress={() => setChartType('stacked')}
             >
@@ -266,6 +272,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
         <div className="flex gap-2">
           <Tooltip content="Select a single time range to analyze">
             <Button
+              size="sm"
               variant={interactionMode === 'single' ? 'solid' : 'bordered'}
               onPress={() => setInteractionMode('single')}
             >
@@ -274,6 +281,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
           </Tooltip>
           <Tooltip content="Select two time ranges to compare">
             <Button
+              size="sm"
               variant={interactionMode === 'diff' ? 'solid' : 'bordered'}
               onPress={() => setInteractionMode('diff')}
             >
@@ -284,8 +292,15 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
 
         <Divider orientation="vertical" className="h-8" />
 
-        <Tooltip content={isAnimating ? "Stop automatic time progression" : "Start automatic time progression (3s intervals)"}>
+        <Tooltip
+          content={
+            isAnimating
+              ? 'Stop automatic time progression'
+              : 'Start automatic time progression (3s intervals)'
+          }
+        >
           <Button
+            size="sm"
             color={isAnimating ? 'danger' : 'primary'}
             variant="solid"
             onPress={() => setIsAnimating(!isAnimating)}
@@ -297,6 +312,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
         {interactionMode === 'diff' && (
           <Tooltip content="Clear all time range selections">
             <Button
+              size="sm"
               variant="bordered"
               onPress={resetSelections}
               isDisabled={!dateRangeFilter.dateRangeA && !dateRangeFilter.dateRangeB}
@@ -305,8 +321,24 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             </Button>
           </Tooltip>
         )}
-      </div>
 
+        <Divider orientation="vertical" className="h-8" />
+        <Tooltip content="Change the bin size for the bar chart">
+            <div style={{ maxWidth: 200, minWidth: 120, width: '100%'}}>
+            {/* <span className="text-sm font-medium text-gray-700 mr-2">Bins</span> */}
+            <Slider
+              label="#Bins"
+              maxValue={24}
+              minValue={1}
+              onChangeEnd={(val) => setNumberBins(+val * 14)}
+              defaultValue={numberBins / 14}
+              showTooltip={true}
+              size="sm"
+              step={1}
+            />
+            </div>
+        </Tooltip>
+      </div>
       <div className="flex flex-col gap-2">
         {chartType === 'stacked' ? (
           <StackedBarChart
@@ -314,7 +346,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             bars={currentStackedData?.bars}
             segments={currentStackedData?.segments}
             numberOfBins={numberOfBins}
-            dimensions={{...dimensions, height: dimensions.height * 0.8}}
+            dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
@@ -323,7 +355,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
           <BarChart
             data={currentData}
             numberOfBins={numberOfBins}
-            dimensions={{...dimensions, height: dimensions.height * 0.8}}
+            dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
