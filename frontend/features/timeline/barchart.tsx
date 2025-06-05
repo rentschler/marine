@@ -104,27 +104,6 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-      .on('start brush', (event) => {
-        const selection = event.selection;
-        if (!selection) return;
-
-        const [x0, x1] = selection;
-        const bars = g.selectAll('.bar');
-
-        let highlightBars: any[] = [];
-
-        bars.each(function (d, i) {
-          const bar = d3.select(this);
-          const xMin = +bar.attr('x');
-          const xMax = xMin + scaleOrdinal.bandwidth();
-
-          // check if the bar is intersect with the selection
-          const isBrushed = x0 <= xMax && x1 >= xMin;
-          bar.attr('fill', isBrushed ? 'grey' : 'steelblue');
-        });
-
-
-      })
       .on('end', (event) => {
         const selection = event.selection;
         if (!selection) {
@@ -149,16 +128,8 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
             highlightBars.push(bar.data()[0]);
           }
         });
-
-        console.log('highlightBars', highlightBars);
         const startDate = d3.min(highlightBars, (d) => d.start);
         const endDate = d3.max(highlightBars, (d) => d.end);
-
-        console.log('Selected date range:', {
-          start: startDate,
-          end: endDate,
-        });
-
         onSelection?.(startDate, endDate);
       });
 

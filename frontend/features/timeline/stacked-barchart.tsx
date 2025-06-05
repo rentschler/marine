@@ -61,7 +61,7 @@ const StackedBarChart = ({
       .selectAll('.bar')
       .data((D) =>
         D.map((d, i) => {
-          const barId = d.data.start?.toString() || "null"
+          const barId = d.data.start?.toString() || 'null';
           const segmentKey = D.key;
           const segmentId = `rect_${barId}_${segmentKey}`;
           const start = new Date(d.data.start);
@@ -117,14 +117,17 @@ const StackedBarChart = ({
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-      .on('start brush', (event) => {
+      .on('end', (event) => {
         const selection = event.selection;
-        if (!selection) return;
+        if (!selection) {
+          onSelection?.(null, null);
+          return;
+        }
 
         const [x0, x1] = selection;
         const bars = g.selectAll('.bar');
 
-        let highlightBars: number[] = [];
+        let highlightBars: any[] = [];
 
         bars.each(function (d) {
           const bar = d3.select(this);
@@ -133,8 +136,15 @@ const StackedBarChart = ({
 
           // check if the bar is intersect with the selection
           const isBrushed = x0 <= xMax && x1 >= xMin;
-          bar.attr('stroke', isBrushed ? 'red' : 'none');
+
+          if (isBrushed) {
+            highlightBars.push(bar.data()[0]);
+          }
         });
+
+        const startDate = d3.min(highlightBars, (d) => d.start);
+        const endDate = d3.max(highlightBars, (d) => d.end);
+        onSelection?.(startDate, endDate);
       });
 
     g.call(brush);
