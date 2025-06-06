@@ -29,7 +29,7 @@ const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
 export interface GraphWrapperProps {
-  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random';
+  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null';
   limit?: number;
   currentNode?: TabNode;
 }
@@ -43,7 +43,7 @@ export const GraphWrapper = ({ layout, limit, currentNode }: GraphWrapperProps) 
   let dimensions:Dimensions = currentNode ? {width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10} : useDimensions(boxRef);
 
   // filter options
-  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, selectedDateRange } =
+  const { selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes } =
     useFilterContext();
 
   const { currentData, setCurrentData } = useFilterContext();  

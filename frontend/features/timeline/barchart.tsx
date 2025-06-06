@@ -3,10 +3,17 @@ import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, selectionB }: BarChartProps) => {
+const Barchart = ({
+  data,
+  numberOfBins,
+  dimensions,
+  onSelection,
+  selectionA,
+  selectionB,
+}: BarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
-  const { width, height } = dimensions 
+  const { width, height } = dimensions;
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -32,11 +39,9 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
       .text('Daily Activity Count');
 
     // scale the x axis
-    const scaleOrdinal = d3
-      .scaleBand()
-      .domain(data.map((d) => d.start.toISOString()))
-      .range([0, boundsWidth])
-      .padding(0.2);
+    const minDate = d3.min(data, (d) => d.start)!;
+    const maxDate = d3.max(data, (d) => d.end)!;
+    const scaleTime = d3.scaleTime().domain([minDate, maxDate]).range([0, boundsWidth]);
 
     // scale the y axis
     const scaleLinear = d3
@@ -52,9 +57,9 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
       .enter()
       .append('rect')
       .classed('bar', true)
-      .attr('x', (d) => scaleOrdinal(d.start.toISOString()) || 0)
+      .attr('x', (d) => scaleTime(d.start))
       .attr('y', (d) => scaleLinear(d.count))
-      .attr('width', scaleOrdinal.bandwidth())
+      .attr('width', (d) => scaleTime(d.end) - scaleTime(d.start))
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
       .attr('fill', (d, i) => {
         if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
@@ -68,13 +73,8 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
       );
 
     // add the axes
-    const xAxis = d3
-      .axisBottom(scaleOrdinal)
-      .tickFormat((d) => {
-        const date = new Date(d);
-        return d3.timeFormat('%Y-%m-%d %H:%M')(date);
-      })
-      .ticks(Math.min(10, data.length));
+    const xAxis = d3.axisBottom(scaleTime).ticks(Math.min(10, data.length));
+    // .tickFormat(d3.timeFormat('%Y-%m-%d %H:%M'));
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
@@ -104,33 +104,6 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-      .on('start brush', (event) => {
-        const selection = event.selection;
-        if (!selection) return;
-
-        const [x0, x1] = selection;
-        const bars = g.selectAll('.bar');
-
-        let highlightBars: any[] = [];
-
-        bars.each(function (d, i) {
-          const bar = d3.select(this);
-          const xMin = +bar.attr('x');
-          const xMax = xMin + scaleOrdinal.bandwidth();
-
-          // check if the bar is intersect with the selection
-          const isBrushed = x0 <= xMax && x1 >= xMin;
-          bar.attr('fill', isBrushed ? 'grey' : 'steelblue');
-
-          if (isBrushed) {
-            highlightBars.push(bar.data());
-          }
-        });
-
-        // if (highlightBars.length > 0 && onSelection) {
-        //   onSelection(Math.min(...highlightBars), Math.max(...highlightBars));
-        // }
-      })
       .on('end', (event) => {
         const selection = event.selection;
         if (!selection) {
@@ -143,28 +116,16 @@ const Barchart = ({ data, numberOfBins, dimensions, onSelection, selectionA, sel
 
         let highlightBars: any[] = [];
 
-        bars.each(function (d) {
-          const bar = d3.select(this);
-          const xMin = +bar.attr('x');
-          const xMax = xMin + scaleOrdinal.bandwidth();
-
-          // check if the bar is intersect with the selection
-          const isBrushed = x0 <= xMax && x1 >= xMin;
-
-          if (isBrushed) {
-            highlightBars.push(bar.data()[0]);
+        data.forEach((d) => {
+          const barX = scaleTime(d.start);
+          const barXEnd = scaleTime(d.end);
+          // Check if bar is within brush selection
+          if (x0 <= barXEnd && x1 >= barX) {
+            highlightBars.push(d);
           }
         });
-
-        console.log('highlightBars', highlightBars);
         const startDate = d3.min(highlightBars, (d) => d.start);
         const endDate = d3.max(highlightBars, (d) => d.end);
-
-        console.log('Selected date range:', {
-          start: startDate,
-          end: endDate,
-        });
-
         onSelection?.(startDate, endDate);
       });
 
