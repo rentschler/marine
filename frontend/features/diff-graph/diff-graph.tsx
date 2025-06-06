@@ -16,6 +16,7 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 interface MyGraphProps extends DiffGraphWrapperProps {
   data: GraphData | null;
   dimensions: Dimensions;
+  displaySubset: SubsetType;
 }
 
 // Component that load the graph
@@ -52,7 +53,7 @@ export const DiffGraph = ({ data, displaySubset, dimensions }: MyGraphProps) => 
           image =
             'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Half_circle_right.svg/1200px-Half_circle_right.svg.png';
           break;
-        case SubsetType.AB:
+        case SubsetType.A_INTERSECT_B:
         default:
           // full circle
           image =
@@ -99,7 +100,7 @@ export const DiffGraph = ({ data, displaySubset, dimensions }: MyGraphProps) => 
       nodeReducer: (node, data) => {
         const newData = { ...data, hidden: false };
         // check if the node is in the display subset
-        if (displaySubset && displaySubset !== SubsetType.A_B_AB && data.subset !== displaySubset) {
+        if (displaySubset && displaySubset !== SubsetType.A_UNION_B && data.subset !== displaySubset) {
           newData.hidden = true;
         }
         return newData;

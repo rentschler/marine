@@ -67,10 +67,10 @@ export interface Node {
 }
 
 export enum SubsetType {
-  A = 'A', // only in graph a
-  B = 'B', // only in graph b
-  AB = 'AB', // in graph a and b
-  A_B_AB = 'A_B_AB', // in graph a or b or both
+  A = 'A', // only in graph A
+  B = 'B', // only in graph B
+  A_INTERSECT_B = 'A∩B', // in both graph A and B (intersection)
+  A_UNION_B = 'A∪B', // in graph A or B or both (union)
 }
 
 export interface DiffNode extends Node {

@@ -244,7 +244,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col overflow-hidden">
       {/* navigation bar */}
       <div ref={navRef} className="flex items-center justify-between p-1 bg-gray-100">
         <div className="flex gap-2">
@@ -347,7 +347,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             bars={currentStackedData?.bars}
             segments={currentStackedData?.segments}
             numberOfBins={numberOfBins}
-            dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height)/2 }}
+            dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height) }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
@@ -356,18 +356,12 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
           <BarChart
             data={currentData}
             numberOfBins={numberOfBins}
-            dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height)/2 }}
+            dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height) }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
           />
         )}
-        <DiffGraphWrapper
-          dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height)/2 }}
-          dateRangeA={dateRangeFilter.dateRangeA}
-          dateRangeB={dateRangeFilter.dateRangeB}
-          id='timeline-diff-graph'
-        />
       </div>
     </div>
   );

@@ -30,7 +30,7 @@ const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
 interface DailyGraphWrapperProps {
-  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random';
+  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | undefined | 'null';
   limit?: number;
   currentNode?: TabNode;
   dateRange?: [Date, Date];
@@ -51,6 +51,7 @@ export const DailyGraphWrapper = ({
   id 
 }: DailyGraphWrapperProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+  layout = "null"
  // get the dimensions of the box + update when the screen size changes
  let dimensions: Dimensions = currentNode
  ? { width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10 }

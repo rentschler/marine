@@ -16,31 +16,26 @@ import { useEffect } from 'react';
 import { DiffGraph } from './diff-graph';
 import { SubsetType } from '@/types/graph-types';
 import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
+import { useFilterContext } from '@/context/filter-context';
+import { TabNode } from 'flexlayout-react';
 // import { NodeImageProgram } from '@sigma/node-image';
 
 export interface DiffGraphWrapperProps {
-  dateRangeA?: [Date, Date];
-  dateRangeB?: [Date, Date];
-  dimensions: {
-    width: number;
-    height: number;
-  };
+  currentNode: TabNode;
   id: string;
-  displaySubset?: SubsetType;
 }
 
 // Component that display the graph
-export const DiffGraphWrapper = ({
-  dateRangeA,
-  dateRangeB,
-  dimensions,
-  id,
-  displaySubset,
-}: DiffGraphWrapperProps) => {
+export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => {
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
   const [dailyData, setDailyData] = useState<GraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currDisplaySubset, setCurrentDisplaySubset] = useState<SubsetType>(SubsetType.A_B_AB);
+  const [currDisplaySubset, setCurrentDisplaySubset] = useState<SubsetType>(SubsetType.A_UNION_B);
+
+  const { dateRangeFilter } = useFilterContext();
+  const { dateRangeA, dateRangeB } = dateRangeFilter;
+
+  const dimensions = { width: currentNode.getRect().width - 10, height: currentNode.getRect().height - 10 }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,7 +93,7 @@ export const DiffGraphWrapper = ({
             subset: nodesA.includes(node) ? SubsetType.A : SubsetType.B,
           });
         } else {
-          nodeMap.set(node.id, { ...node, subset: SubsetType.AB });
+          nodeMap.set(node.id, { ...node, subset: SubsetType.A_INTERSECT_B });
         }
       });
 
@@ -150,6 +145,7 @@ export const DiffGraphWrapper = ({
             dimensions={dimensions}
             id={id}
             displaySubset={currDisplaySubset}
+            currentNode={currentNode}
           />
           <ControlsContainer position={'top-left'}>
             <ZoomControl />

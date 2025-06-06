@@ -11,6 +11,9 @@ const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
 const DailyGraphWrapper = dynamic(() => import('@/features/daily-graph/daily-graph-wrapper'), {
   ssr: false,
 });
+const DiffGraphWrapper = dynamic(() => import('@/features/diff-graph/diff-graph-wrapper'), {
+  ssr: false,
+});
 
 interface LayoutFactoryProps {
   layout: string;
@@ -34,6 +37,8 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
         return <div className="w-full h-full bg-gray-100">Placeholder</div>;
       case VisType.DAILY_GRAPH:
         return <DailyGraphWrapper currentNode={node} layout={layout as LayoutType} id={node.getId()} />;
+      case VisType.DIFF_GRAPH:
+        return <DiffGraphWrapper currentNode={node} id={node.getId()} />;
       case VisType.RAG_GRAPH:
         return <div>RAG Graph</div>;
       default:
