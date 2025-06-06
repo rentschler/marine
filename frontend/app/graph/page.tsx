@@ -4,12 +4,12 @@ import * as React from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import dynamic from 'next/dynamic';
-import BasicGraphWrapper from '@/features/basic-graph/graph-wrapper';
+// import BasicGraphWrapper from '@/features/basic-graph/graph-wrapper';
 
-// const BasicGraphWrapper = dynamic(() => import('@/features/basic-graph/graph-wrapper'), {
-//   // special import to ensure that the component is not rendered on the server
-//   ssr: false,
-// });
+const BasicGraphWrapper = dynamic(() => import('@/features/basic-graph/graph-wrapper'), {
+  // special import to ensure that the component is not rendered on the server
+  ssr: false,
+});
 
 function Page() {
   // asynchronous access of `params`.

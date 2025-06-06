@@ -1,3 +1,4 @@
+"use client";
 import { SigmaContainer, useLoadGraph } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
 import { MultiDirectedGraph } from 'graphology';
