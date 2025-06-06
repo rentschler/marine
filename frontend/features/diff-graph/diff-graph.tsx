@@ -1,31 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Graph from 'graphology';
 import { useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, LinkType, DiffNode, NodeType, Link } from '@/types/graph-types';
+import { GraphData, LinkType, DiffNode, NodeType, Link, SubsetType } from '@/types/graph-types';
 import * as d3 from 'd3';
-import { useLayoutForceAtlas2 } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
 import '@react-sigma/graph-search/lib/style.css';
-import { useLayoutCircular } from '@react-sigma/layout-circular';
-import { useLayoutForce } from '@react-sigma/layout-force';
-import { useLayoutNoverlap } from '@react-sigma/layout-noverlap';
-import { useLayoutRandom } from '@react-sigma/layout-random';
-import { useLayoutCirclepack } from '@react-sigma/layout-circlepack';
-import { GraphWrapperProps } from '@/features/graph/graph-wrapper';
 import { Dimensions } from '@/types/dimension-type';
+import { DiffGraphWrapperProps } from './diff-graph-wrapper';
 const nodeColorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(Object.values(NodeType));
 const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values(LinkType));
 
-interface MyGraphProps extends GraphWrapperProps {
+interface MyGraphProps extends DiffGraphWrapperProps {
   data: GraphData | null;
   dimensions: Dimensions;
 }
 
 // Component that load the graph
-export const DiffGraph = ({ data, dimensions }: MyGraphProps) => {
+export const DiffGraph = ({ data, displaySubset, dimensions }: MyGraphProps) => {
   const loadGraph = useLoadGraph();
 
   const sigma = useSigma();
@@ -47,16 +41,18 @@ export const DiffGraph = ({ data, dimensions }: MyGraphProps) => {
     data.nodes.forEach((node: DiffNode) => {
       let image;
       switch (node.subset) {
-        case 'A':
+        // use different images for different subsets, not using images for now
+        case SubsetType.A:
           // half circle (left)
           image =
             'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Half_circle_left.svg/1200px-Half_circle_left.svg.png';
           break;
-        case 'B':
+        case SubsetType.B:
           // half circle (right)
           image =
             'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Half_circle_right.svg/1200px-Half_circle_right.svg.png';
           break;
+        case SubsetType.AB:
         default:
           // full circle
           image =
@@ -69,7 +65,8 @@ export const DiffGraph = ({ data, dimensions }: MyGraphProps) => {
         y: node.y || 0,
         label: node.label,
         size: 10,
-        color: node.subset === 'A' ? 'red' : node.subset === 'B' ? 'green' : 'grey',
+        color:
+          node.subset === SubsetType.A ? 'red' : node.subset === SubsetType.B ? 'green' : 'grey',
         data: node,
         // image,
       };
@@ -92,7 +89,28 @@ export const DiffGraph = ({ data, dimensions }: MyGraphProps) => {
     });
     // Load the graph in sigma
     loadGraph(graph);
-  }, [data, loadGraph]);
+  }, [data, loadGraph, displaySubset]);
+
+  /**
+   * When displaySubset or data changes, update the settings for the graph
+   */
+  useEffect(() => {
+    setSettings({
+      nodeReducer: (node, data) => {
+        const newData = { ...data, hidden: false };
+        // check if the node is in the display subset
+        if (displaySubset && displaySubset !== SubsetType.A_B_AB && data.subset !== displaySubset) {
+          newData.hidden = true;
+        }
+        return newData;
+      },
+      // edgeReducer: (edge, data) => {
+      //   const graph = sigma.getGraph();
+      //   const newData = { ...data, hidden: false };
+      //   return newData;
+      // },
+    });
+  }, [setSettings, sigma, dimensions, displaySubset]);
 
   if (!data) {
     return <div>Loading...</div>;

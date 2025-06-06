@@ -1,19 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { SigmaContainer } from '@react-sigma/core';
+import {
+  ControlsContainer,
+  FullScreenControl,
+  SigmaContainer,
+  ZoomControl,
+} from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, LinkType, NodeType } from '@/types/graph-types';
-import * as d3 from 'd3';
+import { GraphData } from '@/types/graph-types';
 import '@react-sigma/core/lib/style.css';
 import '@react-sigma/graph-search/lib/style.css';
 
 import { useEffect } from 'react';
 import { DiffGraph } from './diff-graph';
-import { NodeCircleProgram } from 'sigma/rendering';
+import { SubsetType } from '@/types/graph-types';
+import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
 // import { NodeImageProgram } from '@sigma/node-image';
 
-interface DiffGraphWrapperProps {
+export interface DiffGraphWrapperProps {
   dateRangeA?: [Date, Date];
   dateRangeB?: [Date, Date];
   dimensions: {
@@ -21,6 +26,7 @@ interface DiffGraphWrapperProps {
     height: number;
   };
   id: string;
+  displaySubset?: SubsetType;
 }
 
 // Component that display the graph
@@ -29,10 +35,12 @@ export const DiffGraphWrapper = ({
   dateRangeB,
   dimensions,
   id,
+  displaySubset,
 }: DiffGraphWrapperProps) => {
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
   const [dailyData, setDailyData] = useState<GraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currDisplaySubset, setCurrentDisplaySubset] = useState<SubsetType>(SubsetType.A_B_AB);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,9 +93,12 @@ export const DiffGraphWrapper = ({
       // Merge nodes and annotate membership
       [...nodesA, ...nodesB].forEach((node) => {
         if (!nodeMap.has(node.id)) {
-          nodeMap.set(node.id, { ...node, subset: nodesA.includes(node) ? 'A' : 'B' });
+          nodeMap.set(node.id, {
+            ...node,
+            subset: nodesA.includes(node) ? SubsetType.A : SubsetType.B,
+          });
         } else {
-          nodeMap.set(node.id, { ...node, subset: 'AB' });
+          nodeMap.set(node.id, { ...node, subset: SubsetType.AB });
         }
       });
 
@@ -134,7 +145,33 @@ export const DiffGraphWrapper = ({
           settings={sigmaSettings}
         >
           {/* Graph component */}
-          <DiffGraph data={dailyData} dimensions={dimensions} />
+          <DiffGraph
+            data={dailyData}
+            dimensions={dimensions}
+            id={id}
+            displaySubset={currDisplaySubset}
+          />
+          <ControlsContainer position={'top-left'}>
+            <ZoomControl />
+            <FullScreenControl />
+            <LayoutForceAtlas2Control />
+          </ControlsContainer>
+          {/* toggle buttons to switch between subsets based on the value SubsetType can take */}
+          <ControlsContainer position={'top-right'}>
+            <div className="flex flex-row gap-2">
+              {Object.values(SubsetType).map((subset) => (
+                <button
+                  key={subset}
+                  className={`px-4 py-2 rounded ${currDisplaySubset === subset ? 'font-bold' : ''}`}
+                  onClick={() => {
+                    setCurrentDisplaySubset(subset);
+                  }}
+                >
+                  {subset}
+                </button>
+              ))}
+            </div>
+          </ControlsContainer>
         </SigmaContainer>
       </div>
     </div>
