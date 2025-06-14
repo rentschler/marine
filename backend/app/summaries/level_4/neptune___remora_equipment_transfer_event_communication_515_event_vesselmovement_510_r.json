@@ -1,0 +1,34 @@
+{
+  "title": "Neptune & Remora Equipment Transfer",
+  "summary": "This community centers around a planned equipment transfer involving Neptune and Remora, occurring via Route C. Communication indicates readiness for the transfer at 0600, with specialized handling equipment prepped and a maintained 'tourism facade'.  Associated with this is special access permission and a subsequent vessel movement to Nemo Reef.",
+  "rating": 6.0,
+  "rating explanation": "The impact severity rating is moderate due to the coordinated movement of equipment and the use of special access, suggesting a potentially sensitive or illicit operation.",
+  "findings": [
+    {
+      "summary": "Coordinated Equipment Transfer",
+      "explanation": "Neptune and Remora are coordinating an equipment transfer scheduled for 0600. The communication details preparation of specialized handling equipment, indicating the transfer involves sensitive or valuable goods. The pre-planning and coordination suggest a deliberate operation. [Data: Event_Communication_515 (record id: 515)]"
+    },
+    {
+      "summary": "Special Access Permissions Granted",
+      "explanation": "Special access permissions (Relationship_AccessPermission_306) are in effect starting at 0600, coinciding with the time of the planned equipment transfer. This suggests that the transfer requires exceptions to normal security protocols or regulations.  The link between Event_Communication_515 and Relationship_AccessPermission_306 provides evidence of a connection between communication and permission approval [Data: Relationship_AccessPermission_306 (record id: 306); Event_Communication_515 -[]-> Relationship_AccessPermission_306 ]"
+    },
+    {
+      "summary": "Use of 'Tourism Facade'",
+      "explanation": "The communication explicitly mentions maintaining a 'tourism facade' during all communications related to the transfer. This suggests an attempt to disguise the true nature of the operation or to avoid attracting unwanted attention. This is a major indicator of potentially illicit or sensitive activity. [Data: Event_Communication_515 (record id: 515)]"
+    },
+    {
+      "summary": "Route C as Transfer Pathway",
+      "explanation": "Route C is identified as the pathway for the vessel movement related to this operation. Both Event_VesselMovement_510 and Relationship_AccessPermission_306 relate directly to Route C, confirming its importance to this activity. [Data: Route C (record id: Route C); Event_VesselMovement_510 -[]-> Route C; Relationship_AccessPermission_306 -[]-> Route C]"
+    },
+    {
+      "summary": "Vessel Movement to Nemo Reef",
+      "explanation": "Following communication and permissioning, a vessel movement (Event_VesselMovement_510) is scheduled to Nemo Reef. This indicates the ultimate destination of the equipment being transferred, and suggests a point of interest for further investigation. The rendezvous type suggests a planned meeting with another party at that location. [Data: Event_VesselMovement_510 (record id: 510)]"
+    }
+  ],
+  "nodes": [
+    "Route C",
+    "Relationship_AccessPermission_306",
+    "Event_Communication_515",
+    "Event_VesselMovement_510"
+  ]
+}

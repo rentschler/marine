@@ -1,0 +1,28 @@
+{
+  "title": "West Reef Activity - Music Video Shoot",
+  "summary": "The community centers around observed activity on the west reef, specifically a potential music video shoot. Both Sentinel and The Lookout detected the presence of lighting rigs and camera equipment, but details remain unconfirmed due to distance.",
+  "rating": 2.0,
+  "rating explanation": "The impact severity is low, as the observed activity appears to be benign (a music video shoot) with no immediate threat indicated.",
+  "findings": [
+    {
+      "summary": "Initial Observation of West Reef Activity",
+      "explanation": "Both Sentinel and The Lookout initially observed what appears to be a music video shoot on the west reef. This observation is the foundation of the community, linking the two reporting entities. The presence of lighting rigs and camera equipment suggests a planned event requiring dedicated resources. [Data: Communication (Event_Communication_912), Monitoring (Event_Monitoring_911)]"
+    },
+    {
+      "summary": "Communication between Sentinel and The Lookout",
+      "explanation": "Sentinel initiated communication with The Lookout requesting closer verification of the observed activity. This communication establishes a relationship between the two entities and highlights a collaborative effort to gather more detailed information about the event taking place on the west reef. [Data: Communication (Event_Communication_912)]"
+    },
+    {
+      "summary": "Surveillance as a Monitoring Type",
+      "explanation": "The monitoring activity is specifically classified as surveillance, indicating a deliberate effort to observe and document the events taking place on the west reef. This suggests a routine or proactive approach to monitoring the area, potentially to identify and assess any unusual or concerning activity. [Data: Monitoring (Event_Monitoring_911)]"
+    },
+    {
+      "summary": "Evidence-Based Relationship between Events",
+      "explanation": "The relationship between Event_Communication_912 and Event_Monitoring_911 is established as 'evidence_for,' indicating that the communication serves as supporting evidence for the monitoring observation. This confirms that the communication about potentially observing a music video shoot strengthens the original monitoring event. The 'is_inferred: True' suggests that this relationship isn't direct but based on interpretation and context. [Data: Communication - Monitoring relationship]"
+    }
+  ],
+  "nodes": [
+    "Event_Monitoring_911",
+    "Event_Communication_912"
+  ]
+}

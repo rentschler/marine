@@ -1,8 +1,9 @@
+from nl_querying.indexing.indexing_service import IndexingService3
 from nl_querying.indexing_service2 import IndexService2
 from models.Graph import Node
 from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
-from nl_querying.init_llm import LLM
+from nl_querying.utils.llm import LLM
 from database_utils.get_filtered_graph import get_filtered_graph
 from models.filter_request_body import FilterRequestBody
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
@@ -31,10 +32,11 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
-llm = LLM(model= "phi4:latest")
+llm = LLM(model= "gemma3:27b")
 
 # services
 indexing_service = IndexingService(llm=llm)
+indexing_service3 = IndexingService3(llm=llm)
 query_service = QueryService(llm=llm)
 
 router = APIRouter()
@@ -353,20 +355,33 @@ async def index():
             
         with open('data/MC3_graph.json', 'r') as f:
             json_data = json.load(f)
+        print("Loading Graph")
+        nodes = json_data["nodes"]
+        edges = json_data["edges"]
+        G = nx.Graph()
+
+        for node in nodes:
+            node_id = node["id"]
+            attrs = {k: v for k, v in node.items() if k != "id"}
+            if attrs["type"] != "Relationship":
+                G.add_node(node_id, **attrs)
+
+        for edge in edges:
+            source = edge["source"]
+            target = edge["target"]
+            if source in G.nodes and target in G.nodes:
+                attrs = {k: v for k, v in edge.items() if k not in ["source", "target"]}
+                G.add_edge(source, target, **attrs)
         
-        G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
-        
-        # 2. Indexierung durchführen
-        index_service = IndexService2(llm=llm)
-        
+        print(G)
+        print("Indexing")
         # Annahme: Sie fügen diese Methode zu IndexService2 hinzu
-        result = await index_service.indexing(graph=G)
+        result = await indexing_service3.index(graph=G)
         
         return {
             "status": "success",
             "communities_detected": len(result["communities"]),
             "summaries_generated": len(result["summaries"]),
-            "output_dir": index_service.community_path
         }
         
     except json.JSONDecodeError:

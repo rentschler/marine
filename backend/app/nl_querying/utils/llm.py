@@ -57,3 +57,19 @@ class LLM:
         )
         return clean_json_string(response.choices[0].message.content)
     
+    def extract_json_block(self, text: str) -> str:
+        start = text.find('{')
+        if start == -1:
+            return text
+        
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    return text[start:i+1]
+        return text
+
+    

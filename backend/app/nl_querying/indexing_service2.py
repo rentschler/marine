@@ -1,6 +1,6 @@
 import networkx as nx
 from nl_querying.query_utils import _flatten_nodes, describe_edge, describe_node, estimate_tokens
-from nl_querying.init_llm import LLM
+from nl_querying.utils.llm import LLM
 import leidenalg
 import igraph as ig
 from typing import Dict, List, Tuple
@@ -8,7 +8,7 @@ import json, os
 
 class IndexService2:
     
-    def __init__(self, llm: LLM, community_path: str = "community_descriptions2") -> None:
+    def __init__(self, llm: LLM, community_path: str = "summaries") -> None:
             self.community_path = community_path
             self.llm = llm
             self.community_summary_generation_prompt = {
@@ -129,50 +129,73 @@ class IndexService2:
         "Use the following text for your answer. Do not make anything up in your answer. Input:"
     }
 
-    def detect_communities_hierarchical(self, graph: nx.Graph, min_size = 6) -> List:
-            """
-            Hierachically detects communities using the Leiden algoritm.
+    def detect_communities_hierarchical(
+    self,
+    graph: nx.Graph,
+    min_size: int = 6,
+    level: int = 1
+    ) -> List:
+        """
+        Hierarchically detects communities using the Leiden algorithm.
+        Now also tracks the current hierarchical level.
 
-            Parameters
-            ----------
-            graph: nx.Graph
-                The input graph in NetworkX foramt.
-            min_size: int
-                Minimum community size to consider further splitting.
+        Parameters
+        ----------
+        graph : nx.Graph
+            The input graph in NetworkX format.
+        min_size : int
+            Minimum community size to consider further splitting.
+        level : int
+            Current depth in the hierarchy.
 
-            Returns
-            -------
-            List
-                A nested list representing the hierachical community structure.
-            """
-            nodes = list(graph.nodes())
-            node_idx = {node: idx for idx, node in enumerate(nodes)}
-            edges = [(node_idx[u], node_idx[v]) for u, v in graph.edges()]
+        Returns
+        -------
+        List
+            A nested list representing the hierarchical community structure.
+        """
+        nodes = list(graph.nodes())
+        node_idx = {node: idx for idx, node in enumerate(nodes)}
+        edges = [(node_idx[u], node_idx[v]) for u, v in graph.edges()]
 
-            g = ig.Graph()
-            g.add_vertices(len(nodes))
-            g.vs["id"] = nodes
-            g.add_edges(edges)
+        g = ig.Graph()
+        g.add_vertices(len(nodes))
+        g.vs["id"] = nodes
+        g.add_edges(edges)
 
-            partition = leidenalg.find_partition(g, leidenalg.ModularityVertexPartition)
+        partition = leidenalg.find_partition(g, leidenalg.ModularityVertexPartition)
 
-            if len(partition) == 1 or all(len(c) == len(nodes) for c in partition):
-                return nodes
+        if len(partition) == 1 or all(len(c) == len(nodes) for c in partition):
+            return {
+                "level": level,
+                "nodes": nodes
+            }
 
-            result = []
-            for community in partition:
-                community_nodes = [g.vs[v]["id"] for v in community]
-                if len(community) >= min_size:
-                    subgraph = graph.subgraph(community_nodes)
-                    if subgraph.number_of_edges() > 0 and len(subgraph.nodes()) > 1:
-                        sub_communities = self.detect_communities_hierarchical(subgraph, min_size)
-                        result.append(sub_communities)
-                    else:
-                        result.append(community_nodes)
+        result = []
+        for community in partition:
+            community_nodes = [g.vs[v]["id"] for v in community]
+            if len(community) >= min_size:
+                subgraph = graph.subgraph(community_nodes)
+                if subgraph.number_of_edges() > 0 and len(subgraph.nodes()) > 1:
+                    sub_communities = self.detect_communities_hierarchical(
+                        subgraph, min_size, level=level + 1
+                    )
+                    result.append(sub_communities)
                 else:
-                    result.append(community_nodes)
+                    result.append({
+                        "level": level + 1,
+                        "nodes": community_nodes
+                    })
+            else:
+                result.append({
+                    "level": level + 1,
+                    "nodes": community_nodes
+                })
 
-            return result
+        return {
+            "level": level,
+            "communities": result
+        }
+
     
     def get_community_description(self, graph: nx.Graph, nodes: List[str]) -> List[str]:
         """
@@ -211,12 +234,12 @@ class IndexService2:
         
         for source, target, edge_data in edges_sorted:
             if source not in added_nodes:
-                source_desc = describe_node(subgraph.nodes[source])
+                source_desc = describe_node(source, subgraph.nodes[source])
                 descriptions.append(source_desc)
                 added_nodes.add(source) 
 
             if target not in added_nodes:
-                target_desc = describe_node(subgraph.nodes[target])
+                target_desc = describe_node(target, subgraph.nodes[target])
                 descriptions.append(target_desc)
                 added_nodes.add(target)
 
@@ -226,23 +249,22 @@ class IndexService2:
         return descriptions
 
     async def summarize_communities_hierarchical(
-        self,
-        graph: nx.Graph,
-        community_structure: List,
-        sub_community_summaries: Dict[str, str] = None,
-        token_limit: int = 2048
-    ) -> str:
+    self,
+    graph: nx.Graph,
+    community_structure: dict,
+    sub_community_summaries: Dict[str, str] = None,
+    token_limit: int = 2048
+    ) -> dict:
         """
         Summarizes a hierarchical community structure using the GraphRAG approach.
-        Leaf-level communities: summarize element summaries.
-        Higher-level communities: summarize sub-community summaries if element summaries exceed the token limit.
+        Stores summaries in folders named by their hierarchical level.
 
         Parameters:
         -----------
         graph : nx.Graph
             The full graph.
-        community_structure : List
-            The hierarchical community structure from detect_communities_hierarchical.
+        community_structure : dict
+            The hierarchical community structure with "level", "nodes"/"communities".
         sub_community_summaries : Dict[str, str]
             A dictionary to cache sub-community summaries by community identifier.
         token_limit : int
@@ -250,64 +272,67 @@ class IndexService2:
 
         Returns:
         --------
-        str
-            A textual summary of the community.
+        dict
+            The JSON summary.
         """
         if sub_community_summaries is None:
             sub_community_summaries = {}
 
-        if all(isinstance(node, str) for node in community_structure):
+        level = community_structure["level"]
 
-            print("summarizing sub graph")
-            element_summaries = self.get_community_description(graph, community_structure)
-            token_count = sum(estimate_tokens(summary) for summary in element_summaries)
+        # Case 1: Leaf node — contains list of nodes
+        if "nodes" in community_structure:
+            node_list = community_structure["nodes"]
+            print(f"Summarizing leaf-level community at level {level}")
+
+            element_summaries = self.get_community_description(graph, node_list)
+            token_count = sum(estimate_tokens(s) for s in element_summaries)
 
             selected_summaries = []
             running_tokens = 0
             for summary in element_summaries:
-                summary_tokens = estimate_tokens(summary)
-                if running_tokens + summary_tokens <= token_limit:
+                tokens = estimate_tokens(summary)
+                if running_tokens + tokens <= token_limit:
                     selected_summaries.append(summary)
-                    running_tokens += summary_tokens
+                    running_tokens += tokens
                 else:
                     break
 
             final_text = "\n".join(selected_summaries)
-            community_id = self._community_id(community_structure)
+            community_id = self._community_id(node_list)
             sub_community_summaries[community_id] = final_text
-            
+
             final_result = await self.llm.invoke_prompt(
                 system_prompt=self.community_summary_generation_prompt.get("system_prompt"),
-                user_prompt= f"{self.community_summary_generation_prompt.get("user_prompt")}\n\n {final_text}"
+                user_prompt=f"{self.community_summary_generation_prompt.get('user_prompt')}\n\n{final_text}"
             )
 
-        else:
-            sub_summaries = []
+        # Case 2: Internal node — recurse into subcommunities
+        elif "communities" in community_structure:
+            print(f"Summarizing parent community at level {level}")
+            sub_community_results = []
             sub_tokens = []
-            for sub in  community_structure:
-                print("summarizing sub graph")
+
+            for sub in community_structure["communities"]:
                 sub_summary = await self.summarize_communities_hierarchical(
                     graph, sub, sub_community_summaries, token_limit
                 )
-                community_id = self._community_id(sub)
-                sub_community_summaries[community_id] = sub_summary
-                sub_summaries.append(sub_summary)
-                sub_tokens.append(estimate_tokens(sub_summary))
+                community_id = self._community_id(sub.get("nodes", []))
+                sub_community_summaries[community_id] = sub_summary["summary"]
+                sub_community_results.append(sub_summary["summary"])
+                sub_tokens.append(estimate_tokens(sub_summary["summary"]))
 
+            # Try to use original node-level summaries if possible
             flat_nodes = _flatten_nodes(community_structure)
             element_summaries = self.get_community_description(graph, flat_nodes)
-            element_tokens = sum(estimate_tokens(s) for s in element_summaries)
-            if element_tokens <= token_limit:
+            element_token_total = sum(estimate_tokens(s) for s in element_summaries)
+
+            if element_token_total <= token_limit:
                 final_text = "\n".join(element_summaries)
-                final_result= await self.llm.invoke_prompt(
-                    system_prompt=self.community_summary_generation_prompt.get("system_prompt"),
-                    user_prompt= f"{self.community_summary_generation_prompt.get("user_prompt")}\n\n {final_text}"
-                )
             else:
+                # Use sub-summaries instead
                 sub_community_sorted = sorted(
-                    zip(sub_summaries, sub_tokens),
-                    key=lambda x: x[1],
-                    reverse=True
+                    zip(sub_community_results, sub_tokens), key=lambda x: x[1], reverse=True
                 )
                 selected_summaries = []
                 running_tokens = 0
@@ -319,13 +344,19 @@ class IndexService2:
                         break
                 final_text = "\n".join(selected_summaries)
 
-                final_result= await self.llm.invoke_prompt(
-                    system_prompt=self.community_summary_generation_prompt.get("system_prompt"),
-                    user_prompt= f"{self.community_summary_generation_prompt.get("user_prompt")}\n\n {final_text}"
-                )
+            final_result = await self.llm.invoke_prompt(
+                system_prompt=self.community_summary_generation_prompt.get("system_prompt"),
+                user_prompt=f"{self.community_summary_generation_prompt.get('user_prompt')}\n\n{final_text}"
+            )
+
+        # JSON parsing & saving
+        community_id = self._community_id(_flatten_nodes(community_structure))
+        folder_path = f"{self.community_path}/level_{level}"
+        os.makedirs(folder_path, exist_ok=True)
+
         try:
             print(final_result)
-            summary_json = json.loads(final_result)  
+            summary_json = json.loads(final_result)
             summary_obj = {
                 "title": summary_json.get("title"),
                 "summary": summary_json.get("summary"),
@@ -334,20 +365,12 @@ class IndexService2:
                 "findings": summary_json.get("findings"),
                 "nodes": final_text
             }
-            community_id = self._community_id(community_structure)
-            await self.save_community_summary(community_id, summary_obj)
-            return summary_json
-        except json.JSONDecodeError:
-            community_id = self._community_id(community_structure)
-            summary_obj = {
-                "title": f"Community_{community_id}",
-                "summary": final_text,
-                "rating": 0.0,
-                "rating explanation": "Could not parse full summary",
-                "findings": []
-            }
-            await self.save_community_summary(community_id, summary_obj)
+            await self.save_community_summary(community_id, summary_obj, folder_path)
             return summary_obj
+
+        except json.JSONDecodeError as e:
+            print(e)
+            raise e
 
     
     def _community_id(self, community_nodes: List[str]) -> str:
@@ -359,23 +382,22 @@ class IndexService2:
         unique_hash = hash(frozenset(community_nodes)) % (10**8)
         return f"{base_name}_{unique_hash}"
     
-    async def save_community_summary(self, community_id: str, summary: dict):
+    async def save_community_summary(self, community_id: str, summary: dict, folder_path: str):
         """Saves a community summary as JSON file with descriptive name."""
-        if not os.path.exists(self.community_path):
-            os.makedirs(self.community_path)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
         
         title = summary.get("title", "community").lower()
         title = "".join(c if c.isalnum() else "_" for c in title)
         
         filename = f"{title}_{community_id[:50]}.json"
-        filepath = os.path.join(self.community_path, filename)
+        filepath = os.path.join(folder_path, filename)
         
         with open(filepath, "w") as f:
             json.dump(summary, f, indent=2)
 
 
-    async def indexing(self, graph: nx.graph):
-        print("starting Pipeline")
+    async def indexing(self, graph: nx.digraph):
         community_structure = self.detect_communities_hierarchical(graph)
         summary = await self.summarize_communities_hierarchical(
         graph, 
