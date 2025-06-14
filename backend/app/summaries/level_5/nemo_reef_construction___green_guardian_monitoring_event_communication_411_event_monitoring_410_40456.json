@@ -1,0 +1,28 @@
+{
+  "title": "Nemo Reef Construction & Green Guardian Monitoring",
+  "summary": "The community centers around construction activity at Nemo Reef, observed and reported by the Green Guardians. Both monitoring and communication events indicate site preparation is underway, following an expedited approval after a previous denial, suggesting potential undue influence.",
+  "rating": 6.5,
+  "rating explanation": "The impact severity rating is moderate due to the expedited approval following a denial, indicating potential concerning influence on the construction project at Nemo Reef.",
+  "findings": [
+    {
+      "summary": "Nemo Reef Construction Activity",
+      "explanation": "Construction crews have arrived at Nemo Reef for site preparation, with equipment installation scheduled for the following day and full event execution expected next week. This indicates a rapid progression of activity at the site. [Data: Monitoring (410), Communication (411)]"
+    },
+    {
+      "summary": "Green Guardian Surveillance",
+      "explanation": "The Green Guardians are maintaining a legal observation distance and reporting on the activity at Nemo Reef. They are actively monitoring the site, documenting the arrival of construction crews and the scheduled equipment installation. [Data: Communication (411)]"
+    },
+    {
+      "summary": "Concerning Expedited Approval",
+      "explanation": "A key aspect of this community is the expedited approval of the Nemo Reef construction project after a previous denial. This raises concerns about potential undue influence or corruption in the approval process. The fact that the approval was expedited suggests a deviation from normal procedures. [Data: Monitoring (410), Communication (411)]"
+    },
+    {
+      "summary": "Evidence Link Between Communication & Monitoring",
+      "explanation": "The communication event (Event_Communication_411) serves as evidence for the monitoring event (Event_Monitoring_410), although this relationship is inferred rather than directly observed. This suggests that the Green Guardians' report is the source of the monitoring findings. [Data: Event_Communication_411 -[]-> Event_Monitoring_410]"
+    }
+  ],
+  "nodes": [
+    "Event_Monitoring_410",
+    "Event_Communication_411"
+  ]
+}

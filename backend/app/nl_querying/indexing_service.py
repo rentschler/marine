@@ -1,5 +1,5 @@
 import networkx as nx
-from nl_querying.init_llm import LLM
+from nl_querying.utils.llm import LLM
 import leidenalg
 import igraph as ig
 from typing import List, Tuple

@@ -1,0 +1,24 @@
+{
+  "title": "Himark Harbor and Remora Vessel Operations",
+  "summary": "This community centers around communication and vessel movement involving the entities Himark Harbor and Remora.  Himark Harbor approved Remora\u2019s departure documentation, and Remora is scheduled to depart for Nemo Reef. The communication serves as evidence for the subsequent vessel movement.",
+  "rating": 3.0,
+  "rating explanation": "The impact severity is low, representing routine operational communication and vessel movement with no immediately apparent negative consequences.",
+  "findings": [
+    {
+      "summary": "Communication Regarding Departure Approval",
+      "explanation": "Himark Harbor communicated approval of departure documentation to Remora. This suggests a standard operational procedure where vessels require approval before departing port. The communication specifies the berthing schedule and requests confirmation regarding potential extended docking hours upon return from Nemo Reef operations [Data: Communication (Event_Communication_501)]"
+    },
+    {
+      "summary": "Remora\u2019s Departure to Nemo Reef",
+      "explanation": "Remora is scheduled to depart for Nemo Reef at 0530. This indicates a planned operation at Nemo Reef, potentially involving resource gathering, research, or other activities. VesselMovement event describes the specific time of departure [Data: VesselMovement (Event_VesselMovement_509)]"
+    },
+    {
+      "summary": "Evidence of Communication Supporting Vessel Movement",
+      "explanation": "The communication between Himark Harbor and Remora serves as evidence for Remora\u2019s subsequent vessel movement. This suggests that the approval of departure documentation was a prerequisite for Remora\u2019s departure. The relationship between the communication event and the vessel movement is inferred [Data: Event_Communication_501 -[]-> Event_VesselMovement_509]"
+    }
+  ],
+  "nodes": [
+    "Event_VesselMovement_509",
+    "Event_Communication_501"
+  ]
+}

@@ -116,17 +116,16 @@ def construct_answer_graph(
         links=links
     )
 
-def describe_node(node: dict) -> str:
-    node_type = node.get("sub_type", "Node")
-    node_id = node.get("id", "UnknownID")
-    props = ", ".join(f"{k}: {v}" for k, v in node.items() if k not in ["x", "y", "sub_type"])
+def describe_node(node_id, node_attrs) -> str:
+    node_type = node_attrs.get("sub_type", "Node")
+    props = ", ".join(f"{k}: {v}" for k, v in node_attrs.items() if k not in ["x", "y", "sub_type"])
     desc = f"{node_type}({node_id})"
     if props:
         desc += f" [{props}]"
     return desc
 
 def describe_edge(source: str, target: str, edge: dict) -> str:
-    rel_type = edge.get("edge_type") or edge.get("label", "MISSING")
+    rel_type = edge.get("edge_type") or edge.get("label", "")
     props = ", ".join(f"{k}: {v}" for k, v in edge.items() if k not in ["edge_type", "label", "source", "target", "id"])
     desc = f"{source} -[{rel_type}]-> {target}"
     if props:

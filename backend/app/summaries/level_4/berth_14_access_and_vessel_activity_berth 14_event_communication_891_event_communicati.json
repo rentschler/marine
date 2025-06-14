@@ -1,0 +1,35 @@
+{
+  "title": "Berth 14 Access and Vessel Activity",
+  "summary": "This community centers around Berth 14 and involves restricted access permissions, vessel movements, and communications between Neptune and Davis. Communications detail preparations for equipment loading and confirm security arrangements, emphasizing the use of specific clearance codes and encryption protocols.",
+  "rating": 6.0,
+  "rating explanation": "The impact severity rating is moderate due to the restricted access, security protocols, and coordinated activity suggesting potential sensitive operations or concerns.",
+  "findings": [
+    {
+      "summary": "Berth 14 as the central location",
+      "explanation": "Berth 14 is the central entity, serving as the destination for vessel movement and subject to access permissions. All activities appear to revolve around this location, suggesting its importance. [Data: Location(Berth 14), VesselMovement(Event_VesselMovement_980), Relationship_AccessPermission_564]"
+    },
+    {
+      "summary": "Restricted Access to Berth 14",
+      "explanation": "Access to Berth 14 is restricted, as indicated by the 'restricted' permission type associated with Relationship_AccessPermission_564. This suggests potential security concerns or sensitive operations taking place at the location. Event_Communication_891 further emphasizes the need for a specific clearance code (ALPHA-937) for harbor access. [Data: AccessPermission(Relationship_AccessPermission_564), Communication(Event_Communication_891)]"
+    },
+    {
+      "summary": "Coordinated Vessel Movement",
+      "explanation": "VesselMovement Event_VesselMovement_980 indicates a rendezvous scheduled at Berth 14. This movement highlights a planned arrival or meeting, suggesting coordinated activity. [Data: VesselMovement(Event_VesselMovement_980)]"
+    },
+    {
+      "summary": "Communication between Neptune and Davis",
+      "explanation": "Communications Event_Communication_891 and Event_Communication_981 reveal exchanges between Neptune and Davis regarding Berth 14. These communications detail preparations, security confirmations, and operational readiness, indicating a coordinated operation. [Data: Communication(Event_Communication_891), Communication(Event_Communication_981)]"
+    },
+    {
+      "summary": "Emphasis on Secure Communications",
+      "explanation": "Both communications (Event_Communication_891 and Event_Communication_981) mandate the use of Delta-3 encryption, emphasizing the importance of secure communications. This suggests that the information exchanged is sensitive and requires protection. [Data: Communication(Event_Communication_891), Communication(Event_Communication_981)]"
+    }
+  ],
+  "nodes": [
+    "Event_Communication_981",
+    "Event_VesselMovement_980",
+    "Berth 14",
+    "Relationship_AccessPermission_564",
+    "Event_Communication_891"
+  ]
+}
