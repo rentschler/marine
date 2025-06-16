@@ -32,9 +32,8 @@ class CommunitySummarizer:
         community_id = self._community_id(community.nodes)
         folder_path = f"{self.summary_path}/level_{level}"
         os.makedirs(folder_path, exist_ok=True)
-        print(llm_summary)
-        return await self._parse_and_save_summary(llm_summary, community=community, community_id=community_id, folder_path=folder_path)
-        
+        summary= await self._parse_and_save_summary(llm_summary, community=community, community_id=community_id, folder_path=folder_path)
+        return summary
 
     async def _get_leaf_community_context(self, graph: nx.DiGraph, community: Community) -> str:
         print("leaf")
@@ -143,7 +142,7 @@ class CommunitySummarizer:
         except json.JSONDecodeError as e:
             print("Error while summarizing: ",summary) 
             summary = await self._call_llm(summary)
-            return self._parse_and_save_summary(summary=summary, community=community, community_id=community_id, folder_path=folder_path)  
+            return await self._parse_and_save_summary(summary=summary, community=community, community_id=community_id, folder_path=folder_path)  
 
 
     def _estimate_tokens(self, text: str) -> int:
