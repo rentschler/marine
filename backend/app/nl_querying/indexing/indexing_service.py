@@ -7,11 +7,11 @@ from nl_querying.utils.llm import LLM
 
 
 class IndexingService3:
-    def __init__(self, llm: LLM, min_size: int = 7):
+    def __init__(self, llm: LLM, min_size: int = 12):
         self.llm = llm
 
         self.community_detector = LeidenAlgorithm(min_size=min_size)
-        self.community_summarizer = CommunitySummarizer(self.llm, summary_path="summaries_with_out_relationships")
+        self.community_summarizer = CommunitySummarizer(self.llm, summary_path="summaries")
 
     async def index(self, graph: nx.DiGraph):
         print("Searching for Communities.")
