@@ -11,7 +11,7 @@ from nl_querying.indexing.prompts.community_summary_prompt import community_summ
 
 
 class CommunitySummarizer:
-    def __init__(self, llm: LLM, token_limit = 2048 * 1.5, summary_path: str = "summaries"):
+    def __init__(self, llm: LLM, token_limit = 2048, summary_path: str = "summaries"):
         self.token_limit = token_limit
         self.summary_path = summary_path
         self.llm = llm
@@ -139,7 +139,7 @@ class CommunitySummarizer:
             )
             self._save_community_summary(community_id=community_id, summary=summary_obj, folder_path=folder_path)
             return summary_obj
-        except json.JSONDecodeError as e:
+        except Exception as e:
             print("Error while summarizing: ",summary) 
             summary = await self._call_llm(summary)
             return await self._parse_and_save_summary(summary=summary, community=community, community_id=community_id, folder_path=folder_path)  

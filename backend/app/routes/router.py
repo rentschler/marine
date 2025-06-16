@@ -35,7 +35,7 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
-llm = LLM(model= "gemma3:27b")
+llm = LLM(model= "phi4:latest")
 
 # services
 indexing_service = IndexingService(llm=llm)
@@ -386,8 +386,7 @@ async def index():
         for node in nodes:
             node_id = node["id"]
             attrs = {k: v for k, v in node.items() if k != "id"}
-            if attrs["type"] != "Relationship":
-                G.add_node(node_id, **attrs)
+            G.add_node(node_id, **attrs)
 
         for edge in edges:
             source = edge["source"]
