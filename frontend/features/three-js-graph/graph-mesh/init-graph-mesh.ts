@@ -30,7 +30,7 @@ export function initGraphMesh(
   edgeMeshRef.current = edgeMesh;
 
   scene.add(arrowMesh);
-  edgeMeshRef.current = arrowMesh;
+  arrowMeshRef.current = arrowMesh;
 
   if (nodeMeshRef.current)
     scene.remove(nodeMeshRef.current as THREE.InstancedMesh);

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { initScene } from "./scene/init-scene";
 import { Spinner } from "@heroui/react";
+import { GraphLegend } from "./graph-legend/graph-legend";
 
 export function GraphScene(){
     const { currentData } = useFilterContext(); 
@@ -89,16 +90,20 @@ export function GraphScene(){
         };
     }, [currentData]);
 
-    return(
-        <div ref={resize_container} className="h-full w-full relative">
-            {
-                loading ?
-                <div className="h-full w-full flex items-center justify-center">
-                    <Spinner/>
+    return (
+    <div ref={resize_container} className="h-full w-full">
+        {loading ? (
+            <div className="h-full w-full flex items-center justify-center">
+                <Spinner />
+            </div>
+        ) : (
+            <div className="h-full w-full relative">
+                <div ref={container} className="h-full w-full absolute inset-0 m-2" />
+                <div className="absolute bottom-0 right-0 z-[100]">
+                    <GraphLegend />
                 </div>
-                :
-                <div ref={container} style={{ width: "100%", height: "100%" }} />
-            }
-        </div>
-    )
+            </div>
+        )}
+    </div>
+    );
 }
