@@ -3,7 +3,7 @@ import networkx as nx
 from nl_querying.indexing.find_communities.models.community import Community
 from nl_querying.indexing.summarize_communities.community_summarizer.community_summarizer import CommunitySummarizer
 from nl_querying.indexing.find_communities.leiden_algorithm.leiden_algorithm import LeidenAlgorithm
-from nl_querying.utils.llm import LLM
+from nl_querying.utils.llm.llm import LLM
 
 
 class IndexingService3:

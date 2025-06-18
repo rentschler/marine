@@ -1,5 +1,9 @@
+from typing import List
+from nl_querying.utils.llm.parallel_llm_call import ParallelLLMCall
 from nl_querying.query_utils import clean_json_string
 from openai import AsyncOpenAI
+import asyncio, json
+import re
 
 class LLM:
     """
@@ -57,6 +61,32 @@ class LLM:
         )
         return clean_json_string(response.choices[0].message.content)
     
+    async def invoke_llm_parallel(self, calls: List[ParallelLLMCall]) -> List[ParallelLLMCall]:
+        semaphore = asyncio.Semaphore(4)  
+
+        async def limited_invoke(call: ParallelLLMCall):
+            async with semaphore:
+                response = await self.invoke_prompt(
+                        system_prompt=call.system_prompt,
+                        user_prompt=call.user_prompt
+                    )
+                try:
+                    cleaned = self.extract_json_block(clean_json_string(response))
+                    cleaned = self.sanitize_json_string(cleaned)
+                    response_data = json.loads(cleaned)
+                    call.answer = response_data
+                except Exception as e:
+                    print(f"LLM call failed: {e}")
+                    print("Response: ", response)
+                    call.answer = response
+
+            return call
+
+        tasks = [limited_invoke(call) for call in calls]
+        results = await asyncio.gather(*tasks)
+        return results
+    
+
     def extract_json_block(self, text: str) -> str:
         start = text.find('{')
         if start == -1:
@@ -71,5 +101,16 @@ class LLM:
                 if depth == 0:
                     return text[start:i+1]
         return text
+    
+    import re
+
+    def sanitize_json_string(self, json_str: str) -> str:
+        if not json_str:
+            return json_str
+
+        json_str = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', json_str)
+
+        return json_str
+
 
     

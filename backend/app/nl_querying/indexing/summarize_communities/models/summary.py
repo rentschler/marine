@@ -1,5 +1,9 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pydantic import BaseModel
+
+class Finding(BaseModel):
+    summary: str
+    explanation: Optional[str] = None
 
 
 class Summary(BaseModel):
@@ -7,7 +11,7 @@ class Summary(BaseModel):
     summary: str
     rating: float
     rating_explanation: str
-    findings: List[Dict[str, str]]
+    findings: List[Finding]
     nodes: List[str]
 
     def to_string(self) -> str:
@@ -17,6 +21,6 @@ class Summary(BaseModel):
             f"Rating: {self.rating}\n"
             f"Rating Explanation: {self.rating_explanation}\n"
             f"Findings:\n" +
-            "\n".join(f"  - {item['label']}: {item['value']}" for item in self.findings)
+            "\n".join(f"  - {finding.summary}: {finding.explanation}" for finding in self.findings)
         )
 

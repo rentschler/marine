@@ -1,10 +1,12 @@
 from database_utils.turn_communication_into_edge import turn_communication_into_edge
+from nl_querying.querying.reduce_to_global_answer.final_answer_reducer import FinalAnswerReducer
+from nl_querying.querying.intermidate_answer_generator.intermidate_answer_generator import IntermidateAnswerGenerator
+from nl_querying.querying.prepare_community_summaries.community_summary_loader import CommunitySummaryLoader
 from nl_querying.indexing.indexing_service import IndexingService3
-from nl_querying.indexing_service2 import IndexService2
 from models.Graph import Node
 from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
-from nl_querying.utils.llm import LLM
+from nl_querying.utils.llm.llm import LLM
 from database_utils.get_filtered_graph import get_filtered_graph
 from database_utils.get_diff_graph import get_diff_graph
 from models.diff_request_body import DiffRequestBody
@@ -410,4 +412,14 @@ async def index():
         raise HTTPException(status_code=400, detail="Invalid JSON format")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/test-query")
+async def test_query(question: str):
+    summary_loader = CommunitySummaryLoader()
+    reducer = IntermidateAnswerGenerator(llm=llm)
+    final_reducer = FinalAnswerReducer(llm =llm)
 
+    chunked_summaries = summary_loader.load_all_summaries()
+    intermidate_answers = await reducer.get_intermidate_answer(question=question, chunks=chunked_summaries)
+    answer = await final_reducer.reduce_answers(question=question, intermediate_answers=intermidate_answers)
+    return answer
