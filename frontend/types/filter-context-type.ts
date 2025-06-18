@@ -15,6 +15,7 @@ export interface FilterContextType {
   setSelectedEdgeTypes: (types: string[]) => void;
   dateRangeFilter: DateRangeFilter;
   setDateRangeFilter: Dispatch<SetStateAction<DateRangeFilter>>
-  currentData: GraphData | undefined
+  currentData: GraphData | undefined;
   setCurrentData: (data: GraphData | undefined) => void;
+  filteredData: GraphData | undefined;
 }

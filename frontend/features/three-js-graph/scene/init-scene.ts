@@ -21,7 +21,7 @@ export function initScene(
     edgeSize: number,
     graph: GraphData,
     scene: THREE.Scene,
-){
+): ResizeObserver | undefined{
     const currentContainer = container.current;
 
     if (!currentContainer) return;
@@ -56,6 +56,27 @@ export function initScene(
       zoom,
     );
   }
+  const observer = new ResizeObserver(() => {
+    if ( !cameraRef.current || !rendererRef.current) return;
+
+    const width = currentContainer.clientWidth;
+    const height = currentContainer.clientHeight;
+
+    cameraRef.current.aspect = width / height;
+    cameraRef.current.updateProjectionMatrix();
+
+    rendererRef.current.setSize(width, height);
+  });
+
+  observer.observe(currentContainer);
+
+  const width = currentContainer.clientWidth;
+  const height = currentContainer.clientHeight;
+
+  cameraRef.current.aspect = width / height;
+  cameraRef.current.updateProjectionMatrix();
+  rendererRef.current.setSize(width, height);
+
   initGraphMesh(
     edgeMeshRef,
     nodeMeshRef,
@@ -67,4 +88,6 @@ export function initScene(
     edgeSize,
     nodeSize,
   );
+
+  return observer;
 }

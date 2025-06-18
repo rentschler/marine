@@ -16,6 +16,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   });
 
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
+  const [filteredData, setFilteredData] = useState<GraphData | undefined>(undefined);
+
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,8 +28,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          startDate: dateRangeFilter.dateRangeA?.toISOString(),
-          endDate: dateRangeFilter.dateRangeB?.toISOString(),
+          startDate: dateRangeFilter.dateRangeA?.toString(),
+          endDate: dateRangeFilter.dateRangeB?.toString(),
         };
 
         const response = await fetch('/api/filter', {
@@ -55,6 +57,36 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     fetchData();
   }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, dateRangeFilter]);
 
+  useEffect(() => {
+    if (!currentData) {
+      setFilteredData(undefined);
+      return;
+    }
+
+    const filteredNodes = currentData.nodes.filter((node) => {
+      if (!node.timestamp) return false;
+      if (!dateRangeFilter.dateRangeA) return true;
+
+      const nodeDate = new Date(node.timestamp);
+      const startDate = dateRangeFilter.dateRangeA[0];
+      const endDate = dateRangeFilter.dateRangeA[1];
+
+      return nodeDate >= startDate && nodeDate <= endDate;
+    });
+
+
+    const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
+    const filteredLinks = currentData.links.filter(
+      (link) => filteredNodeIds.has(link.source) || filteredNodeIds.has(link.target)
+    );
+
+    setFilteredData({
+      ...currentData,
+      nodes: filteredNodes,
+      links: filteredLinks,
+    });
+  }, [currentData, dateRangeFilter]);
+
   return (
     <FilterContext.Provider
       value={{
@@ -68,6 +100,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setDateRangeFilter,
         currentData,
         setCurrentData,
+        filteredData,
       }}
     >
       {children}
