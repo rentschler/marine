@@ -2,9 +2,9 @@ from typing import Dict, List, Tuple, Union
 import networkx as nx
 import os, json
 
-from nl_querying.utils.llm import LLM
+from nl_querying.utils.llm.llm import LLM
 from nl_querying.indexing.find_communities.community_descriptor.community_descriptor import CommunityDescriptor
-from nl_querying.indexing.summarize_communities.models.summary import Summary
+from nl_querying.indexing.summarize_communities.models.summary import Finding, Summary
 from nl_querying.indexing.find_communities.models.community import Community
 from nl_querying.indexing.prompts.community_summary_prompt import community_summary_prompt
 
@@ -134,9 +134,16 @@ class CommunitySummarizer:
                 summary=summary_json.get("summary"),
                 rating=summary_json.get("rating"),
                 rating_explanation=summary_json.get("rating explanation"),
-                findings=summary_json.get("findings"),
+                findings=[
+                    Finding(
+                        summary=finding.get("summary"),
+                        explanation=finding.get("explanation")
+                    )
+                    for finding in summary_json.get("findings", [])
+                ],
                 nodes=self.community_descriptor.extract_nodes_from_community(community=community)
             )
+
             self._save_community_summary(community_id=community_id, summary=summary_obj, folder_path=folder_path)
             return summary_obj
         except Exception as e:

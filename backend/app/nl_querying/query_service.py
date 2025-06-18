@@ -4,7 +4,7 @@ import os
 from fastapi import WebSocket
 
 
-from nl_querying.utils.llm import LLM
+from nl_querying.utils.llm.llm import LLM
 from nl_querying.query_utils import Entities, PathResult, clean_json_string, construct_answer_graph
 from nl_querying.init_graph import Neo4JGraph
 

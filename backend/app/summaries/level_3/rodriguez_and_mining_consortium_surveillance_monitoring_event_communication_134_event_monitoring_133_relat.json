@@ -18,7 +18,7 @@
     },
     {
       "summary": "Surveillance reporting communications indicating ongoing monitoring",
-      "exclusion": "The communication sent by Miranda on October 2, 2040, encapsulates findings from the surveillance and conveys essential information about Rodriguez\u2019s connections to unauthorized mining operations. Such detailed reporting assists in painting a comprehensive picture of activities that could contravene environmental protections and enables timely responses to mitigate potential impacts. [Data: Communication (Event_Communication_134), Relationship_Suspicious_74 -[]-> Event_Communication_134]"
+      "explanation": "The communication sent by Miranda on October 2, 2040, encapsulates findings from the surveillance and conveys essential information about Rodriguez\u2019s connections to unauthorized mining operations. Such detailed reporting assists in painting a comprehensive picture of activities that could contravene environmental protections and enables timely responses to mitigate potential impacts. [Data: Communication (Event_Communication_134), Relationship_Suspicious_74 -[]-> Event_Communication_134]"
     },
     {
       "summary": "Implications of identified surveillance activity",
