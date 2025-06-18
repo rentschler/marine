@@ -1,11 +1,10 @@
 'use client';
 
 import { DateRangeFilter, FilterContextType } from '@/types/filter-context-type';
-import { GraphData } from '@/types/graph-types';
+import { GraphData, LinkType, NodeType } from '@/types/graph-types';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
-
 
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [selectedNodeTypes, setSelectedNodeTypes] = useState<string[]>([]);
@@ -17,10 +16,44 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   });
 
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log(selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes);
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
+    const fetchData = async () => {
+      try {
+        const filterBody = {
+          minDegree: selectedNodeDegrees?.[0] ?? 0,
+          maxDegree: selectedNodeDegrees?.[1] ?? 1000,
+          nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
+          edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
+          startDate: dateRangeFilter.dateRangeA?.toISOString(),
+          endDate: dateRangeFilter.dateRangeB?.toISOString(),
+        };
+
+        const response = await fetch('/api/filter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(filterBody),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch filtered graph data');
+        }
+
+        const data: GraphData = await response.json();
+        setCurrentData(data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching filtered graph data:', error);
+        setError('Failed to fetch filtered graph data');
+        setCurrentData(undefined);
+      }
+    };
+
+    fetchData();
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, dateRangeFilter]);
 
   return (
     <FilterContext.Provider

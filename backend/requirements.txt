@@ -15,3 +15,4 @@ igraph
 openai
 uvicorn[standard]
 websockets
+scipy

@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { TabNode } from 'flexlayout-react';
 import { VisType, LayoutType } from '@/types/vis-type';
 import { ChatUI } from '@/features/chat/chat-ui';
+import { GraphScene } from '@/features/three-js-graph/graph-scene';
 
 const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
   ssr: false,
@@ -26,7 +27,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
 
     switch (component) {
       case VisType.GRAPH:
-        return <GraphWrapper currentNode={node} layout={layout as LayoutType} />;
+        return <GraphScene/>;
       case VisType.FILTERS:
         return <FilterDashboard />;
       case VisType.TIMELINE:

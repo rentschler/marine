@@ -62,8 +62,8 @@ export interface Node {
   authority_level?: null | string;
   coordination_type?: null | string;
   operational_role?: null | string;
-  x?: number;
-  y?: number;
+  x: number;
+  y: number;
 }
 
 export enum SubsetType {
