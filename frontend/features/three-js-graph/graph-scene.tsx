@@ -7,6 +7,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { initScene } from "./scene/init-scene";
 import { Spinner } from "@heroui/react";
 import { GraphLegend } from "./graph-legend/graph-legend";
+import { NodeTooltip, NodeTooltipProps } from "./graph-mesh/node-tooltip";
 
 interface GraphSceneProps{
     showFilteredData: boolean;
@@ -40,6 +41,15 @@ export function GraphScene({showFilteredData}: GraphSceneProps){
     const [nodeSize, setNodeSize] = useState<number>(10);
     const zoom = 2500;
 
+    const [tooltipState, setTooltipState] = useState<NodeTooltipProps>({
+        visible: false,
+        label: "",
+        x: 0,
+        y: 0,
+    });
+    const nodeDataRef = useRef<{ label: string }[]>([]);
+
+
     useEffect(() => {
         if (!data) {
             setLoading(true);
@@ -62,6 +72,8 @@ export function GraphScene({showFilteredData}: GraphSceneProps){
             edgeSize,
             data,
             scene,
+            nodeDataRef,
+            setTooltipState
         );
 
         const animate = () => {
@@ -77,8 +89,10 @@ export function GraphScene({showFilteredData}: GraphSceneProps){
 
         setLoading(false); 
         if (observer)
-            return () => observer.disconnect();
-
+            return () =>{
+            observer.disconnect();
+            container.current?.removeEventListener("mousemove", mouseMoveListener);
+        } 
         }, [data]);
 
 
@@ -91,11 +105,21 @@ export function GraphScene({showFilteredData}: GraphSceneProps){
         ) : (
             <div className="h-full w-full relative">
                 <div ref={container} className="h-full w-full absolute inset-0 m-2" />
-                <div className="absolute bottom-0 right-0 z-[100]">
+                <div className="absolute bottom-[5%] right-[5%] z-[100]">
                     <GraphLegend />
                 </div>
+                <NodeTooltip
+                    label={tooltipState.label}
+                    visible={tooltipState.visible}
+                    x={tooltipState.x}
+                    y={tooltipState.y}
+                />
             </div>
         )}
     </div>
     );
+}
+
+function mouseMoveListener(this: HTMLDivElement, ev: MouseEvent) {
+    throw new Error("Function not implemented.");
 }

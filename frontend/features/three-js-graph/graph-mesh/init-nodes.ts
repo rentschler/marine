@@ -4,6 +4,8 @@ import { GraphData, Node } from "@/types/graph-types";
 import * as THREE from "three";
 import { SubTypeColorMap } from "./node-subtype-colormap";
 
+
+
 export function getNodes(
   height: number,
   width: number,
@@ -32,15 +34,19 @@ export function getNodes(
   const dummy = new THREE.Object3D();
   const color = new THREE.Color();
 
+  const nodeData: {position: THREE.Vector3, label: string}[] = [];
+
   for (let i = 0; i < nodes.length; i++) {
     const node: Node = nodes[i];
     const nodeSubType = node.sub_type
 
-    dummy.position.set(
+    const position = new THREE.Vector3(
       node.x * scaleFactor,
       node.y * scaleFactor,
       0,
-    );
+    )
+
+    dummy.position.copy(position);
 
     dummy.updateMatrix();
     nodeMesh.setMatrixAt(i, dummy.matrix);
@@ -48,10 +54,46 @@ export function getNodes(
     const hex = SubTypeColorMap[nodeSubType];
     color.set(hex);
     nodeMesh.setColorAt(i, color);
+
+    nodeData.push({
+      position,
+      label: getNodeLabel(node),
+    });
+
   }
 
   nodeMesh.instanceMatrix.needsUpdate = true;
   nodeMesh.instanceColor!.needsUpdate = true;
 
-  return nodeMesh;
+  return { nodeMesh, nodeData };
 }
+
+export function getNodeLabel(node: Node): string {
+  const ignoreKeys = new Set(["x", "y", "id"]);
+  const parts: string[] = [];
+
+  Object.entries(node).forEach(([key, value]) => {
+    if (ignoreKeys.has(key)) return;
+    if (value === undefined || value === null || value === "") return;
+
+    let displayValue: string;
+
+    if (value instanceof Date) {
+      displayValue = value.toISOString().split("T")[0];
+    } else if (typeof value === "object") {
+      const json = JSON.stringify(value);
+      displayValue = json.length > 50 ? json.slice(0, 50) + "..." : json;
+    } else {
+      displayValue = String(value);
+    }
+
+    const formattedKey = key.replace(/_/g, " ");
+    const capitalizedKey = formattedKey.charAt(0).toUpperCase() + formattedKey.slice(1);
+
+    const label = `${capitalizedKey}: ${displayValue}`;
+    parts.push(label);
+  });
+
+  return parts.join("\n");
+}
+

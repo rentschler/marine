@@ -17,6 +17,7 @@ export function initGraphMesh(
     graph: GraphData,
     edgeSize: number,
     nodeSize: number,
+    nodeDataRef: MutableRefObject<{ label: string }[]>,
 ){
     if (edgeMeshRef.current) {
     scene.remove(edgeMeshRef.current as THREE.InstancedMesh);
@@ -34,7 +35,8 @@ export function initGraphMesh(
 
   if (nodeMeshRef.current)
     scene.remove(nodeMeshRef.current as THREE.InstancedMesh);
-  const nodeMesh = getNodes(
+
+  const { nodeMesh, nodeData } = getNodes(
     containerHeight,
     containerWidth,
     graph,
@@ -43,4 +45,6 @@ export function initGraphMesh(
 
   scene.add(nodeMesh);
   nodeMeshRef.current = nodeMesh;
+
+  nodeDataRef.current = nodeData;
 }

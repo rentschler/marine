@@ -6,6 +6,8 @@ import { MutableRefObject } from "react";
 import { GraphData } from "@/types/graph-types";
 import { getCamera, getCustomControls, getRenderer } from "./controls";
 import { initGraphMesh } from "../graph-mesh/init-graph-mesh";
+import { handleMouseMove } from "./handel-mouse-move";
+import { NodeTooltipProps } from "../graph-mesh/node-tooltip";
 
 
 export function initScene(
@@ -21,6 +23,8 @@ export function initScene(
     edgeSize: number,
     graph: GraphData,
     scene: THREE.Scene,
+    nodeDataRef: MutableRefObject<{ label: string }[]>,
+    setTooltipState: (value: NodeTooltipProps) => void,
 ): ResizeObserver | undefined{
     const currentContainer = container.current;
 
@@ -69,6 +73,17 @@ export function initScene(
   });
 
   observer.observe(currentContainer);
+  const mouseMoveListener = (event: MouseEvent) =>
+    handleMouseMove({
+      event,
+      renderer: rendererRef.current,
+      camera: cameraRef.current,
+      nodeMesh: nodeMeshRef.current,
+      nodeData: nodeDataRef.current,
+      setTooltipState,
+    });
+
+  currentContainer.addEventListener("mousemove", mouseMoveListener);
 
   const width = currentContainer.clientWidth;
   const height = currentContainer.clientHeight;
@@ -87,6 +102,7 @@ export function initScene(
     graph,
     edgeSize,
     nodeSize,
+    nodeDataRef,
   );
 
   return observer;
