@@ -25,7 +25,9 @@ export function initScene(
     scene: THREE.Scene,
     nodeDataRef: MutableRefObject<{ label: string }[]>,
     setTooltipState: (value: NodeTooltipProps) => void,
-): ResizeObserver | undefined{
+    mouse: THREE.Vector2,
+    raycaster: THREE.Raycaster,
+){
     const currentContainer = container.current;
 
     if (!currentContainer) return;
@@ -81,6 +83,8 @@ export function initScene(
       nodeMesh: nodeMeshRef.current,
       nodeData: nodeDataRef.current,
       setTooltipState,
+      mouse,
+      raycaster,
     });
 
   currentContainer.addEventListener("mousemove", mouseMoveListener);
@@ -105,5 +109,5 @@ export function initScene(
     nodeDataRef,
   );
 
-  return observer;
+  return { observer, mouseMoveListener};
 }

@@ -16,3 +16,5 @@ openai
 uvicorn[standard]
 websockets
 scipy
+graphviz
+pygraphviz

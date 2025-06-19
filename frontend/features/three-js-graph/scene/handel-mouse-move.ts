@@ -10,10 +10,9 @@ interface MouseMoveParams {
   nodeMesh: THREE.InstancedMesh | null;
   nodeData: { label: string }[] | null;
   setTooltipState: (state: NodeTooltipProps) => void;
+  mouse: THREE.Vector2;
+  raycaster: THREE.Raycaster;
 }
-
-const mouse = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
 
 export function handleMouseMove({
   event,
@@ -22,6 +21,9 @@ export function handleMouseMove({
   nodeMesh,
   nodeData,
   setTooltipState,
+  mouse,
+  raycaster
+
 }: MouseMoveParams) {
   if (!renderer || !camera || !nodeMesh) return;
 

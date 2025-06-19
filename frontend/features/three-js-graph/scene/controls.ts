@@ -1,7 +1,6 @@
 "use client";
 
 import * as THREE from "three";
-import { MutableRefObject } from "react";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 

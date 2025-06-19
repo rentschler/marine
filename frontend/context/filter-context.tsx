@@ -28,8 +28,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          startDate: dateRangeFilter.dateRangeA?.toString(),
-          endDate: dateRangeFilter.dateRangeB?.toString(),
+          startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(), 
+          endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
         };
 
         const response = await fetch('/api/filter', {

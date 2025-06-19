@@ -20,7 +20,7 @@ export function NodeTooltip(props: NodeTooltipProps) {
       style={{
         position: "fixed",
         left: x,
-        top: y + 10,
+        top: y - 20,
         transform: "translate(-50%, 10px)",
         zIndex: 1000,
         pointerEvents: "none",
