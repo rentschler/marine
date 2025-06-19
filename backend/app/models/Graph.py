@@ -24,6 +24,7 @@ class NodeType(str, Enum):
     Entity = "Entity"
     Event = "Event"
     Relationship = "Relationship"
+    Missing = "MISSING"
 
 class SubType(str, Enum):
     AccessPermission = "AccessPermission"

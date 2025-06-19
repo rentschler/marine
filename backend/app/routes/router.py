@@ -51,9 +51,9 @@ async def start_up():
             if node_count == 0:
                 print("Laoding graph in DB...")
                 G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
-                G = await indexing_service.add_graph_communities(graph=G)
+                #G = await indexing_service.add_graph_communities(graph=G)
 
-                pos = nx.nx_agraph.graphviz_layout(G, prog="neato") 
+                pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp") 
                 pos = nx.rescale_layout_dict(pos)
 
                 nodes = list(G.nodes(data=True))

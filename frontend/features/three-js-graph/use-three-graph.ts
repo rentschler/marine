@@ -26,7 +26,6 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
   const edgeSize = 1;
   const zoom = 2500;
 
-  const [loading, setLoading] = useState(true);
   const [tooltipState, setTooltipState] = useState({
     visible: false,
     label: "",
@@ -38,7 +37,6 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
 
   useEffect(() => {
     if (!containerRef?.current || !data || (data.nodes.length == 0)) {
-      setLoading(true);
       return;
     }
 
@@ -88,7 +86,6 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
     };
     animate();
 
-    setLoading(false);
 
     return () => {
       observer?.disconnect();
@@ -123,7 +120,6 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
   }, [highLightedNodes, highLightedEdges]);
 
   return {
-    loading,
     tooltipState,
   };
 };

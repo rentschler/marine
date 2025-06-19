@@ -18,7 +18,6 @@ export function GraphScene({ showFilteredData }: GraphSceneProps) {
   const { filteredData, currentData } = useFilterContext();
   const data = showFilteredData ? filteredData : currentData;
 
-  // 💡 Beobachte Größe & Sichtbarkeit mit ResizeObserver
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -35,21 +34,19 @@ export function GraphScene({ showFilteredData }: GraphSceneProps) {
   }, []);
 
   const {
-    loading,
     tooltipState
-  } = useThreeGraph(ready ? containerRef : null, data);  // 💡 erst wenn sichtbar
-
+  } = useThreeGraph(ready ? containerRef : null, data); 
   return (
     <div className="h-full w-full relative">
       <div ref={containerRef} className="h-full w-full absolute inset-0 m-2 z-0" />
 
-      {(!ready || loading) && (
+      {(!ready) && (
         <div className="h-full w-full flex items-center justify-center absolute inset-0 z-10 bg-white bg-opacity-80">
           <Spinner />
         </div>
       )}
 
-      {ready && !loading && (
+      {ready && (
         <>
           <div className="absolute bottom-[5%] right-[5%] z-[100]">
             <GraphLegend />

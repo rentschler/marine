@@ -1,13 +1,13 @@
 from collections import defaultdict
 from models.Graph import EDefault, Graph, GraphData, Link, Node
 from models.filter_request_body import FilterRequestBody
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def build_edge_filters(filters: FilterRequestBody) -> str:
     conditions = []
     if filters.edgeTypes:
         type_list = ", ".join(f"'{t}'" for t in filters.edgeTypes)
-        conditions.append(f"r.type IN [{type_list}]")
+        conditions.append(f"type(r) IN [{type_list}]")
     return " AND ".join(conditions) if conditions else "true"
 
 def build_node_date_filter(filters: FilterRequestBody) -> str:
@@ -94,13 +94,12 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             node_ids.add(r.element_id)
     
     links_dict = {}
-    connected_node_ids = set()
     
     if len(filters.edgeTypes) > 0:
         edge_filter = build_edge_filters(filters)
 
         edge_query = f"""
-            MATCH (a)-[r]->(b)
+            MATCH (a)-[r]-(b)
             WHERE elementId(a) IN $node_ids AND elementId(b) IN $node_ids AND ({edge_filter})
             RETURN DISTINCT r, a, b
         """
@@ -123,12 +122,7 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
 
     links = list(links_dict.values())
 
-    for link in links:
-        connected_node_ids.add(link.source)
-        connected_node_ids.add(link.target)
-
     nodes = list(nodes_dict.values())
-    nodes = [node for node in nodes if node.id in connected_node_ids]
 
     # Get nodes with timestamps
     nodes_with_timestamps = [node for node in nodes if hasattr(node, "timestamp") and node.timestamp is not None]
