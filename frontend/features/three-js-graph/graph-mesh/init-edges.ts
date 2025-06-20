@@ -1,6 +1,6 @@
 "use client";
 
-import { GraphData, Node, Link } from "@/types/graph-types";
+import { GraphData, Node, Link, SubType } from "@/types/graph-types";
 import * as THREE from "three";
 import { LinkTypeColorMap } from "./edge-subtype-colormap";
 
@@ -14,9 +14,9 @@ export function getEdges(
   const nodes: Node[] = graph.nodes;
   const edges: Link[] = graph.links;
 
-  const nodeMap: Record<string, { x: number; y: number }> = {};
+  const nodeMap: Record<string, { x: number; y: number; sub_type: string }> = {};
   nodes.forEach((node) => {
-    nodeMap[node.id] = { x: node.x, y: node.y };
+    nodeMap[node.id] = { x: node.x, y: node.y, sub_type: node.sub_type};
   });
 
   const lineGeometry = new THREE.PlaneGeometry(1, edgeSize);
@@ -68,9 +68,25 @@ export function getEdges(
 
     // ----- Arrow head -----
     const norm = Math.sqrt(dx * dx + dy * dy);
-    const arrowLength = arrowSize; 
-    const arrowOffsetX = (dx / norm) * (nodeSize);
-    const arrowOffsetY = (dy / norm) * (nodeSize);
+    const nodeSubType = target.sub_type;
+    let arrowOffsetX = (dx / norm) * (nodeSize);
+    let arrowOffsetY = (dy / norm) * (nodeSize);
+    if (nodeSubType == SubType.Location){
+        arrowOffsetX = (dx / norm) * (nodeSize * 3);
+        arrowOffsetY = (dy / norm) * (nodeSize * 3);
+      } else if (nodeSubType == SubType.Person){
+        arrowOffsetX = (dx / norm) * (nodeSize * 4);
+        arrowOffsetY = (dy / norm) * (nodeSize * 4);
+      } else if (nodeSubType == SubType.Vessel){
+        arrowOffsetX = (dx / norm) * (nodeSize * 3);
+        arrowOffsetY = (dy / norm) * (nodeSize * 3);
+      }else if (nodeSubType == SubType.Organization){
+        arrowOffsetX = (dx / norm) * (nodeSize * 4);
+        arrowOffsetY = (dy / norm) * (nodeSize * 4);
+      }else if (nodeSubType == SubType.Group){
+        arrowOffsetX = (dx / norm) * (nodeSize * 4);
+        arrowOffsetY = (dy / norm) * (nodeSize * 4);
+      }
 
     arrowObject.scale.set(1, 1, 1);
     arrowObject.position.set(endX - arrowOffsetX, endY - arrowOffsetY, 0);

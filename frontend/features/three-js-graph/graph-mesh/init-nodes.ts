@@ -1,6 +1,6 @@
 "use client";
 
-import { GraphData, Node } from "@/types/graph-types";
+import { GraphData, Node, SubType } from "@/types/graph-types";
 import * as THREE from "three";
 import { SubTypeColorMap } from "./node-subtype-colormap";
 
@@ -39,6 +39,20 @@ export function getNodes(
   for (let i = 0; i < nodes.length; i++) {
     const node: Node = nodes[i];
     const nodeSubType = node.sub_type
+
+    if (nodeSubType == SubType.Location){
+      dummy.scale.set(3, 3, 1)
+    } else if (nodeSubType == SubType.Person){
+      dummy.scale.set(4, 4, 1)
+    } else if (nodeSubType == SubType.Vessel){
+      dummy.scale.set(3, 3, 1)
+    }else if (nodeSubType == SubType.Organization){
+      dummy.scale.set(4, 4, 1)
+    }else if (nodeSubType == SubType.Group){
+      dummy.scale.set(4, 4, 1)
+    } else{
+      dummy.scale.set(1, 1, 1)
+    }
 
     const position = new THREE.Vector3(
       node.x * scaleFactor,

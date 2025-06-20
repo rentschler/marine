@@ -1,5 +1,5 @@
 
-import { GraphData, Link } from "@/types/graph-types";
+import { GraphData, Link, SubType } from "@/types/graph-types";
 import * as THREE from "three";
 import { LinkTypeColorMap } from "./edge-subtype-colormap";
 
@@ -17,9 +17,9 @@ export function updateEdgeMesh(
   const nodes = graph.nodes;
   const edges = graph.links;
 
-  const nodeMap: Record<string, { x: number; y: number }> = {};
+  const nodeMap: Record<string, { x: number; y: number; sub_type: string }> = {};
   nodes.forEach((node) => {
-    nodeMap[node.id] = { x: node.x, y: node.y };
+    nodeMap[node.id] = { x: node.x, y: node.y, sub_type: node.sub_type};
   });
 
   const maxDimension = Math.max(height, width);
@@ -69,15 +69,50 @@ export function updateEdgeMesh(
     // --- Update arrow head ---
     const norm = length;
     arrowObject.rotation.set(0, 0, angle);
+    const nodeSubType = target.sub_type;
+
     if (highlightedSet.has(edgeKey) || highlightedSet.has(reverseKey)) {
-      const arrowOffsetX = (dx / norm) * (nodeSize * 2);
-      const arrowOffsetY = (dy / norm) * (nodeSize * 2);
+      let arrowOffsetX = (dx / norm) * (nodeSize * 2);
+      let arrowOffsetY = (dy / norm) * (nodeSize * 2);
+
+      if (nodeSubType == SubType.Location){
+        arrowOffsetX = (dx / norm) * (nodeSize * 6);
+        arrowOffsetY = (dy / norm) * (nodeSize * 6);
+      } else if (nodeSubType == SubType.Person){
+        arrowOffsetX = (dx / norm) * (nodeSize * 8);
+        arrowOffsetY = (dy / norm) * (nodeSize * 8);
+      } else if (nodeSubType == SubType.Vessel){
+        arrowOffsetX = (dx / norm) * (nodeSize * 6);
+        arrowOffsetY = (dy / norm) * (nodeSize * 6);
+      }else if (nodeSubType == SubType.Organization){
+        arrowOffsetX = (dx / norm) * (nodeSize * 8);
+        arrowOffsetY = (dy / norm) * (nodeSize * 8);
+      }else if (nodeSubType == SubType.Group){
+        arrowOffsetX = (dx / norm) * (nodeSize * 8);
+        arrowOffsetY = (dy / norm) * (nodeSize * 8);
+      }
 
       arrowObject.position.set(endX - arrowOffsetX, endY - arrowOffsetY, 0);
       arrowObject.scale.set(2, 2, 1);
     } else {
-      const arrowOffsetX = (dx / norm) * nodeSize;
-      const arrowOffsetY = (dy / norm) * nodeSize;
+      let arrowOffsetX = (dx / norm) * nodeSize;
+      let arrowOffsetY = (dy / norm) * nodeSize;
+      if (nodeSubType == SubType.Location){
+        arrowOffsetX = (dx / norm) * (nodeSize * 3);
+        arrowOffsetY = (dy / norm) * (nodeSize * 3);
+      } else if (nodeSubType == SubType.Person){
+        arrowOffsetX = (dx / norm) * (nodeSize * 4);
+        arrowOffsetY = (dy / norm) * (nodeSize * 4);
+      } else if (nodeSubType == SubType.Vessel){
+        arrowOffsetX = (dx / norm) * (nodeSize * 3);
+        arrowOffsetY = (dy / norm) * (nodeSize * 3);
+      }else if (nodeSubType == SubType.Organization){
+        arrowOffsetX = (dx / norm) * (nodeSize * 4);
+        arrowOffsetY = (dy / norm) * (nodeSize * 4);
+      }else if (nodeSubType == SubType.Group){
+        arrowOffsetX = (dx / norm) * (nodeSize * 4);
+        arrowOffsetY = (dy / norm) * (nodeSize * 4);
+      }
 
       arrowObject.position.set(endX - arrowOffsetX, endY - arrowOffsetY, 0);
       arrowObject.scale.set(1, 1, 1);

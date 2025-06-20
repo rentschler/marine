@@ -2,6 +2,7 @@ from collections import defaultdict
 from models.Graph import EDefault, Graph, GraphData, Link, Node
 from models.filter_request_body import FilterRequestBody
 from datetime import datetime
+import networkx as nx
 
 def build_edge_filters(filters: FilterRequestBody) -> str:
     conditions = []
@@ -80,7 +81,7 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
 
     if filters.nodeTypes and "Relationship" in filters.nodeTypes:
         relationship_query = f"""
-            MATCH (c)-[]-(r)
+            MATCH (c)-[]->(r)
             WHERE c.type = "Event" AND r.type = "Relationship"
             AND elementId(c) IN $event_ids
             RETURN DISTINCT r
@@ -94,12 +95,13 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             node_ids.add(r.element_id)
     
     links_dict = {}
+    connected_node_ids = set()
     
     if len(filters.edgeTypes) > 0:
         edge_filter = build_edge_filters(filters)
 
         edge_query = f"""
-            MATCH (a)-[r]-(b)
+            MATCH (a)-[r]->(b)
             WHERE elementId(a) IN $node_ids AND elementId(b) IN $node_ids AND ({edge_filter})
             RETURN DISTINCT r, a, b
         """
@@ -121,9 +123,27 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             )
 
     links = list(links_dict.values())
+    for link in links:
+        connected_node_ids.add(link.source)
+        connected_node_ids.add(link.target)
 
     nodes = list(nodes_dict.values())
+    nodes = [node for node in nodes if node.id in connected_node_ids]
 
+
+    """
+    if nodes and links:
+        G = nx.DiGraph()
+        for node in nodes:
+            G.add_node(node.id)
+        for link in links:
+            G.add_edge(link.source, link.target)
+        pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp") 
+        pos = nx.rescale_layout_dict(pos)
+        for node in nodes:
+            if node.id in pos:
+                node.x, node.y = pos[node.id]
+    """
     # Get nodes with timestamps
     nodes_with_timestamps = [node for node in nodes if hasattr(node, "timestamp") and node.timestamp is not None]
 
