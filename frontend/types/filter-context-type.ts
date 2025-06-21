@@ -1,9 +1,11 @@
-import { GraphData } from "./graph-types";
+import { GraphData, SubsetType } from "./graph-types";
 import { Dispatch, SetStateAction } from "react";
 
 export interface DateRangeFilter {
   dateRangeA?: [Date, Date];
   dateRangeB?: [Date, Date];
+  subsetFilter: SubsetType;
+  neighboorNodes: boolean;
 }
 
 export interface FilterContextType {

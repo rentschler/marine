@@ -27,6 +27,11 @@ export function initGraphMesh(
   }
   const { edgeMesh, arrowMesh } = getEdges(containerHeight, containerWidth, graph, edgeSize, nodeSize);
 
+  if (!edgeMesh || !arrowMesh) {
+    console.error("Failed to create edge or arrow mesh");
+    return;
+  }
+  
   scene.add(edgeMesh);
   edgeMeshRef.current = edgeMesh;
 

@@ -120,7 +120,9 @@ async def get_diff_graph(session, filters: DiffRequestBody):
     merged_nodes = {}
     for node_id, node in nodesA.items():
         merged_nodes[node_id] = node
-        merged_nodes[node_id].subset = "A"
+        if filters.startDateB:
+            # if the second thime filter does not exist, skip the annotation
+            merged_nodes[node_id].subset = "A"
     for node_id, node in nodesB.items():
         if node_id in merged_nodes:
             merged_nodes[node_id].subset = "A∩B"
@@ -129,7 +131,7 @@ async def get_diff_graph(session, filters: DiffRequestBody):
             merged_nodes[node_id].subset = "B"
 
     # 4. Optionally filter by subset
-    if filters.subsetFilter:
+    if filters.subsetFilter and filters.subsetFilter != "A∪B":
         merged_nodes = {
             nid: n
             for nid, n in merged_nodes.items()
@@ -164,28 +166,58 @@ async def get_diff_graph(session, filters: DiffRequestBody):
     # 7. Fetch edges where source or target is in merged_node_ids
     links_dict = {}
     connected_node_ids = set()
+    
+    # 7.1 only return nodes where the timestamp is within the specified range
+    if not filters.neighboorNodes:
+        if filters.edgeTypes and len(filters.edgeTypes) > 0:
+            edge_filter = build_edge_filters(filters)
 
-    if filters.edgeTypes and len(filters.edgeTypes) > 0:
-        edge_filter = build_edge_filters(filters)
+            edge_query = f"""
+                MATCH (a)-[r]->(b)
+                WHERE (a.id IN $node_ids AND b.id IN $node_ids) AND ({edge_filter})
+                RETURN DISTINCT r, a, b
+            """
+            link_result = await session.run(edge_query, node_ids=list(merged_node_ids))
+            async for record in link_result:
+                r = record["r"]
+                source_id = record["a"].get("id")
+                target_id = record["b"].get("id")
+                key = (source_id, target_id)
+                links_dict[key] = Link(
+                    id=r.get("id"),
+                    source=source_id,
+                    target=target_id,
+                    type=r.get("type"),
+                    is_inferred=r.get("is_inferred", False),
+                )
+    # 7.2 return nodes within the specified range, and add their neighbors (to include the enteties not only the event nodes)
+    else:
+        if filters.edgeTypes and len(filters.edgeTypes) > 0:
+            edge_filter = build_edge_filters(filters)
 
-        edge_query = f"""
-            MATCH (a)-[r]->(b)
-            WHERE (a.id IN $node_ids AND b.id IN $node_ids) AND ({edge_filter})
-            RETURN DISTINCT r, a, b
-        """
-        link_result = await session.run(edge_query, node_ids=list(merged_node_ids))
-        async for record in link_result:
-            r = record["r"]
-            source_id = record["a"].get("id")
-            target_id = record["b"].get("id")
-            key = (source_id, target_id)
-            links_dict[key] = Link(
-                id=r.get("id"),
-                source=source_id,
-                target=target_id,
-                type=r.get("type"),
-                is_inferred=r.get("is_inferred", False),
-            )
+            edge_query = f"""
+                MATCH (a)-[r]->(b)
+                WHERE (a.id IN $node_ids OR b.id IN $node_ids) AND ({edge_filter})
+                RETURN DISTINCT r, a, b
+            """
+            link_result = await session.run(edge_query, node_ids=list(merged_node_ids))
+            async for record in link_result:
+                r = record["r"]
+                source_id = record["a"].get("id")
+                target_id = record["b"].get("id")
+                key = (source_id, target_id)
+                links_dict[key] = Link(
+                    id=r.get("id"),
+                    source=source_id,
+                    target=target_id,
+                    type=r.get("type"),
+                    is_inferred=r.get("is_inferred", False),
+                )
+                # add node if not already in merged_nodes
+                if source_id not in merged_nodes:
+                    merged_nodes[source_id] = record["a"]
+                elif target_id not in merged_nodes:
+                    merged_nodes[target_id] = record["b"]
 
     # 8. Prepare final node and edge lists
     nodes = list(merged_nodes.values())

@@ -13,6 +13,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>({
     dateRangeA: undefined,
     dateRangeB: undefined,
+    subsetFilter: SubsetType.A_UNION_B, 
+    neighboorNodes: false
   });
 
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
@@ -69,7 +71,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           endDateA: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
           startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),
           endDateB: dateRangeFilter.dateRangeB?.[1]?.toISOString(),
-          // subsetFilter: SubsetType.A
+          subsetFilter: dateRangeFilter.subsetFilter,
+          neighboorNodes: dateRangeFilter.neighboorNodes,
         };
 
         const response = await fetch('/api/diff', {

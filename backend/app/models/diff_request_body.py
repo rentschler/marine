@@ -19,4 +19,5 @@ class DiffRequestBody(BaseModel):
     endDateB: Optional[str] = None
     # Optional: filter for subset (A, B, A_INTERSECT_B, etc.)
     subsetFilter: Optional[str] = None
+    neighboorNodes: Optional[bool] = False
 
