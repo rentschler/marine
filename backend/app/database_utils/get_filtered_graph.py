@@ -15,18 +15,12 @@ def build_node_date_filter(filters: FilterRequestBody) -> str:
     if not filters.startDate or not filters.endDate:
         return "true"
 
-    # Convert ISO 8601 format to datetime objects
-    start_date = datetime.fromisoformat(filters.startDate.replace('Z', '+00:00'))
-    end_date = datetime.fromisoformat(filters.endDate.replace('Z', '+00:00'))
-
-    # Format to match Neo4j's timestamp format: 'YYYY-MM-DD HH:MM:SS'
-    start_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
-    end_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
-    print("start_str", start_str)
-    print("end_str", end_str)
+    # Parse as local time (no timezone conversion)
+    start_date = datetime.fromisoformat(filters.startDate).isoformat()
+    end_date = datetime.fromisoformat(filters.endDate).isoformat()
 
     # Return a clause that can be added to a Cypher WHERE condition
-    return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_str}' AND c.timestamp < '{end_str}')"
+    return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_date}' AND c.timestamp < '{end_date}')"
 
 async def get_filtered_graph(session, filters: FilterRequestBody):
     nodes_dict = {}

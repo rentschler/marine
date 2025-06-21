@@ -1,7 +1,7 @@
 'use client';
 
 import { DateRangeFilter, FilterContextType } from '@/types/filter-context-type';
-import { GraphData, LinkType, NodeType } from '@/types/graph-types';
+import { GraphData, LinkType, NodeType, SubType } from '@/types/graph-types';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -28,8 +28,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(), 
-          endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
+          // startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
+          // endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
         };
 
         const response = await fetch('/api/filter', {
@@ -55,37 +55,44 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, dateRangeFilter]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
 
   useEffect(() => {
-    if (!currentData) {
-      setFilteredData(undefined);
-      return;
-    }
+    const fetchData = async () => {
+      try {
+        const filterBody = {
+          minDegree: 0,
+          maxDegree: 1000,
+          nodeTypes: Object.values(NodeType),
+          edgeTypes: Object.values(LinkType),
+          startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
+          endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
+        };
 
-    const filteredNodes = currentData.nodes.filter((node) => {
-      if (!node.timestamp) return false;
-      if (!dateRangeFilter.dateRangeA) return true;
+        const response = await fetch('/api/filter', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(filterBody),
+        });
 
-      const nodeDate = new Date(node.timestamp);
-      const startDate = dateRangeFilter.dateRangeA[0];
-      const endDate = dateRangeFilter.dateRangeA[1];
+        if (!response.ok) {
+          throw new Error('Failed to fetch filtered graph data');
+        }
 
-      return nodeDate >= startDate && nodeDate <= endDate;
-    });
+        const data: GraphData = await response.json();
+        setFilteredData(data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching filtered graph data:', error);
+        setError('Failed to fetch filtered graph data');
+        setFilteredData(undefined);
+      }
+    };
 
-
-    const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
-    const filteredLinks = currentData.links.filter(
-      (link) => filteredNodeIds.has(link.source) || filteredNodeIds.has(link.target)
-    );
-
-    setFilteredData({
-      ...currentData,
-      nodes: filteredNodes,
-      links: filteredLinks,
-    });
-  }, [currentData, dateRangeFilter]);
+    fetchData();
+  }, [dateRangeFilter]);
 
   return (
     <FilterContext.Provider
