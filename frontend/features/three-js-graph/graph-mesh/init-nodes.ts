@@ -1,6 +1,6 @@
 "use client";
 
-import { GraphData, Node, SubType } from "@/types/graph-types";
+import { GraphData, Node, SubsetType, SubType } from "@/types/graph-types";
 import * as THREE from "three";
 import { SubTypeColorMap } from "./node-subtype-colormap";
 
@@ -21,7 +21,7 @@ export function getNodes(
   const scaleFactor = maxDimension;
 
   const nodeMaterial = new THREE.MeshBasicMaterial({
-    color: 0x987f00,
+    color: 0xaaaaaa,
     side: THREE.DoubleSide,
   });
 
@@ -66,7 +66,9 @@ export function getNodes(
     nodeMesh.setMatrixAt(i, dummy.matrix);
 
     const hex = SubTypeColorMap[nodeSubType];
-    color.set(hex);
+        let colorHex =  node.subset === SubsetType.A ? '#ff0000' : node.subset === SubsetType.B ? '#00ff00' : node.subset === SubsetType.A_INTERSECT_B ? '#aaaaaa' : hex;
+
+    color.set(colorHex);
     nodeMesh.setColorAt(i, color);
 
     nodeData.push({

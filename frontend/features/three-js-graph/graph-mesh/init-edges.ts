@@ -14,6 +14,11 @@ export function getEdges(
   const nodes: Node[] = graph.nodes;
   const edges: Link[] = graph.links;
 
+  if (!edges || edges.length === 0) {
+    // Return empty meshes or nulls to avoid crashes
+    return { edgeMesh: null, arrowMesh: null };
+  }
+
   const nodeMap: Record<string, { x: number; y: number; sub_type: string }> = {};
   nodes.forEach((node) => {
     nodeMap[node.id] = { x: node.x, y: node.y, sub_type: node.sub_type};

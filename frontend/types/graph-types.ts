@@ -64,6 +64,7 @@ export interface Node {
   operational_role?: null | string;
   x: number;
   y: number;
+  subset?: SubsetType;
 }
 
 export enum SubsetType {
