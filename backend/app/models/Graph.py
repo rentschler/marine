@@ -125,6 +125,7 @@ class Node(BaseModel):
     authority_level: Optional[str] = None
     coordination_type: Optional[str] = None
     operational_role: Optional[str] = None
+    subset: Optional[str] = None
 
 class Graph(BaseModel):
     mode: str

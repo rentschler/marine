@@ -2,6 +2,8 @@ from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
 from nl_querying.init_llm import LLM
 from database_utils.get_filtered_graph import get_filtered_graph
+from database_utils.get_diff_graph import get_diff_graph
+from models.diff_request_body import DiffRequestBody
 from models.filter_request_body import FilterRequestBody
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
@@ -99,15 +101,18 @@ async def filter_graph(request: FilterRequestBody):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/graph-data-timestamps")
-async def graph_with_timestamps():
+    
+    
+@router.post("/diff")
+async def diff_graph(request: DiffRequestBody):
     try:
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
-                graph = await get_graph_with_timestamps(session)
+                graph = await get_diff_graph(session, request)
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
+
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/graph-data-timestamps")
@@ -119,6 +124,16 @@ async def graph_with_timestamps():
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# @router.get("/graph-data-timestamps")
+# async def graph_with_timestamps():
+#     try:
+#         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+#             async with driver.session() as session:
+#                 graph = await get_graph_with_timestamps(session)
+#                 return graph.model_dump(exclude_unset=True, exclude_none=True)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @router.websocket("/ws/nl-query")
 async def websocket_nl_query(websocket: WebSocket):
