@@ -17,7 +17,7 @@ const Barchart = ({
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
-    console.log('barchart data', data);
+    // console.log('barchart data', data);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;

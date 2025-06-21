@@ -61,17 +61,20 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     if (isAnimating) {
       animationInterval = setInterval(() => {
         setCurrentTimeStep((prev) => {
-          const next = (prev + 1) % numberBins;
-          // Update the time range in the filter context
+          //  get the next time step that contains data
+          let nextStep = (prev + 1) % numberBins;
+          while (currentData && currentData[nextStep]?.count === 0) {
+            nextStep = (nextStep + 1) % numberBins;
+          } // Update the time range in the filter context
           if (currentData) {
-            const bin = currentData[next];
+            const bin = currentData[nextStep];
             console.log('timerange updated', bin.start, bin.end);
             setDateRangeFilter({
               dateRangeA: [bin.start, bin.end],
               dateRangeB: undefined,
             });
           }
-          return next;
+          return nextStep;
         });
       }, 3000);
     }
@@ -180,12 +183,12 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
           return obj;
         });
 
-        console.log('aggregatedArray', aggregatedArray);
+        // console.log('aggregatedArray', aggregatedArray);
 
         // stack the data using the subtype and the day
         const series = d3.stack().keys(groups).order(d3.stackOrderDescending)(aggregatedArray);
 
-        console.log('series', series);
+        // console.log('series', series);
         setCurrentStackedData({
           data: series,
           bars: binIndices.map((i) => new Date(minDate.getTime() + i * binSize).toString()),
@@ -325,7 +328,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
 
         <Divider orientation="vertical" className="h-8" />
         <Tooltip content="Change the bin size for the bar chart">
-            <div style={{ maxWidth: 200, minWidth: 120, width: '100%'}}>
+          <div style={{ maxWidth: 200, minWidth: 120, width: '100%' }}>
             {/* <span className="text-sm font-medium text-gray-700 mr-2">Bins</span> */}
             <Slider
               label="#Bins"
@@ -337,7 +340,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
               size="sm"
               step={1}
             />
-            </div>
+          </div>
         </Tooltip>
       </div>
       <div className="flex flex-col gap-2">
@@ -347,7 +350,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             bars={currentStackedData?.bars}
             segments={currentStackedData?.segments}
             numberOfBins={numberOfBins}
-            dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height) }}
+            dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
@@ -356,7 +359,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
           <BarChart
             data={currentData}
             numberOfBins={numberOfBins}
-            dimensions={{ ...dimensions, height: (dimensions.height - navBarDimensions.height) }}
+            dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
