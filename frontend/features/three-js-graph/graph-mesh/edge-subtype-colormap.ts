@@ -5,4 +5,5 @@ export const LinkTypeColorMap: Record<LinkType, string> = {
   [LinkType.Received]: "#377eb8",
   [LinkType.Sent]: "#4daf4a",
   [LinkType.Missing]: "#999999",
+  [LinkType.Communication]: "#000000",
 };

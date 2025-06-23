@@ -19,6 +19,9 @@ class Link(BaseModel):
     source: str | int
     target: str | int
     type: Optional[str] = None
+    content: Optional[str] = None
+    is_collapsed: Optional[bool] = False
+    message: Optional[str] = None
 
 class NodeType(str, Enum):
     Entity = "Entity"

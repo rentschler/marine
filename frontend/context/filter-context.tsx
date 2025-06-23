@@ -30,6 +30,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
+          collapseComms: true,
           // startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
           // endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
         };

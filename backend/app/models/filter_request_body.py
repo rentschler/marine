@@ -9,3 +9,4 @@ class FilterRequestBody(BaseModel):
     edgeTypes: Optional[List[str]] = None
     startDate: Optional[str] = None
     endDate: Optional[str] = None
+    collapseComms: Optional[bool] = False

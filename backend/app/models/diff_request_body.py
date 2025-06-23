@@ -20,4 +20,5 @@ class DiffRequestBody(BaseModel):
     # Optional: filter for subset (A, B, A_INTERSECT_B, etc.)
     subsetFilter: Optional[str] = None
     neighboorNodes: Optional[bool] = False
+    collapseComms: Optional[bool] = False
 

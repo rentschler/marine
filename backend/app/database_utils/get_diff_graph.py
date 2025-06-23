@@ -240,10 +240,11 @@ async def get_diff_graph(session, filters: DiffRequestBody):
         name="Knowledge Graph",
     )
 
-    return GraphData(
+    graph = GraphData(
         directed=True,
         multigraph=False,
         graph=graph_meta,
         nodes=nodes,
         links=links,
     )
+    return graph

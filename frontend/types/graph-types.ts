@@ -28,6 +28,7 @@ export enum LinkType {
   Received = 'received',
   Sent = 'sent',
   Missing = 'MISSING',
+  Communication = 'Communication',
 }
 
 export interface Node {

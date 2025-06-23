@@ -1,3 +1,4 @@
+from database_utils.turn_communication_into_edge import turn_communication_into_edge
 from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
 from nl_querying.init_llm import LLM
@@ -96,6 +97,9 @@ async def filter_graph(request: FilterRequestBody):
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
                 graph = await get_filtered_graph(session, request)
+                if request.collapseComms:
+                    print("Collapsing communication nodes into edges...")
+                    graph = turn_communication_into_edge(graph)
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
 
     except Exception as e:
@@ -109,6 +113,9 @@ async def diff_graph(request: DiffRequestBody):
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
                 graph = await get_diff_graph(session, request)
+                if request.collapseComms:
+                    print("Collapsing communication nodes into edges...")
+                    graph = turn_communication_into_edge(graph)
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
 
     except Exception as e:

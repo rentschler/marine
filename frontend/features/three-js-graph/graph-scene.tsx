@@ -23,19 +23,23 @@ export function GraphScene({
 
   const { filteredData, currentData } = useFilterContext();
   const data = showFilteredData ? filteredData : currentData;
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
 
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
+      console.log(`Container resized: width=${width}, height=${height}`);
+      
       if (width > 0 && height > 0) {
+        setDimensions({ width, height });
         setReady(true);
       }
     });
+    if(containerRef.current) {
+      observer.observe(containerRef.current) 
+    }
 
-    observer.observe(container);
     return () => observer.disconnect();
   }, []);
 
