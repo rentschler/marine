@@ -174,8 +174,38 @@ export function FilterDashboard() {
             />
             <label htmlFor='neighboorNodesSwitch' className="text-sm font-medium text-gray-700">Include Neighbor Nodes in Diff Graph</label>
           </div>
-
-
+          <Divider />
+          {/* toggle dateRangeFilter.collapseComms */}
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="checkbox"
+              id="collapseCommsSwitch"
+              checked={dateRangeFilter.collapseComms}
+              onChange={(e) =>
+                setDateRangeFilter((prev) => ({
+                  ...prev,
+                  neighboorNodes: e.target.checked? true : prev.neighboorNodes,// ensure neighboorNodes is true if collapseComms is true
+                  collapseComms: e.target.checked,
+                }))
+              }
+            />
+            <label htmlFor='collapseCommsSwitch' className="text-sm font-medium text-gray-700">Collapse Communication Edges</label>
+          </div>
+          {/* toggle dateRangeFilter.collapseComms */}
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="checkbox"
+              id="recalculateLayoutSwitch"
+              checked={dateRangeFilter.recalculateLayout}
+              onChange={(e) =>
+                setDateRangeFilter((prev) => ({
+                  ...prev,
+                  recalculateLayout: e.target.checked,
+                }))
+              }
+            />
+            <label htmlFor='recalculateLayoutSwitch' className="text-sm font-medium text-gray-700">Recalculate Layout</label>
+          </div>
           {/* end */}
         </div>
       )}

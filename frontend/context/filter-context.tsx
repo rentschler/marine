@@ -3,6 +3,7 @@
 import { DateRangeFilter, FilterContextType } from '@/types/filter-context-type';
 import { GraphData, LinkType, NodeType, SubsetType, SubType } from '@/types/graph-types';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { receiveMessageOnPort } from 'worker_threads';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
@@ -13,8 +14,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>({
     dateRangeA: undefined,
     dateRangeB: undefined,
-    subsetFilter: SubsetType.A_UNION_B, 
-    neighboorNodes: false
+    subsetFilter: SubsetType.A_UNION_B,
+    neighboorNodes: false,
+    collapseComms: true,
   });
 
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
@@ -30,7 +32,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          collapseComms: true,
+          collapseComms: dateRangeFilter.collapseComms,
+          recalculateLayout: dateRangeFilter.recalculateLayout ?? false,
+
           // startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
           // endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
         };
@@ -58,7 +62,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, dateRangeFilter.collapseComms, dateRangeFilter.recalculateLayout]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +78,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           endDateB: dateRangeFilter.dateRangeB?.[1]?.toISOString(),
           subsetFilter: dateRangeFilter.subsetFilter,
           neighboorNodes: dateRangeFilter.neighboorNodes,
+          collapseComms: dateRangeFilter.collapseComms,
+          recalculateLayout: dateRangeFilter.recalculateLayout ?? false,
         };
 
         const response = await fetch('/api/diff', {

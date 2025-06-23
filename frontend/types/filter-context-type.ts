@@ -6,6 +6,8 @@ export interface DateRangeFilter {
   dateRangeB?: [Date, Date];
   subsetFilter: SubsetType;
   neighboorNodes: boolean;
+  collapseComms: boolean;
+  recalculateLayout?: boolean;
 }
 
 export interface FilterContextType {
