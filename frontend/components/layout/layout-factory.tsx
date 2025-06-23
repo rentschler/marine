@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { TabNode } from 'flexlayout-react';
 import { VisType, LayoutType } from '@/types/vis-type';
 import { ChatUI } from '@/features/chat/chat-ui';
+import { GraphScene } from '@/features/three-js-graph/graph-scene';
 
 const GraphWrapper = dynamic(() => import('@/features/graph/graph-wrapper'), {
   ssr: false,
@@ -26,7 +27,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
 
     switch (component) {
       case VisType.GRAPH:
-        return <GraphWrapper currentNode={node} layout={layout as LayoutType} />;
+        return <GraphScene showFilteredData={false} defaultShowNodes={false}/>;
       case VisType.FILTERS:
         return <FilterDashboard />;
       case VisType.TIMELINE:
@@ -36,7 +37,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
       case VisType.PLACEHOLDER:
         return <div className="w-full h-full bg-gray-100">Placeholder</div>;
       case VisType.DAILY_GRAPH:
-        return <DailyGraphWrapper currentNode={node} layout={layout as LayoutType} id={node.getId()} />;
+        return <GraphScene showFilteredData={true} defaultShowEdges={false} defaultShowNodes={false}/>;
       case VisType.DIFF_GRAPH:
         return <DiffGraphWrapper currentNode={node} id={node.getId()} />;
       case VisType.RAG_GRAPH:

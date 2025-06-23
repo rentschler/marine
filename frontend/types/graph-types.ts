@@ -27,7 +27,8 @@ export enum LinkType {
   EvidenceFor = 'evidence_for',
   Received = 'received',
   Sent = 'sent',
-  Null = 'null',
+  Missing = 'MISSING',
+  Communication = 'Communication',
 }
 
 export interface Node {
@@ -62,8 +63,9 @@ export interface Node {
   authority_level?: null | string;
   coordination_type?: null | string;
   operational_role?: null | string;
-  x?: number;
-  y?: number;
+  x: number;
+  y: number;
+  subset?: SubsetType;
 }
 
 export enum SubsetType {

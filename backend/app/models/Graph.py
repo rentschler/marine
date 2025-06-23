@@ -19,11 +19,15 @@ class Link(BaseModel):
     source: str | int
     target: str | int
     type: Optional[str] = None
+    content: Optional[str] = None
+    is_collapsed: Optional[bool] = False
+    message: Optional[str] = None
 
 class NodeType(str, Enum):
     Entity = "Entity"
     Event = "Event"
     Relationship = "Relationship"
+    Missing = "MISSING"
 
 class SubType(str, Enum):
     AccessPermission = "AccessPermission"
@@ -124,6 +128,7 @@ class Node(BaseModel):
     authority_level: Optional[str] = None
     coordination_type: Optional[str] = None
     operational_role: Optional[str] = None
+    subset: Optional[str] = None
 
 class Graph(BaseModel):
     mode: str

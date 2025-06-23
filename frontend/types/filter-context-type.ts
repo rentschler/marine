@@ -1,9 +1,13 @@
-import { GraphData } from "./graph-types";
+import { GraphData, SubsetType } from "./graph-types";
 import { Dispatch, SetStateAction } from "react";
 
 export interface DateRangeFilter {
   dateRangeA?: [Date, Date];
   dateRangeB?: [Date, Date];
+  subsetFilter: SubsetType;
+  neighboorNodes: boolean;
+  collapseComms: boolean;
+  recalculateLayout?: boolean;
 }
 
 export interface FilterContextType {
@@ -15,6 +19,7 @@ export interface FilterContextType {
   setSelectedEdgeTypes: (types: string[]) => void;
   dateRangeFilter: DateRangeFilter;
   setDateRangeFilter: Dispatch<SetStateAction<DateRangeFilter>>
-  currentData: GraphData | undefined
+  currentData: GraphData | undefined;
   setCurrentData: (data: GraphData | undefined) => void;
+  filteredData: GraphData | undefined;
 }

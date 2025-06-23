@@ -1,0 +1,16 @@
+type LegendItemProps = {
+  color: string;
+  label: string;
+};
+
+export function LegendItem({ color, label }: LegendItemProps) {
+  return (
+    <div className="flex items-center space-x-2 mb-1 gap-2">
+      <div
+        style={{ backgroundColor: color }}
+        className="w-4 h-4 rounded-sm border border-gray-300"
+      />
+      <span className="text-xs">{label}</span>
+    </div>
+  );
+}

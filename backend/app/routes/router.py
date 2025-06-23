@@ -1,7 +1,10 @@
+from database_utils.turn_communication_into_edge import turn_communication_into_edge
 from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
 from nl_querying.init_llm import LLM
 from database_utils.get_filtered_graph import get_filtered_graph
+from database_utils.get_diff_graph import get_diff_graph
+from models.diff_request_body import DiffRequestBody
 from models.filter_request_body import FilterRequestBody
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
@@ -51,9 +54,9 @@ async def start_up():
             if node_count == 0:
                 print("Laoding graph in DB...")
                 G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
-                G = await indexing_service.add_graph_communities(graph=G)
+                #G = await indexing_service.add_graph_communities(graph=G)
 
-                pos = nx.forceatlas2_layout(G)
+                pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp") 
                 pos = nx.rescale_layout_dict(pos)
 
                 nodes = list(G.nodes(data=True))
@@ -94,6 +97,25 @@ async def filter_graph(request: FilterRequestBody):
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
                 graph = await get_filtered_graph(session, request)
+                if request.collapseComms:
+                    print("Collapsing communication nodes into edges...")
+                    graph = turn_communication_into_edge(graph)
+                return graph.model_dump(exclude_unset=True, exclude_none=True)
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
+@router.post("/diff")
+async def diff_graph(request: DiffRequestBody):
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph = await get_diff_graph(session, request)
+                if request.collapseComms:
+                    print("Collapsing communication nodes into edges...")
+                    graph = turn_communication_into_edge(graph)
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
 
     except Exception as e:
@@ -110,15 +132,15 @@ async def graph_with_timestamps():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/graph-data-timestamps")
-async def graph_with_timestamps():
-    try:
-        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
-            async with driver.session() as session:
-                graph = await get_graph_with_timestamps(session)
-                return graph.model_dump(exclude_unset=True, exclude_none=True)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.get("/graph-data-timestamps")
+# async def graph_with_timestamps():
+#     try:
+#         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+#             async with driver.session() as session:
+#                 graph = await get_graph_with_timestamps(session)
+#                 return graph.model_dump(exclude_unset=True, exclude_none=True)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @router.websocket("/ws/nl-query")
 async def websocket_nl_query(websocket: WebSocket):

@@ -84,7 +84,7 @@ export const DiffGraph = ({ data, displaySubset, dimensions }: MyGraphProps) => 
           ...edge,
           type: 'arrow',
           label: edge.type || 'RELATION',
-          color: edgeColorScale(edge.type || LinkType.Null),
+          color: edgeColorScale(edge.type || LinkType.Missing),
         }
       );
     });
