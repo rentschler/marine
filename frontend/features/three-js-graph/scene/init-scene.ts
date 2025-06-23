@@ -12,6 +12,8 @@ import { NodeTooltipProps } from "../graph-mesh/node-tooltip";
 
 export function initScene(
     container: MutableRefObject<HTMLDivElement | null>,
+    width: number,
+    height: number, 
     cameraRef: MutableRefObject<THREE.PerspectiveCamera | null>,
     rendererRef: MutableRefObject<THREE.WebGLRenderer | null>,
     controlsRef: MutableRefObject<OrbitControls | null>,
@@ -32,8 +34,8 @@ export function initScene(
 
     if (!currentContainer) return;
 
-    const containerWidth = currentContainer.clientWidth;
-    const containerHeight = currentContainer.clientHeight;
+    const containerWidth = width;
+    const containerHeight = height;
 
     if (!cameraRef.current) {
     cameraRef.current = getCamera(containerWidth, containerHeight, zoom);
@@ -65,9 +67,6 @@ export function initScene(
   const observer = new ResizeObserver(() => {
     if ( !cameraRef.current || !rendererRef.current) return;
 
-    const width = currentContainer.clientWidth;
-    const height = currentContainer.clientHeight;
-
     cameraRef.current.aspect = width / height;
     cameraRef.current.updateProjectionMatrix();
 
@@ -89,8 +88,6 @@ export function initScene(
 
   currentContainer.addEventListener("mousemove", mouseMoveListener);
 
-  const width = currentContainer.clientWidth;
-  const height = currentContainer.clientHeight;
 
   cameraRef.current.aspect = width / height;
   cameraRef.current.updateProjectionMatrix();

@@ -63,10 +63,19 @@ export function updateNodeMesh(
         nodeObject.updateMatrix();
 
         nodeMesh.setMatrixAt(i, nodeObject.matrix);
-        const hex = node.subset === SubsetType.A ? '#ff0000' : node.subset === SubsetType.B ? '#00ff00' : node.subset === SubsetType.A_INTERSECT_B ? '#aaaaaa' : "#aaaaaa";
-        
-        color.set(hex);
-        nodeMesh.setColorAt(i, color);
+
+    const hex = SubTypeColorMap[nodeSubType];
+    let colorHex =
+      node.subset === SubsetType.A
+        ? '#ff0000'
+        : node.subset === SubsetType.B
+          ? '#00ff00'
+          : node.subset === SubsetType.A_INTERSECT_B
+            ? '#aaaaaa'
+            : hex;
+
+    color.set(node.subset ? colorHex : hex);
+    nodeMesh.setColorAt(i, color);
     }
 
     nodeMesh.instanceMatrix.needsUpdate = true;
