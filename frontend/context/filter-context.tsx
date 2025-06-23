@@ -1,7 +1,7 @@
 'use client';
 
 import { DateRangeFilter, FilterContextType } from '@/types/filter-context-type';
-import { GraphData, LinkType, NodeType, SubType } from '@/types/graph-types';
+import { GraphData, LinkType, NodeType, SubsetType, SubType } from '@/types/graph-types';
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -13,6 +13,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>({
     dateRangeA: undefined,
     dateRangeB: undefined,
+    subsetFilter: SubsetType.A_UNION_B, 
+    neighboorNodes: false
   });
 
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
@@ -65,11 +67,15 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: 1000,
           nodeTypes: Object.values(NodeType),
           edgeTypes: Object.values(LinkType),
-          startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
-          endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
+          startDateA: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
+          endDateA: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
+          startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),
+          endDateB: dateRangeFilter.dateRangeB?.[1]?.toISOString(),
+          subsetFilter: dateRangeFilter.subsetFilter,
+          neighboorNodes: dateRangeFilter.neighboorNodes,
         };
 
-        const response = await fetch('/api/filter', {
+        const response = await fetch('/api/diff', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

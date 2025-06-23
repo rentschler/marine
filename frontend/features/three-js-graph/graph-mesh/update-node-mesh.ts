@@ -1,5 +1,5 @@
 
-import { GraphData, Node, SubType } from "@/types/graph-types";
+import { GraphData, Node, SubsetType, SubType } from "@/types/graph-types";
 import * as THREE from "three";
 import { SubTypeColorMap } from "./node-subtype-colormap";
 
@@ -63,7 +63,8 @@ export function updateNodeMesh(
         nodeObject.updateMatrix();
 
         nodeMesh.setMatrixAt(i, nodeObject.matrix);
-        const hex = SubTypeColorMap[nodeSubType];
+        const hex = node.subset === SubsetType.A ? '#ff0000' : node.subset === SubsetType.B ? '#00ff00' : node.subset === SubsetType.A_INTERSECT_B ? '#aaaaaa' : "#aaaaaa";
+        
         color.set(hex);
         nodeMesh.setColorAt(i, color);
     }
