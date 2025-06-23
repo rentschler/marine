@@ -7,8 +7,9 @@ import { GraphData, Link, Node } from "@/types/graph-types";
 import { initScene } from "./scene/init-scene";
 import { selectNode } from "./scene/select-node";
 import { updateGraphMesh } from "./graph-mesh/update-graph-mesh";
+import { Dimensions } from "@/types/dimension-type";
 
-export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | null> | null, data: GraphData | undefined) => {
+export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | null> | null, dimensions: Dimensions, data: GraphData | undefined) => {
   const scene = useMemo(() => new THREE.Scene(), []);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -42,6 +43,8 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
 
     const result = initScene(
       containerRef,
+      dimensions.width,
+      dimensions.height,
       cameraRef,
       rendererRef,
       controlsRef,
@@ -100,7 +103,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       scene.clear();
 
     };
-  }, [data, containerRef?.current, scene]);
+  }, [data, containerRef?.current, scene, dimensions]);
 
   useEffect(() => {
     if (!containerRef?.current || !data  || (data.nodes.length == 0)) return;
@@ -109,8 +112,8 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       edgeMeshRef,
       nodeMeshRef,
       arrowMeshRef,
-      containerRef.current.clientHeight,
-      containerRef.current.clientWidth,
+      dimensions.height,
+      dimensions.width,
       data,
       highLightedNodes,
       highLightedEdges,

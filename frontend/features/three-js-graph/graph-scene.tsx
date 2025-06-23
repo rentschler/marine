@@ -6,44 +6,30 @@ import { NodeTooltip } from './graph-mesh/node-tooltip';
 import { useFilterContext } from '@/context/filter-context';
 import { useThreeGraph } from './use-three-graph';
 import { use, useEffect, useRef, useState } from 'react';
+import { TabNode } from 'flexlayout-react/types/model/TabNode';
 
 interface GraphSceneProps {
   showFilteredData: boolean;
   defaultShowEdges?: boolean;
   defaultShowNodes?: boolean;
+  currentNode?: TabNode;
 }
 
 export function GraphScene({
   showFilteredData,
   defaultShowEdges = true,
   defaultShowNodes = true,
+  currentNode,
 }: GraphSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
 
   const { filteredData, currentData } = useFilterContext();
   const data = showFilteredData ? filteredData : currentData;
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  useEffect(() => {
-
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      console.log(`Container resized: width=${width}, height=${height}`);
-      
-      if (width > 0 && height > 0) {
-        setDimensions({ width, height });
-        setReady(true);
-      }
-    });
-    if(containerRef.current) {
-      observer.observe(containerRef.current) 
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  const { tooltipState } = useThreeGraph(ready ? containerRef : null, data);
+  // get the dimensions of the current node
+  const dimensions = {width:currentNode?.getRect().width || 800, height: currentNode?.getRect().height || 600};
+  const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data);
   return (
     <div className="h-full w-full relative">
       <div ref={containerRef} className="h-full w-full absolute inset-0 m-2 z-0" />

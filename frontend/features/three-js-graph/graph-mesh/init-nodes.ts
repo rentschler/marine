@@ -66,9 +66,9 @@ export function getNodes(
     nodeMesh.setMatrixAt(i, dummy.matrix);
 
     const hex = SubTypeColorMap[nodeSubType];
-        let colorHex =  node.subset === SubsetType.A ? '#ff0000' : node.subset === SubsetType.B ? '#00ff00' : node.subset === SubsetType.A_INTERSECT_B ? '#aaaaaa' : hex;
+    let colorHex =  node.subset === SubsetType.A ? '#ff0000' : node.subset === SubsetType.B ? '#00ff00' : node.subset === SubsetType.A_INTERSECT_B ? '#aaaaaa' : hex;
 
-    color.set(colorHex);
+    color.set(node.subset? colorHex : hex);
     nodeMesh.setColorAt(i, color);
 
     nodeData.push({

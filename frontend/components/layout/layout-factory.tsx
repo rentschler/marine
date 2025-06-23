@@ -27,7 +27,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
 
     switch (component) {
       case VisType.GRAPH:
-        return <GraphScene showFilteredData={false} defaultShowNodes={false}/>;
+        return <GraphScene currentNode={node} showFilteredData={false} defaultShowNodes={false}/>;
       case VisType.FILTERS:
         return <FilterDashboard />;
       case VisType.TIMELINE:
@@ -37,7 +37,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
       case VisType.PLACEHOLDER:
         return <div className="w-full h-full bg-gray-100">Placeholder</div>;
       case VisType.DAILY_GRAPH:
-        return <GraphScene showFilteredData={true} defaultShowEdges={false} defaultShowNodes={false}/>;
+        return <GraphScene currentNode={node} showFilteredData={true} defaultShowEdges={false} defaultShowNodes={false}/>;
       case VisType.DIFF_GRAPH:
         return <DiffGraphWrapper currentNode={node} id={node.getId()} />;
       case VisType.RAG_GRAPH:
