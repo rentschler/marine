@@ -20,3 +20,24 @@ export interface StackedBarChartData {
   bars: string[];
   segments: string[];
 }
+
+export interface BaseChartProps {
+  numberOfBins: number;
+  dimensions: {
+    width: number;
+    height: number;
+  };
+  onSelection?: (start: Date | null, end: Date | null) => void;
+  selectionA?: [Date, Date] | null;
+  selectionB?: [Date, Date] | null;
+}
+
+export interface BarChartProps extends BaseChartProps {
+  data?: DayBin[];
+}
+
+export interface StackedBarChartProps extends BaseChartProps {
+  data?: StackedSeries;
+  bars?: string[];
+  segments?: string[];
+}

@@ -13,6 +13,7 @@ import {
 } from '@heroui/react';
 import { useFilterContext } from '@/context/filter-context';
 import * as d3 from 'd3';
+import { SubsetType } from '@/types/graph-types';
 
 export function FilterDashboard() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,8 +28,8 @@ export function FilterDashboard() {
     setSelectedNodeDegrees,
     selectedEdgeTypes,
     setSelectedEdgeTypes,
-    selectedDateRange,
-    setSelectedDateRange,
+    dateRangeFilter,
+    setDateRangeFilter,
   } = useFilterContext();
 
   useEffect(() => {
@@ -122,12 +123,90 @@ export function FilterDashboard() {
           <label className="text-sm font-medium text-gray-700">Date Range</label>
           <div className="flex flex-col gap-3 w-full">
             <label className="text-sm font-medium text-gray-700">
-              Start Date {selectedDateRange[0] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[0]) : ''}
+              Start Date{' '}
+              {dateRangeFilter.dateRangeA?.[0]
+                ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(dateRangeFilter.dateRangeA?.[0])
+                : ''}
             </label>
             <label className="text-sm font-medium text-gray-700">
-              End Date {selectedDateRange[1] ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(selectedDateRange[1]) : ''}
+              End Date{' '}
+              {dateRangeFilter.dateRangeA?.[1]
+                ? d3.timeFormat('%Y-%m-%d %H:%M (%a)')(dateRangeFilter.dateRangeA?.[1])
+                : ''}
             </label>
           </div>
+          <Divider />
+          {/* toggle diff mode (SubsetType enum) */}
+          <label className="text-sm font-medium text-gray-700">
+            Diff Graph Display Mode
+          </label>
+
+          <div className="flex flex-row gap-2">
+            {Object.values(SubsetType).map((subset) => (
+                <label key={subset} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={dateRangeFilter.subsetFilter === subset}
+                  onChange={() => {
+                  setDateRangeFilter((prev) => ({
+                    ...prev,
+                    subsetFilter: prev.subsetFilter === subset ? prev.subsetFilter : subset,
+                  }));
+                  }}
+                />
+                <span>{subset}</span>
+                </label>
+            ))}
+          </div>
+          <Divider />
+          {/* toggle dateRangeFilter.neighboorNodes */}
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="checkbox"
+              id="neighboorNodesSwitch"
+              checked={dateRangeFilter.neighboorNodes}
+              onChange={(e) =>
+                setDateRangeFilter((prev) => ({
+                  ...prev,
+                  neighboorNodes: e.target.checked,
+                }))
+              }
+            />
+            <label htmlFor='neighboorNodesSwitch' className="text-sm font-medium text-gray-700">Include Neighbor Nodes in Diff Graph</label>
+          </div>
+          <Divider />
+          {/* toggle dateRangeFilter.collapseComms */}
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="checkbox"
+              id="collapseCommsSwitch"
+              checked={dateRangeFilter.collapseComms}
+              onChange={(e) =>
+                setDateRangeFilter((prev) => ({
+                  ...prev,
+                  neighboorNodes: e.target.checked? true : prev.neighboorNodes,// ensure neighboorNodes is true if collapseComms is true
+                  collapseComms: e.target.checked,
+                }))
+              }
+            />
+            <label htmlFor='collapseCommsSwitch' className="text-sm font-medium text-gray-700">Collapse Communication Edges</label>
+          </div>
+          {/* toggle dateRangeFilter.collapseComms */}
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="checkbox"
+              id="recalculateLayoutSwitch"
+              checked={dateRangeFilter.recalculateLayout}
+              onChange={(e) =>
+                setDateRangeFilter((prev) => ({
+                  ...prev,
+                  recalculateLayout: e.target.checked,
+                }))
+              }
+            />
+            <label htmlFor='recalculateLayoutSwitch' className="text-sm font-medium text-gray-700">Recalculate Layout</label>
+          </div>
+          {/* end */}
         </div>
       )}
     </div>

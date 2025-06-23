@@ -48,6 +48,21 @@ const defaultModel = Model.fromJson({
                 name: 'Graph',
                 component: VisType.GRAPH,
               },
+              {
+                type: 'tab',
+                name: 'Graph',
+                component: VisType.GRAPH,
+              },
+              {
+                type: 'tab',
+                name: 'Graph',
+                component: VisType.GRAPH,
+              },
+              {
+                type: 'tab',
+                name: 'Graph',
+                component: VisType.GRAPH,
+              },
             ],
           },
           {
@@ -78,9 +93,14 @@ const defaultModel = Model.fromJson({
               },
               {
                 type: 'tab',
-                name: 'RAG Graph',
-                component: VisType.RAG_GRAPH,
+                name: 'Diff Graph',
+                component: VisType.DIFF_GRAPH,
               },
+              // {
+              //   type: 'tab',
+              //   name: 'RAG Graph',
+              //   component: VisType.RAG_GRAPH,
+              // },
             ],
           },
           {

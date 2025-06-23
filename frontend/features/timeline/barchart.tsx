@@ -1,23 +1,23 @@
-import { DayBin } from './time-line-types';
+import { BarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { useFilterContext } from '@/context/filter-context';
-import { Dimensions } from '@/types/dimension-type';
-interface BarchartProps {
-  data?: DayBin[];
-  numberOfBins: number;
-  dimensions: Dimensions;
-}
 
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
-const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
+const Barchart = ({
+  data,
+  numberOfBins,
+  dimensions,
+  onSelection,
+  selectionA,
+  selectionB,
+}: BarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
   const { width, height } = dimensions;
-  const { selectedDateRange, setSelectedDateRange } = useFilterContext();
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
-    console.log('barchart data', data);
+    // console.log('barchart data', data);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -39,11 +39,9 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       .text('Daily Activity Count');
 
     // scale the x axis
-    const scaleOrdinal = d3
-      .scaleBand()
-      .domain(data.map((d) => d.start.toISOString()))
-      .range([0, boundsWidth])
-      .padding(0.2);
+    const minDate = d3.min(data, (d) => d.start)!;
+    const maxDate = d3.max(data, (d) => d.end)!;
+    const scaleTime = d3.scaleTime().domain([minDate, maxDate]).range([0, boundsWidth]);
 
     // scale the y axis
     const scaleLinear = d3
@@ -59,13 +57,14 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       .enter()
       .append('rect')
       .classed('bar', true)
-      .attr('x', (d) => scaleOrdinal(d.start.toISOString()) || 0)
+      .attr('x', (d) => scaleTime(d.start))
       .attr('y', (d) => scaleLinear(d.count))
-      .attr('width', scaleOrdinal.bandwidth())
+      .attr('width', (d) => scaleTime(d.end) - scaleTime(d.start))
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
-      .attr('fill', (d) => {
-        const isSelected = d.start >= selectedDateRange?.[0] && d.end <= selectedDateRange?.[1];
-        return isSelected ? 'red' : 'steelblue';
+      .attr('fill', (d, i) => {
+        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
+        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
+        return 'steelblue';
       })
       .append('title')
       .text(
@@ -74,13 +73,8 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       );
 
     // add the axes
-    const xAxis = d3
-      .axisBottom(scaleOrdinal)
-      .tickFormat((d) => {
-        const date = new Date(d);
-        return d3.timeFormat('%Y-%m-%d %H:%M')(date);
-      })
-      .ticks(Math.min(10, data.length));
+    const xAxis = d3.axisBottom(scaleTime).ticks(Math.min(10, data.length));
+    // .tickFormat(d3.timeFormat('%Y-%m-%d %H:%M'));
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
@@ -93,12 +87,6 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
       .attr('dx', '-.8em')
       .attr('dy', '.15em')
       .attr('transform', 'rotate(-45)');
-    // .append('text')
-    // .attr('x', boundsWidth / 2)
-    // .attr('y', 35)
-    // .attr('text-anchor', 'middle')
-    // .attr('fill', 'currentColor')
-    // .text('Date');
 
     g.append('g')
       .call(yAxis)
@@ -116,37 +104,10 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
         [0, 0],
         [boundsWidth, boundsHeight],
       ])
-      .on('start brush', (event) => {
-        // console.log('event', event);
-
-        const selection = event.selection;
-        if (!selection) return;
-
-        const [x0, x1] = selection;
-        const bars = g.selectAll('.bar');
-
-        let highlightBars: any[] = [];
-
-        bars.each(function (d) {
-          const bar = d3.select(this);
-          const xMin = +bar.attr('x');
-          const xMax = xMin + scaleOrdinal.bandwidth();
-
-          // check if the bar is intersect with the selection
-          const isBrushed = x0 <= xMax && x1 >= xMin;
-          bar.attr('fill', isBrushed ? 'red' : 'steelblue');
-
-          if (isBrushed) {
-            highlightBars.push(bar.data());
-          }
-        });
-
-        // console.log('highlightBars', highlightBars);
-      })
       .on('end', (event) => {
         const selection = event.selection;
         if (!selection) {
-          setSelectedDateRange([]);
+          onSelection?.(null, null);
           return;
         }
 
@@ -155,36 +116,24 @@ const Barchart = ({ data, numberOfBins, dimensions }: BarchartProps) => {
 
         let highlightBars: any[] = [];
 
-        bars.each(function (d) {
-          const bar = d3.select(this);
-          const xMin = +bar.attr('x');
-          const xMax = xMin + scaleOrdinal.bandwidth();
-
-          // check if the bar is intersect with the selection
-          const isBrushed = x0 <= xMax && x1 >= xMin;
-
-          if (isBrushed) {
-            highlightBars.push(bar.data()[0]);
+        data.forEach((d) => {
+          const barX = scaleTime(d.start);
+          const barXEnd = scaleTime(d.end);
+          // Check if bar is within brush selection
+          if (x0 <= barXEnd && x1 >= barX) {
+            highlightBars.push(d);
           }
         });
-
-        console.log('highlightBars', highlightBars);
         const startDate = d3.min(highlightBars, (d) => d.start);
         const endDate = d3.max(highlightBars, (d) => d.end);
-
-        console.log('Selected date range:', {
-          start: startDate,
-          end: endDate,
-        });
-
-        setSelectedDateRange([startDate, endDate]);
+        onSelection?.(startDate, endDate);
       });
 
     g.call(brush);
-  }, [data, width, height]);
+  }, [data, width, height, onSelection, selectionA, selectionB]);
 
   return (
-    <div className="w-full h-full">
+    <div ref={boxRef} className="w-full h-full">
       <svg ref={svgRef}></svg>
     </div>
   );

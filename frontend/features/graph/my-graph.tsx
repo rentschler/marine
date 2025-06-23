@@ -22,7 +22,7 @@ const edgeColorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(Object.values
 interface MyGraphProps extends GraphWrapperProps {
   hoveredNode: string | null;
   setHoveredNode: (node: string | null) => void;
-  data: GraphData | null;
+  data?: GraphData;
   dimensions: Dimensions;
 }
 
