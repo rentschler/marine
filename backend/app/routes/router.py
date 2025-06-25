@@ -431,3 +431,31 @@ async def test_query(question: str):
   }]
     parsed_answer = parser.parse_llm_final_response(final_answer[0])
     return parsed_answer
+
+@router.get("/fetch-communities")
+async def fetch_communities(level: int = 2):
+    """
+    Access the precomputed communities from the app/summaries/level_{level} folder.
+    The communities are stored in JSON files, each representing a community with its nodes and edges.
+    each json includes the following fields:
+    {
+        "title": "Community Title",
+        "summary": "Community Summary",
+        "rating": number,
+        "rating explanation": "Explanation of the rating",
+        findings": [{summary, explanation
+        nodes": [Node1, Node2, ...],
+    """
+
+    try:
+        print(os.listdir('summaries'))
+        files = os.listdir(f'summaries/level_{level}')
+        communities = []
+        for file in files:
+            if file.endswith('.json'):
+                with open(f'summaries/level_{level}/{file}', 'r') as f:
+                    community_data = json.load(f)
+                    communities.append(community_data)
+        return JSONResponse(content=communities)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
