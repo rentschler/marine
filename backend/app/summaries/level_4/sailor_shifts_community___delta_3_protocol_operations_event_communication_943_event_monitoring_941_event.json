@@ -1,0 +1,26 @@
+{
+  "title": "Sailor Shifts Community & Delta-3 Protocol Operations",
+  "summary": "The community centers around the Sailor Shifts operations at the south dock and involves monitoring activities of conservation vessels under Delta-3 protocols. Key events include communication from a Remora vessel reporting preparations for Sailor Shifts, supported by surveillance data ensuring adherence to the tourism facade.",
+  "rating": 6.5,
+  "rating explanation": "The impact severity rating is moderately high due to the operational control and potential implications of maintaining active Delta-3 protocols under the guise of tourism, suggesting strategic concealment of activities.",
+  "findings": [
+    {
+      "summary": "Monitoring under Delta-3 Protocols",
+      "explanation": "Events Monitoring_Event_Monitoring_941 and Monitoring_Event_Monitoring_942 report conservation vessels being monitored under Delta-3 protocols. These protocols suggest a level of regulation that maintains a tourism facade, indicating a potentially covert operation designed to influence or control these activities without public visibility. This surveillance might have broader implications on conservation efforts if manipulated for undisclosed objectives. [Data: Monitoring (Event_Monitoring_941, Event_Monitoring_942)]"
+    },
+    {
+      "summary": "Event_Communication and Coordination of Operations",
+      "explanation": "Communication_Event_Communication_943 indicates that preparations for Sailor Shifts at the south dock are complete, as reported by a Remora vessel. This event is directly linked to Monitoring_Event_Monitoring_941 and Monitoring_Event_Monitoring_942, supporting an operational structure under Delta-3 protocols. The emphasis on waiting for final approval regarding underwater lighting placement at Nemo Reef suggests ongoing planning affecting environmental or visual aspects integral to tourism activities. [Data: Communication (Event_Communication_943), Relationships (Relationship_Operates_593)]"
+    },
+    {
+      "summary": "Operational Control through Relationship_Operates_593",
+      "exclusion": "The relationship between Operation_Operates_593 and Communication_Event_Communication_943 suggests a structured workflow ensuring all preparatory aspects of Sailor Shifts are aligned with operational requirements. As an evidence support, it reflects organized efforts to maintain appearances consistent with tourism while potentially concealing broader agendas connected to Delta-3 protocols. [Data: Relationship (Relationship_Operates_593)]"
+    }
+  ],
+  "nodes": [
+    "Event_Communication_943",
+    "Relationship_Operates_593",
+    "Event_Monitoring_941",
+    "Event_Monitoring_942"
+  ]
+}

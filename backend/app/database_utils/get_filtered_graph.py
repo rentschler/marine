@@ -89,7 +89,6 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             node_ids.add(r.element_id)
     
     links_dict = {}
-    connected_node_ids = set()
     
     if len(filters.edgeTypes) > 0:
         edge_filter = build_edge_filters(filters)
@@ -117,12 +116,14 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             )
 
     links = list(links_dict.values())
-    for link in links:
-        connected_node_ids.add(link.source)
-        connected_node_ids.add(link.target)
 
     nodes = list(nodes_dict.values())
-    nodes = [node for node in nodes if node.id in connected_node_ids]
+    #for link in links:
+    #   connected_node_ids.add(link.source)
+    #   connected_node_ids.add(link.target)
+
+    #nodes = list(nodes_dict.values())
+    #nodes = [node for node in nodes if node.id in connected_node_ids]
 
 
     """
