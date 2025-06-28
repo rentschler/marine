@@ -456,6 +456,64 @@ async def fetch_communities(level: int = 2):
                 with open(f'summaries/level_{level}/{file}', 'r') as f:
                     community_data = json.load(f)
                     communities.append(community_data)
+            
+        # query all nodes from the backend and add check if they belong to one or more communities
+        
+        return JSONResponse(content=communities)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
+    
+    
+@router.post("/fetch-graph-with-communities")
+async def fetch_graph_with_communities(request: FilterRequestBody):
+    """
+    Access the precomputed communities from the app/summaries/level_{level} folder.
+    The communities are stored in JSON files, each representing a community with its nodes and edges.
+    each json includes the following fields:
+    {
+        "title": "Community Title",
+        "summary": "Community Summary",
+        "rating": number,
+        "rating explanation": "Explanation of the rating",
+        findings": [{summary, explanation
+        nodes": [Node1, Node2, ...],
+    """
+    level = 3
+    try:
+        print(os.listdir('summaries'))
+        files = os.listdir(f'summaries/level_{level}')
+        communities = []
+        for file in files:
+            if file.endswith('.json'):
+                with open(f'summaries/level_{level}/{file}', 'r') as f:
+                    community_data = json.load(f)
+                    communities.append(community_data)
+            
+        # query all nodes from the backend and add check if they belong to one or more communities
+        try:
+            async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+                async with driver.session() as session:
+                    # request = FilterRequestBody()
+                    graph = await get_filtered_graph(session, request)
+                    nodes_per_community = {community['title']: [] for community in communities}
+                    for node in graph.nodes:
+                        node_communities = []
+                        for community in communities:
+                            if node.id in community['nodes']:
+                                node_communities.append(community['title'])
+                                nodes_per_community[community['title']].append(node)
+                        node.communities = node_communities
+                        
+                    # validate that each nodes has exactly one community
+                    for node in graph.nodes:
+                        if node.communities and len(node.communities) != 1:
+                            print(f"Node {node.id} has {len(node.communities)} communities: {node.communities}")
+
+                    return graph.model_dump(exclude_unset=True, exclude_none=True)
+        except Exception as e:
+            print(f"Error fetching graph data: {e}")
+            raise HTTPException(status_code=500, detail="Error fetching graph data")
+        
         return JSONResponse(content=communities)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")

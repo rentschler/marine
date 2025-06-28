@@ -129,6 +129,7 @@ class Node(BaseModel):
     coordination_type: Optional[str] = None
     operational_role: Optional[str] = None
     subset: Optional[str] = None
+    communities: Optional[List[str]] = None
 
 class Graph(BaseModel):
     mode: str
