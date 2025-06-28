@@ -47,22 +47,7 @@ const defaultModel = Model.fromJson({
                 type: 'tab',
                 name: 'Graph',
                 component: VisType.GRAPH,
-              },
-              {
-                type: 'tab',
-                name: 'Graph',
-                component: VisType.GRAPH,
-              },
-              {
-                type: 'tab',
-                name: 'Graph',
-                component: VisType.GRAPH,
-              },
-              {
-                type: 'tab',
-                name: 'Graph',
-                component: VisType.GRAPH,
-              },
+              }
             ],
           },
           {
