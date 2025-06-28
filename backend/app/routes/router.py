@@ -462,8 +462,34 @@ async def fetch_communities(level: int = 2):
         return JSONResponse(content=communities)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
-    
-    
+
+
+@router.get("/get-community-summaries")
+async def get_community_summaries():
+    levels = [1,2, 3, 4, 5]
+    communities_per_level = {}
+    for level in levels:
+        communities = []
+        for file in os.listdir(f"summaries/level_{level}"):
+            if file.endswith(".json"):
+                with open(f"summaries/level_{level}/{file}", "r") as f:
+                    community_data = json.load(f)
+                    
+                    # format the community data
+                    community_data['id'] = f"""{level}_{community_data['title']}"""  # remove .json and prepend level
+                    community_data['level'] = level
+                    community_data['number_of_nodes'] = len(community_data.get('nodes', []))
+                    # remove the nodes 
+                    if 'nodes' in community_data:
+                        del community_data['nodes']
+                    if 'findings' in community_data:
+                        del community_data['findings']
+                    communities.append(community_data)
+        communities_per_level[level] = communities
+
+    return JSONResponse(content=communities_per_level)
+
+
 @router.post("/fetch-graph-with-communities")
 async def fetch_graph_with_communities(request: FilterRequestBody):
     """
@@ -478,7 +504,7 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
         findings": [{summary, explanation
         nodes": [Node1, Node2, ...],
     """
-    level = 3
+    level = 4
     try:
         print(os.listdir('summaries'))
         files = os.listdir(f'summaries/level_{level}')
