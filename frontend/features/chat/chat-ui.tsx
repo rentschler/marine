@@ -2,7 +2,7 @@
 
 import { ChatInput } from "@/components/chat-input/chat-input";
 import { ChatPanel } from "@/components/chat-panel/chat-panel";
-import { Message, MessageType } from "@/types/message-type";
+import { FinalReport, Message, MessageType } from "@/types/message-type";
 import { QueryAnswerType } from "@/types/query-answer-type";
 import { useState } from "react";
 import { getQueryWebsocket } from "./web-socket";
@@ -26,19 +26,18 @@ export function ChatUI() {
       const socket = getQueryWebsocket();
 
       socket.onopen = () => {
-        socket.send(message.content);
+        socket.send(message.content as string);
       };
 
       let hasAddedStatusMessage = false;
 
       socket.onmessage = (event) => {
         try {
-          const data: QueryAnswerType = JSON.parse(event.data);
+          const data: FinalReport = JSON.parse(event.data);
 
           const finalMessage: Message = {
             type: MessageType.System,
-            content: data.answer,
-            graph: data.graph,
+            content: data,
           };
 
           setMessages((prev) => [...prev.slice(0, -1), finalMessage]);
