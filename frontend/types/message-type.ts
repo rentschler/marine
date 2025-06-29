@@ -1,22 +1,20 @@
 import { GraphData } from "./graph-types";
 
-export interface Section {
-  heading: string;
-  content: string;
-  data_nodes: string[];
-  sub_graph?: GraphData | null;
+export interface SubGraphDiscription{
+  graph: GraphData,
+  description: string,
+  llm_summary: string
 }
 
-export interface FinalReport {
-  title: string;
-  summary: string;
-  sections: Section[];
-  graph?: GraphData | null;
+export interface FinalAnswer{
+  sub_graphs: [SubGraphDiscription],
+  hole_graph: GraphData,
+  answer: string
 }
 
 export interface Message {
   type: MessageType;
-  content: FinalReport | string;
+  content: FinalAnswer | string;
 }
 
 export enum MessageType{

@@ -1,6 +1,6 @@
-import { FinalReport, Message } from "@/types/message-type";
+import { FinalAnswer, Message } from "@/types/message-type";
 
-export function finalReportToMarkdown(report: FinalReport): string {
+export function finalReportToMarkdown(report: FinalAnswer): string {
   let md = `# ${report.title}\n\n`;
   md += `**Summary:** ${report.summary}\n\n`;
 

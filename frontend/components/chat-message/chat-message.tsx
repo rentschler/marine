@@ -4,7 +4,6 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { Button } from "@heroui/react";
 import { useFilterContext } from "@/context/filter-context";
-import { finalReportToMarkdown } from "./chat-message-helper";
 
 
 export function ChatMessage(props: {
@@ -19,10 +18,10 @@ export function ChatMessage(props: {
   const contentMarkdown =
     typeof message.content === "string"
       ? message.content
-      : finalReportToMarkdown(message.content);
+      : message.content.answer;
 
   const graphData =
-    typeof message.content !== "string" ? message.content.graph : undefined;
+    typeof message.content !== "string" ? message.content.hole_graph : undefined;
 
   return (
     <div
