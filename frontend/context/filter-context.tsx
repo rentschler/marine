@@ -1,29 +1,49 @@
 'use client';
 
-import { DateRangeFilter, FilterContextType } from '@/types/filter-context-type';
-import { GraphData, LinkType, NodeType, SubsetType, SubType } from '@/types/graph-types';
+import {
+  DateRangeFilter,
+  DiffGraphOptions,
+  FilterContextType,
+  GraphOptions,
+} from '@/types/filter-context-type';
+import { GraphData, LinkType, NodeType, SubsetType } from '@/types/graph-types';
+
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { receiveMessageOnPort } from 'worker_threads';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
+
+const defaultDateRangeFilter: DateRangeFilter = {
+  dateRangeA: undefined,
+  dateRangeB: undefined,
+};
+const defaultGraphOptions: GraphOptions = {
+  neighboorNodes: true,
+  collapseComms: false,
+  recalculateLayout: false,
+};
+const defaultDiffGraphOptions: DiffGraphOptions = {
+  neighboorNodes: true,
+  collapseComms: false,
+  recalculateLayout: false,
+  subsetFilter: SubsetType.A_UNION_B,
+};
 
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [selectedNodeTypes, setSelectedNodeTypes] = useState<string[]>([]);
   const [selectedNodeDegrees, setSelectedNodeDegrees] = useState<number[]>([]);
   const [selectedEdgeTypes, setSelectedEdgeTypes] = useState<string[]>([]);
-  const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>({
-    dateRangeA: undefined,
-    dateRangeB: undefined,
-    subsetFilter: SubsetType.A_UNION_B,
-    neighboorNodes: false,
-    collapseComms: true,
-  });
-
+  const [dateRangeFilter, setDateRangeFilter] = useState<DateRangeFilter>(defaultDateRangeFilter);
+  const [graphOptions, setGraphOptions] = useState<GraphOptions>(defaultGraphOptions);
+  const [diffGraphOptions, setDiffGraphOptions] =
+    useState<DiffGraphOptions>(defaultDiffGraphOptions);
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
   const [filteredData, setFilteredData] = useState<GraphData | undefined>(undefined);
 
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Fetch data for the current graph based on selected filters.
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -32,8 +52,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          collapseComms: dateRangeFilter.collapseComms,
-          recalculateLayout: dateRangeFilter.recalculateLayout ?? false,
+          collapseComms: graphOptions.collapseComms,
+          recalculateLayout: graphOptions.recalculateLayout ?? false,
 
           // startDate: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
           // endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
@@ -62,8 +82,11 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, dateRangeFilter.collapseComms, dateRangeFilter.recalculateLayout]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, graphOptions]);
 
+  /**
+   * Fetch data for the diff graph.
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -76,10 +99,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           endDateA: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
           startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),
           endDateB: dateRangeFilter.dateRangeB?.[1]?.toISOString(),
-          subsetFilter: dateRangeFilter.subsetFilter,
-          neighboorNodes: dateRangeFilter.neighboorNodes,
-          collapseComms: dateRangeFilter.collapseComms,
-          recalculateLayout: dateRangeFilter.recalculateLayout ?? false,
+          subsetFilter: diffGraphOptions.subsetFilter,
+          neighboorNodes: diffGraphOptions.neighboorNodes,
+          collapseComms: diffGraphOptions.collapseComms,
+          recalculateLayout: diffGraphOptions.recalculateLayout ?? false,
         };
 
         const response = await fetch('/api/diff', {
@@ -105,7 +128,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     };
 
     fetchData();
-  }, [dateRangeFilter]);
+  }, [dateRangeFilter, diffGraphOptions]);
 
   return (
     <FilterContext.Provider
@@ -121,6 +144,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         currentData,
         setCurrentData,
         filteredData,
+        graphOptions,
+        setGraphOptions,
+        diffGraphOptions,
+        setDiffGraphOptions,
       }}
     >
       {children}
