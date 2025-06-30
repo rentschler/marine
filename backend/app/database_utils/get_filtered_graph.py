@@ -116,9 +116,6 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             )
 
     links = list(links_dict.values())
-    for link in links:
-        connected_node_ids.add(link.source)
-        connected_node_ids.add(link.target)
 
     nodes = list(nodes_dict.values())
     #for link in links:
