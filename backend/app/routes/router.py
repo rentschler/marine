@@ -41,7 +41,7 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
-llm = LLM(model= "gemma3:12b")
+llm = LLM(model= "phi4:latest")
 
 # services
 indexing_service = IndexingService(llm=llm)
@@ -183,7 +183,7 @@ async def websocket_nl_query(websocket: WebSocket):
         print("Error in WebSocket:", e)
         message_cache.append(Message(
                 type = MessageType.System,
-                content = "An error occurred. Please try again or enter a new query."
+                content = "result"
             ))
         await websocket.send_text(json.dumps({
             "answer": "An error occurred. Please try again or enter a new query."
