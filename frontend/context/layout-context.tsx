@@ -16,6 +16,7 @@ const defaultModel = Model.fromJson({
     borderMinSize: 100,
     tabSetEnableTabScrollbar: true,
     borderEnableTabScrollbar: true,
+    tabEnableClose: false
   },
   borders: [
     {
@@ -26,7 +27,6 @@ const defaultModel = Model.fromJson({
           type: 'tab',
           name: 'Filters',
           component: VisType.FILTERS,
-          enableClose: true,
         },
       ],
     },
@@ -47,7 +47,17 @@ const defaultModel = Model.fromJson({
                 type: 'tab',
                 name: 'Graph',
                 component: VisType.GRAPH,
-              }
+              },
+              {
+                type: 'tab',
+                name: 'Daily Graph',
+                component: VisType.DAILY_GRAPH,
+              },
+              {
+                type: 'tab',
+                name: 'Diff Graph',
+                component: VisType.DIFF_GRAPH,
+              },
             ],
           },
           {
@@ -69,28 +79,7 @@ const defaultModel = Model.fromJson({
         children: [
           {
             type: 'tabset',
-            weight: 50,
-            children: [
-              {
-                type: 'tab',
-                name: 'Daily Graph',
-                component: VisType.DAILY_GRAPH,
-              },
-              {
-                type: 'tab',
-                name: 'Diff Graph',
-                component: VisType.DIFF_GRAPH,
-              },
-              {
-                type: 'tab',
-                name: 'Community Graph',
-                component: VisType.COMMUNITY_GRAPH,
-              },
-            ],
-          },
-          {
-            type: 'tabset',
-            weight: 50,
+            weight: 100,
             children: [
               {
                 type: 'tab',
