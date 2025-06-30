@@ -8,10 +8,11 @@ import { forwardRef } from 'react';
 interface DiffGraphToolbarProps {
   graphOptions: DiffGraphOptions;
   setGraphOptions: (value: React.SetStateAction<DiffGraphOptions>) => void;
+  disabledSubsetFilter?: boolean; // Optional prop to disable subset filter checkboxes
 }
 
 const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
-  ({ graphOptions, setGraphOptions }, ref) => {
+  ({ graphOptions, setGraphOptions, disabledSubsetFilter }, ref) => {
     return (
       <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100">
         {/* tool bar */}
@@ -28,6 +29,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                       subsetFilter: prev.subsetFilter === subset ? prev.subsetFilter : subset,
                     }));
                   }}
+                  disabled={disabledSubsetFilter}
                 />
                 <span>{subset}</span>
               </label>

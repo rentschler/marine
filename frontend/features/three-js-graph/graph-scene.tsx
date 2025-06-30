@@ -26,7 +26,15 @@ export function GraphScene({
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(true);
 
-  const { filteredData, currentData, diffGraphOptions, setDiffGraphOptions, graphOptions, setGraphOptions } = useFilterContext();
+  const {
+    filteredData,
+    currentData,
+    diffGraphOptions,
+    setDiffGraphOptions,
+    graphOptions,
+    setGraphOptions,
+    dateRangeFilter,
+  } = useFilterContext();
   const data = showFilteredData ? filteredData : currentData;
 
   // get the dimensions of the current node
@@ -39,16 +47,17 @@ export function GraphScene({
   return (
     <div className="h-full w-full relative ">
       {/* toolbar for the graph */}
-      {showFilteredData ? ( 
+      {showFilteredData ? (
         <DiffGraphToolbar
           graphOptions={diffGraphOptions}
           setGraphOptions={setDiffGraphOptions}
+          disabledSubsetFilter={
+            // Disable subset filter checkboxes if the date range filter has no second range
+            dateRangeFilter && dateRangeFilter.dateRangeB === undefined
+          }
         />
       ) : (
-        <GraphToolbar
-          graphOptions={graphOptions}
-          setGraphOptions={setGraphOptions}
-        />
+        <GraphToolbar graphOptions={graphOptions} setGraphOptions={setGraphOptions} />
       )}
 
       {/* container for the 3D graph */}

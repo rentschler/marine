@@ -1,7 +1,7 @@
 'use client';
 
 import { useFilterContext } from '@/context/filter-context';
-import { GraphData } from '@/types/graph-types';
+import { GraphData, SubsetType } from '@/types/graph-types';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
@@ -43,6 +43,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     selectedEdgeTypes,
     dateRangeFilter,
     setDateRangeFilter,
+    setDiffGraphOptions,
   } = useFilterContext();
 
   // get the dimensions of the current node
@@ -88,6 +89,10 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
       dateRangeA: undefined,
       dateRangeB: undefined,
     });
+    setDiffGraphOptions((prev) => ({
+      ...prev,
+      subsetFilter: SubsetType.A_UNION_B, // Reset to default subset filter
+    }));
   }, [interactionMode]);
 
   useEffect(() => {
@@ -114,6 +119,8 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             label: d.label,
             sub_type: d.sub_type,
             id: d.id,
+            x: d.x ?? 0,
+            y: d.y ?? 0,
           };
         });
 
