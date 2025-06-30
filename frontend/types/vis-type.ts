@@ -7,6 +7,7 @@ export enum VisType {
   DAILY_GRAPH = 'daily-graph',
   RAG_GRAPH = 'rag-graph',
   DIFF_GRAPH = 'diff-graph',
+  COMMUNITY_GRAPH = 'community-graph',
 }
 
 export type LayoutType = 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | undefined; 

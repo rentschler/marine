@@ -90,30 +90,29 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
     
     links_dict = {}
     
-    if len(filters.edgeTypes) > 0:
-        edge_filter = build_edge_filters(filters)
+    edge_filter = build_edge_filters(filters)
 
-        edge_query = f"""
-            MATCH (a)-[r]->(b)
-            WHERE elementId(a) IN $node_ids AND elementId(b) IN $node_ids AND ({edge_filter})
-            RETURN DISTINCT r, a, b
-        """
+    edge_query = f"""
+        MATCH (a)-[r]->(b)
+        WHERE elementId(a) IN $node_ids AND elementId(b) IN $node_ids AND ({edge_filter})
+        RETURN DISTINCT r, a, b
+    """
 
-        link_result = await session.run(edge_query, node_ids=list(node_ids)) 
+    link_result = await session.run(edge_query, node_ids=list(node_ids)) 
 
-        async for record in link_result:
-            r = record["r"]
-            source_id = record["a"].get("id")
-            target_id = record["b"].get("id")
-            key = (source_id, target_id)
+    async for record in link_result:
+        r = record["r"]
+        source_id = record["a"].get("id")
+        target_id = record["b"].get("id")
+        key = (source_id, target_id)
 
-            links_dict[key] = Link(
-                id=r.get("id"),
-                source=source_id,
-                target=target_id,
-                type=r.get("type"),
-                is_inferred=r.get("is_inferred", False)
-            )
+        links_dict[key] = Link(
+            id=r.get("id"),
+            source=source_id,
+            target=target_id,
+            type=r.get("type"),
+            is_inferred=r.get("is_inferred", False)
+        )
 
     links = list(links_dict.values())
 

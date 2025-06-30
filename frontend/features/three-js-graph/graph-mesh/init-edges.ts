@@ -115,8 +115,12 @@ export function getEdges(
   arrowMesh.count = index;
   edgeMesh.instanceMatrix.needsUpdate = true;
   arrowMesh.instanceMatrix.needsUpdate = true;
-  edgeMesh.instanceColor!.needsUpdate = true;
-  arrowMesh.instanceColor!.needsUpdate = true;
+  if (edgeMesh.instanceColor) {
+    edgeMesh.instanceColor.needsUpdate = true;
+  }
+  if (arrowMesh.instanceColor) {
+    arrowMesh.instanceColor.needsUpdate = true;
+  }
 
   return { edgeMesh, arrowMesh };
 }

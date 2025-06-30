@@ -53,11 +53,6 @@ const defaultModel = Model.fromJson({
                 name: 'Daily Graph',
                 component: VisType.DAILY_GRAPH,
               },
-              {
-                type: 'tab',
-                name: 'Diff Graph',
-                component: VisType.DIFF_GRAPH,
-              },
             ],
           },
           {
