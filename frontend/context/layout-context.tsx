@@ -53,6 +53,11 @@ const defaultModel = Model.fromJson({
                 name: 'Daily Graph',
                 component: VisType.DAILY_GRAPH,
               },
+              {
+                type: 'tab',
+                name: 'Community Graph',
+                component: VisType.COMMUNITY_GRAPH,
+              },
             ],
           },
           {
