@@ -129,7 +129,7 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
         <GraphWrapperFetched
-          layout={'force'}
+          layout={'circlepack'}
           limit={1000}
           currentNode={currentNode}
           currentData={currentData}
