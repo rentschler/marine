@@ -103,8 +103,8 @@ export const MyGraph = ({
         x: Math.random() * 10 - 5, // Random position between -5 and 5
         y: Math.random() * 10 - 5,
         label: node.label,
-        size: 10,
-        color: nodeColorScale(node.type),
+        size: node.size || 10,
+        color: node.color ? node.color : nodeColorScale(node.type),
         data: node,
       }
       if(!assign){

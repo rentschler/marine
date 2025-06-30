@@ -488,6 +488,49 @@ async def get_community_summaries():
         communities_per_level[level] = communities
 
     return JSONResponse(content=communities_per_level)
+@router.get("/get-community-summaries-graph")
+async def get_community_summaries_graph(level: int = 2):
+    communities = []
+    for file in os.listdir(f"summaries/level_{level}"):
+        if file.endswith(".json"):
+            with open(f"summaries/level_{level}/{file}", "r") as f:
+                community_data = json.load(f)
+                
+                # format the community data
+                community_data['id'] = f"""{level}_{community_data['title']}"""  # remove .json and prepend level
+                community_data['level'] = level
+                community_data['number_of_nodes'] = len(community_data.get('nodes', []))
+                # remove the nodes 
+                if 'nodes' in community_data:
+                    del community_data['nodes']
+                if 'findings' in community_data:
+                    del community_data['findings']
+                communities.append(community_data)
+                
+                
+    # fetch graph data from the database
+    # query all nodes from the backend and add check if they belong to one or more communities
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                request = FilterRequestBody()
+                graph = await get_filtered_graph(session, request)
+    
+    
+                    # Convert the communities_per_level to a graphx graph
+                G = nx.Graph()
+                for community in communities:
+                    community_id = community['id']
+                    G.add_node(community_id, **community)
+                    # Add edges between communities if they share the same community
+                
+    except Exception as e:
+        print(f"Error fetching graph data: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching graph data")
+                
+    
+
+    return JSONResponse(content=communities_per_level)
 
 
 @router.post("/fetch-graph-with-communities")
@@ -504,7 +547,7 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
         findings": [{summary, explanation
         nodes": [Node1, Node2, ...],
     """
-    level = 4
+    level = 2
     try:
         print(os.listdir('summaries'))
         files = os.listdir(f'summaries/level_{level}')
@@ -534,7 +577,25 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
                     for node in graph.nodes:
                         if node.communities and len(node.communities) != 1:
                             print(f"Node {node.id} has {len(node.communities)} communities: {node.communities}")
-
+                            
+                    # print(f"Found {len(graph.nodes)} nodes in the graph with {len(communities)} communities")
+                    # # # calculate the centroids of each community
+                    # for community in communities:
+                    #     if community['nodes']:
+                    #         nodes = [node for node in graph.nodes if node.id in community['nodes']]
+                    #         if nodes:
+                    #             x_coords = [node.x for node in nodes]
+                    #             y_coords = [node.y for node in nodes]
+                    #             community['centroid'] = {
+                    #                 'x': sum(x_coords) / len(x_coords),
+                    #                 'y': sum(y_coords) / len(y_coords)
+                    #             }
+                    #             print(f"Community {community['title']} centroid: {community['centroid']}")
+                    #         else:
+                    #             community['centroid'] = {'x': 0, 'y': 0}
+                    #     else:
+                    #         community['centroid'] = {'x': 0, 'y': 0}
+                    
                     return graph.model_dump(exclude_unset=True, exclude_none=True)
         except Exception as e:
             print(f"Error fetching graph data: {e}")
@@ -543,3 +604,4 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
         return JSONResponse(content=communities)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
+    

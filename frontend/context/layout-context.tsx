@@ -81,11 +81,11 @@ const defaultModel = Model.fromJson({
                 name: 'Diff Graph',
                 component: VisType.DIFF_GRAPH,
               },
-              // {
-              //   type: 'tab',
-              //   name: 'RAG Graph',
-              //   component: VisType.RAG_GRAPH,
-              // },
+              {
+                type: 'tab',
+                name: 'Community Graph',
+                component: VisType.COMMUNITY_GRAPH,
+              },
             ],
           },
           {
