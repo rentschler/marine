@@ -5,35 +5,17 @@ import { DateRangeFilter, DiffGraphOptions, GraphOptions } from '@/types/filter-
 import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
 
-interface GraphSceneToolbarProps {
-  graphOptions: DiffGraphOptions;
-  setGraphOptions: (value: React.SetStateAction<DiffGraphOptions>) => void;
+interface GraphToolbarProps {
+  graphOptions: GraphOptions;
+  setGraphOptions: (value: React.SetStateAction<GraphOptions>) => void;
 }
 
-const GraphSceneToolbar = forwardRef<HTMLDivElement, GraphSceneToolbarProps>(
+const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
   ({ graphOptions, setGraphOptions }, ref) => {
     return (
       <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100">
         {/* tool bar */}
         <div className="flex flex-row items-center gap-2" style={{ zIndex: 100 }}>
-          <div className="flex flex-row gap-2">
-            {Object.values(SubsetType).map((subset) => (
-              <label key={subset} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={graphOptions.subsetFilter === subset}
-                  onChange={() => {
-                    setGraphOptions((prev) => ({
-                      ...prev,
-                      subsetFilter: prev.subsetFilter === subset ? prev.subsetFilter : subset,
-                    }));
-                  }}
-                />
-                <span>{subset}</span>
-              </label>
-            ))}
-          </div>
-          <Divider orientation="vertical" className="h-8" />
           {/* toggle dateRangeFilter.neighboorNodes */}
           <div className="flex flex-row items-center gap-2">
             <input
@@ -76,6 +58,6 @@ const GraphSceneToolbar = forwardRef<HTMLDivElement, GraphSceneToolbarProps>(
   }
 );
 
-GraphSceneToolbar.displayName = 'GraphSceneToolbar';
+GraphToolbar.displayName = 'GraphToolbar';
 
-export default GraphSceneToolbar;
+export default GraphToolbar;

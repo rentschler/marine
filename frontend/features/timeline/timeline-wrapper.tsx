@@ -8,11 +8,8 @@ import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
 import { DayBin, StackedBarChartData } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
-import { DateRangeFilter } from '@/types/filter-context-type';
-import TimelineToolbar from './timeline-toolbar';
-import { DailyGraphWrapper } from '../daily-graph/daily-graph-wrapper';
+import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
 import { useDimensions } from '@/hooks/use-dimension';
-import DiffGraphWrapper from '../diff-graph/diff-graph-wrapper';
 
 interface TimelineWrapperProps {
   numberOfBins: number;
