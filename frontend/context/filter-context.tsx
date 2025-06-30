@@ -77,8 +77,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),
           endDateB: dateRangeFilter.dateRangeB?.[1]?.toISOString(),
           subsetFilter: dateRangeFilter.subsetFilter,
-          neighboorNodes: dateRangeFilter.neighboorNodes,
-          collapseComms: dateRangeFilter.collapseComms,
+          neighboorNodes: true,
+          collapseComms: true,
           recalculateLayout: dateRangeFilter.recalculateLayout ?? false,
         };
 

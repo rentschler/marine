@@ -4,7 +4,7 @@ import { ChatInput } from "@/components/chat-input/chat-input";
 import { ChatPanel } from "@/components/chat-panel/chat-panel";
 import { FinalAnswer, Message, MessageType } from "@/types/message-type";
 import { QueryAnswerType } from "@/types/query-answer-type";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getQueryWebsocket } from "./web-socket";
 
 export function ChatUI() {
@@ -12,6 +12,24 @@ export function ChatUI() {
   const [inputText, setInputText] = useState('');
 
   const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    async function get_cached_messages() {
+      const response = await fetch("/api/get-cached-messages", {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      const data:[Message] = await response.json()
+      console.log(data)
+      if (data.length > 0){
+        setMessages(data)
+      }
+    }
+    get_cached_messages()
+  },[])
 
   async function submit() {
     setLoading(true);

@@ -1,3 +1,4 @@
+from typing import List
 from retriver.knowleadge_graph_retriver import KnowleadgeGraphRetriver
 from nl_querying.querying.reduce_to_global_answer.final_answer_parser import FinalAnswerParser
 from database_utils.turn_communication_into_edge import turn_communication_into_edge
@@ -13,6 +14,7 @@ from database_utils.get_filtered_graph import get_filtered_graph
 from database_utils.get_diff_graph import get_diff_graph
 from models.diff_request_body import DiffRequestBody
 from models.filter_request_body import FilterRequestBody
+from models.message import Message, MessageType
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
 from database_utils.get_hole_graph import get_hole_graph
@@ -39,12 +41,15 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
 
 # LLM
-llm = LLM(model= "phi4:latest")
+llm = LLM(model= "gemma3:12b")
 
 # services
 indexing_service = IndexingService(llm=llm)
 indexing_service3 = IndexingService3(llm=llm)
 query_service = QueryService(llm=llm)
+
+#Message-Cache
+message_cache: List[Message] = []
 
 router = APIRouter()
 
@@ -76,6 +81,10 @@ async def start_up():
             print("Database is ready")
     except Exception as e:
         print(f"Error during DB setup: \n {e}")
+
+@router.get("/get-cached-messages")
+async def get_cached_messages():
+    return message_cache
 
 @router.get("/graph-data")
 async def get_graph_data():
@@ -155,15 +164,27 @@ async def websocket_nl_query(websocket: WebSocket):
     await websocket.accept()
     try:
         question = await websocket.receive_text()
+        message_cache.append(Message(
+            type = MessageType.User,
+            content = question
+        ))
         await websocket.send_text("Received question...")
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             kr = KnowleadgeGraphRetriver(llm=llm, index_summary_path="retriver/index/retriever_summary.json", driver=driver)
             answer = await kr.reducer_pipeline_reporter(ws=websocket, question=question)
             result = answer.model_dump(exclude_unset=True, exclude_none=True)
+            message_cache.append(Message(
+                type = MessageType.System,
+                content = result
+            ))
 
         await websocket.send_text(json.dumps(result, default=str))
     except Exception as e:
         print("Error in WebSocket:", e)
+        message_cache.append(Message(
+                type = MessageType.System,
+                content = "An error occurred. Please try again or enter a new query."
+            ))
         await websocket.send_text(json.dumps({
             "answer": "An error occurred. Please try again or enter a new query."
         }))

@@ -76,6 +76,8 @@ class KnowleadgeGraphRetriver:
 
         ---Grounding Rules---
         Do not include anything that is not provided in the summary Object.
+        If the user ask for general information (e.g is there a person or vessel, etc.) it is important, that you include all Entity with this type,
+        so no information is lost.
         It is very important that you only include the json object in this structure and dont explain or justify, 
         because this object is used in a downstream task.
 
@@ -136,9 +138,9 @@ class KnowleadgeGraphRetriver:
         "RelationshipTypes": ["Suspicious"],
         "EventTypes": ["Enforcement", "Monitoring"]
         }}
-        Question: I think Nadia Conti covers herself with a cover name. Are there some hints for this?
+        Question: I think some Persons are covering themself with a cover name. Are there some hints for this?
         {{
-        "Persons": ["Nadia Conti", "The Intern", "The Lookout", "The Accountant", "Mrs. Money", "The Middleman", "Boss", "Small Fry"],
+        "Persons": ["Sam", "Kelly", "Nadia Conti", "Elise", "Liam Thorne", "Samantha Blake", "Davis", "Rodriguez", "Sailor Shift", "Clepper Jensen", "Miranda Jordan", "The Intern", "The Lookout", "The Accountant", "Mrs. Money", "The Middleman", "Boss", "Small Fry"],
         "Vessels": [],
         "Locations": [],
         "Groups": [],

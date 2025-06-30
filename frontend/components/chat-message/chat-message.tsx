@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { Button } from "@heroui/react";
 import { useFilterContext } from "@/context/filter-context";
+import { finalReportToMarkdown } from "./chat-message-helper";
 
 
 export function ChatMessage(props: {
@@ -18,7 +19,7 @@ export function ChatMessage(props: {
   const contentMarkdown =
     typeof message.content === "string"
       ? message.content
-      : message.content.answer;
+      : finalReportToMarkdown(message.content);
 
   const graphData =
     typeof message.content !== "string" ? message.content.hole_graph : undefined;
@@ -39,6 +40,36 @@ export function ChatMessage(props: {
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={[rehypeHighlight]}
+          components={{
+            a: ({node, href, children, ...props}) => {
+              const sectionId = href?.replace("#section-", '')
+              if (typeof(message.content) != "string"){
+                if(sectionId && message.content.sub_graphs.length > parseInt(sectionId)){
+                  return (
+                    <a
+                      {...props}
+                      href={href}
+                      onClick={(e) => {
+                        e.preventDefault(); // <--- wichtig, damit Seite nicht scrollt
+                        if (typeof message.content !== "string") {
+                          setCurrentData(message.content.sub_graphs[parseInt(sectionId)].graph);
+                        }
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        color: "blue",
+                        textDecoration: "underline",
+                      }}
+                      title={`Show Subgraph ${sectionId}`}
+                    >
+                      {children}
+                    </a>
+                  );
+
+                }
+              }
+            }
+          }}
         >
           {contentMarkdown}
         </ReactMarkdown>

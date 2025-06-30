@@ -1,26 +1,25 @@
 import { FinalAnswer, Message } from "@/types/message-type";
 
-export function finalReportToMarkdown(report: FinalAnswer): string {
-  let md = `# ${report.title}\n\n`;
-  md += `**Summary:** ${report.summary}\n\n`;
+export function finalReportToMarkdown(answer: FinalAnswer): string {
+  const replaced = answer.answer.replace(/\(see Subgraphs ([\d,\sand]+)\)/gi, (match, sectionList) => {
+    const sections = sectionList
+      .split(/,|\sand\s/)
+      .map(s => s.trim())
+      .filter(s => s !== "");
 
-  for (const section of report.sections) {
-    md += `## ${section.heading}\n\n`;
-    md += `${section.content}\n\n`;
+    const links = sections.map(sectionId => {
+      const idNum = parseInt(sectionId);
+      if (!isNaN(idNum) && idNum < answer.sub_graphs.length) {
+        return `[Subgraph ${idNum}](#section-${idNum})`;
+      } else {
+        return `Subgraph ${sectionId}`;
+      }
+    });
 
-    if (section.data_nodes.length > 0) {
-      md += `**Data Nodes:** ${section.data_nodes.join(", ")}\n\n`;
-    }
+    return `(${links.join(", ")})`;
+  });
 
-    if (section.sub_graph) {
-      md += `_This section includes a graph._\n\n`;
-    }
-  }
-
-  if (report.graph) {
-    md += `_This report includes a global graph._\n`;
-  }
-
-  return md;
+  return replaced;
 }
+
   
