@@ -59,7 +59,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           // endDate: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
         };
 
-        const response = await fetch('/api/fetch-graph-with-communities', {
+        const response = await fetch('/api/filter', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

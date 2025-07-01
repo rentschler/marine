@@ -3,21 +3,74 @@
 import { useState } from 'react';
 import {
   ControlsContainer,
-  FullScreenControl,
-  SigmaContainer,
-  ZoomControl,
 } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData } from '@/types/graph-types';
+import { GraphData, NodeType } from '@/types/graph-types';
 import '@react-sigma/core/lib/style.css';
 import '@react-sigma/graph-search/lib/style.css';
 
 import { useEffect } from 'react';
-import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
 import { TabNode } from 'flexlayout-react';
 import { GraphWrapperFetched } from '../graph/graph-wrapper_fetched';
 // import { NodeImageProgram } from '@sigma/node-image';
 import * as d3 from 'd3';
+import { Node } from '@react-sigma/graph-search';
+
+
+
+export interface Main {
+    nodes:    Node[];
+    edges:    Edge[];
+    metadata: Metadata;
+}
+
+export interface Edge {
+    source:        string;
+    target:        string;
+    weight:        number;
+    connection_id: string;
+    type:          EdgeType;
+}
+
+export enum EdgeType {
+    CommunityConnection = "CommunityConnection",
+}
+
+export interface Metadata {
+    level:            number;
+    include_findings: boolean;
+    node_count:       number;
+    edge_count:       number;
+}
+
+export interface Node {
+    id:          string;
+    title:       string;
+    level:       number;
+    description: string;
+    created_at:  Date;
+    updated_at:  Date;
+    type:        NodeType2;
+    findings:    Finding[];
+}
+
+export interface Finding {
+    id:               string;
+    content:          null;
+    type:             FindingType;
+    confidence:       number;
+    created_at:       string;
+    parent_community: string;
+}
+
+export enum FindingType {
+    Finding = "Finding",
+}
+
+export enum NodeType2 {
+    Community = "Community",
+}
+
 
 export interface DiffGraphWrapperProps {
   currentNode: TabNode;
@@ -51,7 +104,6 @@ const CommunityColorScaleD3 = d3.scaleOrdinal(d3.schemeCategory10);
 // Component that display the graph
 export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => {
   const [currentData, setCurrentData] = useState<GraphData | null>(null);
-  const [currentCommunityData, setCurrentCommunityData] = useState<CommunityData | null>(null);
   const [currentSelectedLevel, setCurrentSelectedLevel] = useState<CommunityLevels | null>(
     COMMUNITY_LEVELS[1]
   );
@@ -68,7 +120,7 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
         // query the whole graph first and apply the date filter in the frontend
         // http://localhost:8080/graph-data
 
-        const response = await fetch('/api/get-community-summaries', {
+        const response = await fetch('/api/get-community-graph?level=2&include_findings=false', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -79,10 +131,33 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
           throw new Error('Failed to fetch filtered graph data');
         }
 
-        const communities: CommunityData = await response.json();
+        const communities = await response.json() as Main;
         console.log('complete graph data:', communities);
+        
+        setCurrentData({
+          nodes: communities.nodes.map((node) => ({
+            id: node.id,
+            label: node.title,
+            size: d3_sizeScale(node.findings.length),
+            color: CommunityColorScaleD3(node.title),
+            type: NodeType.Entity,
+            sub_type: 'community',
+            level: node.level,
+            description: node.description,
+            findings: node.findings,
+            x: Math.random() * dimensions.width,
+            y: Math.random() * dimensions.height,
+          })),
+          links: [],
+          metadata: {
+            level: communities.metadata.level,
+            include_findings: communities.metadata.include_findings,
+            node_count: communities.metadata.node_count,
+            edge_count: communities.metadata.edge_count,
+          },
+        });
 
-        setCurrentCommunityData(communities);
+        // setCurrentData(communities);
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -92,26 +167,6 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (currentCommunityData && currentSelectedLevel) {
-      const communties = currentCommunityData[currentSelectedLevel];
-      const graphData: GraphData = {
-        nodes: communties.map((community) => ({
-          id: community.id,
-          label: community.title,
-          type: 'community',
-          summary: community.summary,
-          x: Math.random() * 100,
-          y: Math.random() * 100,
-          number_of_nodes: community.number_of_nodes,
-          size: d3_sizeScale(community.number_of_nodes),
-          color: CommunityColorScaleD3(community.id),
-        })),
-        links: [],
-      };
-      setCurrentData(graphData);
-    }
-  }, [currentCommunityData, currentSelectedLevel]);
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
@@ -121,7 +176,7 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
     return <div>No data available</div>;
   }
   const sigmaSettings = {
-    // defaultNodeType: 'image',
+    // NodeType: 'image',
     // nodeProgramClasses: { image: NodeImageProgram },
   };
   return (

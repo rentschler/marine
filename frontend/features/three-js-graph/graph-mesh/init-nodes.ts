@@ -58,7 +58,7 @@ export function getNodes(height: number, width: number, graph: GraphData, nodeSi
     nodeMesh.setMatrixAt(i, dummy.matrix);
 
     const colorHex = node.subset ? subsetColorScale(node.subset) : SubTypeColorMap[nodeSubType];
-    const community = node.communities && node.communities[0];
+    const community = node.community;
 
     const color = community
       ? new THREE.Color(CommunityColorScaleD3(community))

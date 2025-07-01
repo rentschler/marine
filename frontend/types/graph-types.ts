@@ -66,7 +66,7 @@ export interface Node {
   x: number;
   y: number;
   subset?: SubsetType;
-  communities?: string[]; // Communities this node belongs to
+  community?: string; // Communities this node belongs to
 }
 
 export enum SubsetType {

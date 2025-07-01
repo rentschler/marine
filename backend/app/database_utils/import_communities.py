@@ -409,4 +409,102 @@ async def get_community_connections_by_title(session, title: str, level: int = 2
             "connection_count": record["cc.connection_count"]
         })
     
-    return connections 
+    return connections
+
+
+async def get_community_graph(session, level: int = 2, include_findings: bool = True):
+    """
+    Fetch all Community nodes, their related Findings, and transform CommunityConnection nodes into edges.
+    
+    Args:
+        session: Neo4j database session
+        level: Community level to fetch
+        include_findings: Whether to include Finding nodes
+    
+    Returns:
+        Dictionary with nodes and edges for the community graph
+    """
+    # Query to get communities and their findings
+    if include_findings:
+        community_query = """
+        MATCH (c:Community {level: $level})
+        OPTIONAL MATCH (c)-[:CONTAINS_FINDING]->(f:Finding)
+        RETURN c, collect(f) as findings
+        """
+    else:
+        community_query = """
+        MATCH (c:Community {level: $level})
+        RETURN c, [] as findings
+        """
+    
+    # Query to get CommunityConnection nodes and transform them into edges
+    connection_query = """
+    MATCH (c1:Community {level: $level})-[:CONNECTED_TO]->(cc:CommunityConnection)<-[:CONNECTED_TO]-(c2:Community {level: $level})
+    WHERE c1.title < c2.title  // Avoid duplicate edges
+    RETURN c1.title as source, c2.title as target, cc.connection_count as weight, cc.id as connection_id
+    """
+    
+    # Execute queries
+    community_result = await session.run(community_query, level=level)
+    connection_result = await session.run(connection_query, level=level)
+    
+    # Process communities and findings
+    nodes = []
+    communities = {}
+    
+    async for record in community_result:
+        community = record["c"]
+        findings = record["findings"]
+        
+        # Create community node
+        community_node = {
+            "id": community["id"],
+            "title": community["title"],
+            "level": community["level"],
+            "description": community.get("description", ""),
+            "created_at": community.get("created_at", ""),
+            "updated_at": community.get("updated_at", ""),
+            "type": "Community",
+            "findings": []
+        }
+        
+        # Add findings if requested
+        if include_findings:
+            for finding in findings:
+                if finding:  # Check if finding is not None
+                    finding_node = {
+                        "id": finding["id"],
+                        "content": finding["content"],
+                        "type": finding.get("type", "Finding"),
+                        "confidence": finding.get("confidence", 1.0),
+                        "created_at": finding.get("created_at", ""),
+                        "parent_community": community["title"]
+                    }
+                    community_node["findings"].append(finding_node)
+        
+        nodes.append(community_node)
+        communities[community["title"]] = community_node
+    
+    # Process connections as edges
+    edges = []
+    async for record in connection_result:
+        edge = {
+            "source": record["source"],
+            "target": record["target"],
+            "weight": record["weight"],
+            "connection_id": record["connection_id"],
+            "type": "CommunityConnection"
+        }
+        edges.append(edge)
+        
+    
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "metadata": {
+            "level": level,
+            "include_findings": include_findings,
+            "node_count": len(nodes),
+            "edge_count": len(edges)
+        }
+    } 

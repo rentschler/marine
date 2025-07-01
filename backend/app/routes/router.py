@@ -32,7 +32,8 @@ from database_utils.import_communities import (
     get_nodes_by_community,
     delete_communities,
     get_community_connections,
-    get_community_connections_by_title
+    get_community_connections_by_title,
+    get_community_graph
 )
 from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -1027,4 +1028,26 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
         return JSONResponse(content=communities)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
+    
+@router.get("/get-community-graph")
+async def get_community_graph_endpoint(level: int = 2, include_findings: bool = True):
+    """
+    Get a community graph with nodes representing communities and edges representing connections between them.
+    CommunityConnection nodes are transformed into edges to reduce clutter.
+    
+    Args:
+        level: Community level to fetch (default: 2)
+        include_findings: Whether to include Finding nodes in the response (default: True)
+    
+    Returns:
+        JSON response with nodes (communities + optional findings) and edges (community connections)
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph_data = await get_community_graph(session, level, include_findings)
+                return JSONResponse(content=graph_data)
+    except Exception as e:
+        print(f"Error fetching community graph: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community graph: {str(e)}")
     
