@@ -25,6 +25,15 @@ from database_utils.import_nodes import import_nodes
 from database_utils.get_min_max_date import get_min_max_date
 from database_utils.get_graph_with_timestamps import get_graph_with_timestamps
 from database_utils.update_node_communities import update_node_communities
+from database_utils.import_communities import (
+    import_communities_to_database,
+    get_communities_with_nodes,
+    get_community_by_title,
+    get_nodes_by_community,
+    delete_communities,
+    get_community_connections,
+    get_community_connections_by_title
+)
 from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
@@ -766,7 +775,127 @@ async def update_database_communities(level: int = 2):
     except Exception as e:
         print(f"Error updating database with community information: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating database: {str(e)}")
-    
+
+
+@router.post("/import-communities")
+async def import_communities(level: int = 2):
+    """
+    Import level 2 communities into the database with proper graph structure.
+    This creates Community nodes, Finding nodes, and relationships between them.
+    """
+    summaries_path = f"summaries/level_{level}"
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                imported_count = await import_communities_to_database(session, level, summaries_path)
+                return {
+                    "status": "success",
+                    "message": f"Successfully imported {imported_count} communities to database",
+                    "imported_count": imported_count
+                }
+    except Exception as e:
+        print(f"Error importing communities: {e}")
+        raise HTTPException(status_code=500, detail=f"Error importing communities: {str(e)}")
+
+
+@router.get("/communities")
+async def get_communities(level: int = 2):
+    """
+    Retrieve all communities with their findings and nodes.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                communities = await get_communities_with_nodes(session, level)
+                return JSONResponse(content=communities)
+    except Exception as e:
+        print(f"Error fetching communities: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
+
+
+@router.get("/communities/{title}")
+async def get_community(title: str, level: int = 2):
+    """
+    Retrieve a specific community by title.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                community = await get_community_by_title(session, title, level)
+                if community:
+                    return JSONResponse(content=community)
+                else:
+                    raise HTTPException(status_code=404, detail=f"Community '{title}' not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching community: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community: {str(e)}")
+
+
+@router.get("/communities/{title}/nodes")
+async def get_community_nodes(title: str, level: int = 2):
+    """
+    Get all nodes that belong to a specific community.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                nodes = await get_nodes_by_community(session, title, level)
+                return JSONResponse(content=nodes)
+    except Exception as e:
+        print(f"Error fetching community nodes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community nodes: {str(e)}")
+
+
+@router.delete("/communities")
+async def delete_communities_endpoint(level: int = 2):
+    """
+    Delete all communities and their findings for a specific level.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                deleted_count = await delete_communities(session, level)
+                return {
+                    "status": "success",
+                    "message": f"Successfully deleted {deleted_count} community nodes",
+                    "deleted_count": deleted_count
+                }
+    except Exception as e:
+        print(f"Error deleting communities: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting communities: {str(e)}")
+
+
+@router.get("/community-connections")
+async def get_community_connections_endpoint(level: int = 2):
+    """
+    Get all community connections for a specific level.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                connections = await get_community_connections(session, level)
+                return JSONResponse(content=connections)
+    except Exception as e:
+        print(f"Error fetching community connections: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community connections: {str(e)}")
+
+
+@router.get("/community-connections/{title}")
+async def get_community_connections_by_title_endpoint(title: str, level: int = 2):
+    """
+    Get all connections for a specific community.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                connections = await get_community_connections_by_title(session, title, level)
+                return JSONResponse(content=connections)
+    except Exception as e:
+        print(f"Error fetching community connections: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community connections: {str(e)}")
+
 
 @router.get("/get-community-summaries")
 async def get_community_summaries():
