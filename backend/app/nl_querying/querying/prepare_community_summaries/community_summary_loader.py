@@ -10,7 +10,7 @@ class CommunitySummaryLoader:
         self.token_limit = token_limit
         self.summaries_path = summaries_path
 
-    def load_all_summaries(self) -> List[Chunk]:
+    def load_all_summaries(self) -> List[List[Chunk]]:
         all_summaries: List[List[Summary]] = []
 
         for level_name in os.listdir(self.summaries_path):
@@ -45,9 +45,9 @@ class CommunitySummaryLoader:
                             nodes=data.get("nodes")
                         )
                         summaries.append(summary_obj)
-                    except json.JSONDecodeError:
-                        print(f"Error loading Summery: {file_name}")
-                        raise json.JSONDecodeError
+                    except json.JSONDecodeError as e:
+                        print(f"Error loading Summary: {file_name}")
+                        raise e
         return summaries
     
     def _chunk_summaries(self, summaries: List[List[Summary]]) -> List[List[Chunk]]:

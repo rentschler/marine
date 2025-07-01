@@ -130,6 +130,7 @@ class Node(BaseModel):
     operational_role: Optional[str] = None
     subset: Optional[str] = None
     communities: Optional[List[str]] = None
+    community: Optional[str] = None
 
 class Graph(BaseModel):
     mode: str

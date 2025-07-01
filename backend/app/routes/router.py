@@ -24,6 +24,7 @@ from database_utils.import_edges import import_edges
 from database_utils.import_nodes import import_nodes
 from database_utils.get_min_max_date import get_min_max_date
 from database_utils.get_graph_with_timestamps import get_graph_with_timestamps
+from database_utils.update_node_communities import update_node_communities
 from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
@@ -746,6 +747,27 @@ async def fetch_communities(level: int = 2):
         raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
 
 
+@router.post("/update-database-communities")
+async def update_database_communities(level: int = 2):
+    """
+    Update all nodes in the database with their community information from the specified level.
+    This will read the community summaries from summaries/level_{level} and update each node
+    with a 'community' attribute containing the community title.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                updated_count = await update_node_communities(session, level)
+                return {
+                    "status": "success",
+                    "message": f"Successfully updated {updated_count} nodes with community information from level {level}",
+                    "updated_count": updated_count
+                }
+    except Exception as e:
+        print(f"Error updating database with community information: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating database: {str(e)}")
+    
+
 @router.get("/get-community-summaries")
 async def get_community_summaries():
     levels = [1,2, 3, 4, 5]
@@ -846,6 +868,9 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
                 async with driver.session() as session:
                     # request = FilterRequestBody()
                     graph = await get_filtered_graph(session, request)
+                    
+                    # The community information should now be loaded from the database
+                    # But we can still validate and add communities list for backward compatibility
                     nodes_per_community = {community['title']: [] for community in communities}
                     for node in graph.nodes:
                         node_communities = []
@@ -855,28 +880,15 @@ async def fetch_graph_with_communities(request: FilterRequestBody):
                                 nodes_per_community[community['title']].append(node)
                         node.communities = node_communities
                         
+                        # If the node has a community from the database, use it
+                        if hasattr(node, 'community') and node.community:
+                            print(f"Node {node.id} has community from database: {node.community}")
+                        
                     # validate that each nodes has exactly one community
                     for node in graph.nodes:
                         if node.communities and len(node.communities) != 1:
                             print(f"Node {node.id} has {len(node.communities)} communities: {node.communities}")
                             
-                    # print(f"Found {len(graph.nodes)} nodes in the graph with {len(communities)} communities")
-                    # # # calculate the centroids of each community
-                    # for community in communities:
-                    #     if community['nodes']:
-                    #         nodes = [node for node in graph.nodes if node.id in community['nodes']]
-                    #         if nodes:
-                    #             x_coords = [node.x for node in nodes]
-                    #             y_coords = [node.y for node in nodes]
-                    #             community['centroid'] = {
-                    #                 'x': sum(x_coords) / len(x_coords),
-                    #                 'y': sum(y_coords) / len(y_coords)
-                    #             }
-                    #             print(f"Community {community['title']} centroid: {community['centroid']}")
-                    #         else:
-                    #             community['centroid'] = {'x': 0, 'y': 0}
-                    #     else:
-                    #         community['centroid'] = {'x': 0, 'y': 0}
                     
                     return graph.model_dump(exclude_unset=True, exclude_none=True)
         except Exception as e:
