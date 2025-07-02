@@ -30,6 +30,7 @@ export interface BaseChartProps {
   onSelection?: (start: Date | null, end: Date | null) => void;
   selectionA?: [Date, Date] | null;
   selectionB?: [Date, Date] | null;
+  currentDateRange?: [Date, Date] | null;
 }
 
 export interface BarChartProps extends BaseChartProps {
@@ -40,4 +41,10 @@ export interface StackedBarChartProps extends BaseChartProps {
   data?: StackedSeries;
   bars?: string[];
   segments?: string[];
+}
+
+export enum ChartType {
+  BAR = 'bar',
+  STACKED = 'stacked',
+  COMMUNITY = 'community',
 }

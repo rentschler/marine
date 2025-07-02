@@ -7,11 +7,12 @@ const StackedBarChart = ({
   data,
   bars,
   segments,
-  numberOfBins,
   dimensions,
   onSelection,
   selectionA,
   selectionB,
+  currentDateRange,
+  numberOfBins,
 }: StackedBarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = dimensions;
@@ -41,7 +42,12 @@ const StackedBarChart = ({
       .text('Daily Activity Count');
 
     // scale the x axis
-    const scaleOrdinal = d3.scaleBand().domain(bars).range([0, boundsWidth]).padding(0.2);
+    const minDate = currentDateRange?.[0]!;
+    const maxDate = currentDateRange?.[1]!;
+    const scaleTime = d3.scaleTime().domain([minDate, maxDate]).range([0, boundsWidth]);
+
+    const barWidth = (scaleTime(maxDate) - scaleTime(minDate)) / numberOfBins;
+    console.log('barWidth', barWidth, numberOfBins);
 
     // scale the y axis
     const minY = d3.min(data.flat(), (d) => d[0]) ?? 0;
@@ -72,11 +78,12 @@ const StackedBarChart = ({
       .join('rect')
       .attr('class', 'bar')
       .attr('id', (d) => d.segmentId)
-      .attr('x', (d) => scaleOrdinal(d.barId)!)
+      .attr('x', (d) => scaleTime(d.start)!)
       .attr('y', (d) => scaleLinear(d[1]))
       .attr('height', (d) => Math.abs(scaleLinear(d[0]) - scaleLinear(d[1])))
-      .attr('width', scaleOrdinal.bandwidth())
+      .attr('width', barWidth)
       // .attr('fill', (d) => colorScale(d.segmentId))
+      .attr('stroke-width', 2)
       .attr('stroke', (d) => {
         if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
         if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
@@ -84,10 +91,8 @@ const StackedBarChart = ({
       });
 
     // add the axes
-    const xAxis = d3.axisBottom(scaleOrdinal).tickFormat((d) => {
-      const date = new Date(d);
-      return d3.timeFormat('%Y-%m-%d %H:%M')(date);
-    });
+    const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);
+
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
@@ -132,7 +137,7 @@ const StackedBarChart = ({
         bars.each(function (d) {
           const bar = d3.select(this);
           const xMin = +bar.attr('x');
-          const xMax = xMin + scaleOrdinal.bandwidth();
+          const xMax = xMin + barWidth
 
           // check if the bar is intersect with the selection
           const isBrushed = x0 <= xMax && x1 >= xMin;

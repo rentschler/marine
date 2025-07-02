@@ -158,3 +158,4 @@ export enum NodeType {
   Finding = 'Finding',
   CommunityConnection = 'CommunityConnection',
 }
+

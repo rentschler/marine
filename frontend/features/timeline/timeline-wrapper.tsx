@@ -1,12 +1,12 @@
 'use client';
 
 import { useFilterContext } from '@/context/filter-context';
-import { GraphData, SubsetType } from '@/types/graph-types';
+import { GraphData, SubsetType,  } from '@/types/graph-types';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
-import { DayBin, StackedBarChartData } from './time-line-types';
+import { DayBin, StackedBarChartData, ChartType } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
 import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
 import { useDimensions } from '@/hooks/use-dimension';
@@ -17,7 +17,6 @@ interface TimelineWrapperProps {
 }
 
 type InteractionMode = 'single' | 'diff';
-type ChartType = 'bar' | 'stacked';
 
 export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
@@ -26,11 +25,12 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [chartType, setChartType] = useState<ChartType>('bar');
+  const [chartType, setChartType] = useState<ChartType>(ChartType.BAR);
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('single');
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentTimeStep, setCurrentTimeStep] = useState(0);
   const [numberBins, setNumberBins] = useState<number>(numberOfBins * 14);
+  const [currentDateRange, setCurrentDateRange] = useState<[Date, Date] | undefined>(undefined);
 
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
   const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(
@@ -128,6 +128,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
         const dates = nodes.filter((n) => n.timestamp).map((n) => n.timestamp as Date);
         const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
         const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+        setCurrentDateRange([minDate, maxDate]);
 
         console.log('start date', minDate);
         console.log('end date', maxDate);
@@ -152,6 +153,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             count: binNodes.length,
           };
         });
+
 
         setCurrentData(bins);
         console.log('bins', bins);
@@ -255,7 +257,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
       <TimelineToolbar
         ref={navRef}
         chartType={chartType}
-        setChartType={setChartType}
+        setChartType={(type: ChartType) => setChartType(type)}
         interactionMode={interactionMode}
         setInteractionMode={setInteractionMode}
         isAnimating={isAnimating}
@@ -268,26 +270,32 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
 
       {/* bar chart */}
       <div className="flex flex-col gap-2">
-        {chartType === 'stacked' ? (
+        {chartType === ChartType.STACKED ? (
           <StackedBarChart
             data={currentStackedData?.data}
             bars={currentStackedData?.bars}
             segments={currentStackedData?.segments}
-            numberOfBins={numberOfBins}
+            numberOfBins={numberBins}
             dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
+            currentDateRange={currentDateRange}
           />
-        ) : (
+        ) : chartType === ChartType.BAR ? (
           <BarChart
             data={currentData}
-            numberOfBins={numberOfBins}
+            numberOfBins={numberBins}
             dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
             onSelection={handleSelection}
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
+            currentDateRange={currentDateRange}
           />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <p>Community chart coming soon...</p>
+          </div>
         )}
       </div>
     </div>

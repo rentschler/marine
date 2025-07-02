@@ -2,10 +2,11 @@
 
 import { Button, Divider, Slider, Tooltip } from '@heroui/react';
 import { DateRangeFilter } from '@/types/filter-context-type';
+import { ChartType } from '@/features/timeline/time-line-types';
+
 import { forwardRef } from 'react';
 
 type InteractionMode = 'single' | 'diff';
-type ChartType = 'bar' | 'stacked';
 
 interface TimelineToolbarProps {
   chartType: ChartType;
@@ -42,8 +43,8 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
           <Tooltip content="Switch to regular bar chart view">
             <Button
               size="sm"
-              variant={chartType === 'bar' ? 'solid' : 'bordered'}
-              onPress={() => setChartType('bar')}
+              variant={chartType === ChartType.BAR ? 'solid' : 'bordered'}
+              onPress={() => setChartType(ChartType.BAR)}
             >
               Bar Chart
             </Button>
@@ -51,10 +52,19 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
           <Tooltip content="Switch to stacked bar chart view">
             <Button
               size="sm"
-              variant={chartType === 'stacked' ? 'solid' : 'bordered'}
-              onPress={() => setChartType('stacked')}
+              variant={chartType === ChartType.STACKED ? 'solid' : 'bordered'}
+              onPress={() => setChartType(ChartType.STACKED)}
             >
               Stacked Chart
+            </Button>
+          </Tooltip>
+          <Tooltip content="Switch to community chart view">
+            <Button
+              size="sm"
+              variant={chartType === ChartType.COMMUNITY ? 'solid' : 'bordered'}
+              onPress={() => setChartType(ChartType.COMMUNITY)}
+            >
+              Community Chart
             </Button>
           </Tooltip>
         </div>

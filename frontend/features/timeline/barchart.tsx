@@ -5,11 +5,11 @@ import * as d3 from 'd3';
 const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
 const Barchart = ({
   data,
-  numberOfBins,
   dimensions,
   onSelection,
   selectionA,
   selectionB,
+  numberOfBins,
 }: BarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -73,7 +73,7 @@ const Barchart = ({
       );
 
     // add the axes
-    const xAxis = d3.axisBottom(scaleTime).ticks(Math.min(10, data.length));
+    const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);
     // .tickFormat(d3.timeFormat('%Y-%m-%d %H:%M'));
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
