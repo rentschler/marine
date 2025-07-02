@@ -144,6 +144,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         currentData,
         setCurrentData,
         filteredData,
+        setFilteredData,
         graphOptions,
         setGraphOptions,
         diffGraphOptions,

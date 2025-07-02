@@ -1,21 +1,40 @@
 'use client';
 
-import { Divider } from '@heroui/react';
+import { Button, Divider } from '@heroui/react';
 import { DateRangeFilter, DiffGraphOptions, GraphOptions } from '@/types/filter-context-type';
 import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
+import { LoadingButton } from '@/components/loading-button/loading-button';
+import { recalculateLayout } from './recalculate-layout';
+import { useFilterContext } from '@/context/filter-context';
 
 interface GraphToolbarProps {
   graphOptions: GraphOptions;
   setGraphOptions: (value: React.SetStateAction<GraphOptions>) => void;
+  recalculatingLayout: boolean;
+  setRecalculatingLayout: (value: boolean) => void;
 }
 
 const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
-  ({ graphOptions, setGraphOptions }, ref) => {
+  ({ graphOptions, setGraphOptions, recalculatingLayout, setRecalculatingLayout }, ref) => {
+const { currentData, setCurrentData } = useFilterContext();
+
+    const handleClick = async () => {
+      console.log("Button clicked");
+      setRecalculatingLayout(true);
+      try {
+        const dataToSend = currentData;
+        if (!dataToSend) return;
+
+        await recalculateLayout(dataToSend,setCurrentData);
+      } finally {
+        setRecalculatingLayout(false);
+      }
+    };
     return (
-      <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100">
+      <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100 w-full">
         {/* tool bar */}
-        <div className="flex flex-row items-center gap-2" style={{ zIndex: 100 }}>
+        <div className="flex flex-row items-center gap-2 justify-between p-1 w-full" style={{ zIndex: 100 }}>
           {/* toggle dateRangeFilter.neighboorNodes */}
           <div className="flex flex-row items-center gap-2">
             <input
@@ -32,8 +51,7 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
             <label htmlFor="neighboorNodesSwitch2" className="text-sm font-medium text-gray-700">
               Include Neighbor Nodes in Diff Graph
             </label>
-          </div>
-          <Divider orientation="vertical" className="h-8" />
+            <Divider orientation="vertical" className="h-8" />
           {/* toggle dateRangeFilter.collapseComms */}
           <div className="flex flex-row items-center gap-2">
             <input
@@ -52,6 +70,12 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
               Collapse Communication Edges
             </label>
           </div>
+          </div>
+          <LoadingButton
+              loading={recalculatingLayout}
+              text="Recalculate Layout"
+              onClick={handleClick}
+            />
         </div>
       </div>
     );

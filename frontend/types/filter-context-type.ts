@@ -27,6 +27,7 @@ export interface FilterContextType {
   currentData: GraphData | undefined;
   setCurrentData: (data: GraphData | undefined) => void;
   filteredData: GraphData | undefined;
+  setFilteredData: (data: GraphData | undefined) => void;
   graphOptions: GraphOptions;
   setGraphOptions: Dispatch<SetStateAction<GraphOptions>>;
   diffGraphOptions: DiffGraphOptions;
