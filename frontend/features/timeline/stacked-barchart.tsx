@@ -57,7 +57,26 @@ const StackedBarChart = ({
     // color scale
     const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
 
-    // create the bars
+    // Group data by bar (time bin) to calculate total heights
+    const barGroups = new Map();
+    data.forEach((layer) => {
+      layer.forEach((segment) => {
+        const barId = segment.data.start?.toString() || 'null';
+        if (!barGroups.has(barId)) {
+          barGroups.set(barId, {
+            start: new Date(segment.data.start),
+            end: new Date(segment.data.end),
+            segments: [],
+            totalHeight: 0
+          });
+        }
+        const barGroup = barGroups.get(barId);
+        barGroup.segments.push(segment);
+        barGroup.totalHeight = Math.max(barGroup.totalHeight, segment[1]);
+      });
+    });
+
+    // create the bars (segments)
     g.selectAll('g.layer')
       .data(data)
       .join('g')
@@ -82,7 +101,18 @@ const StackedBarChart = ({
       .attr('y', (d) => scaleLinear(d[1]))
       .attr('height', (d) => Math.abs(scaleLinear(d[0]) - scaleLinear(d[1])))
       .attr('width', barWidth)
-      // .attr('fill', (d) => colorScale(d.segmentId))
+      .attr('fill', (d) => colorScale(d.segmentId.split('_')[2]));
+
+    // Create complete bar rectangles for highlighting
+    g.selectAll('.bar-outline')
+      .data(Array.from(barGroups.values()))
+      .join('rect')
+      .attr('class', 'bar-outline')
+      .attr('x', (d) => scaleTime(d.start)!)
+      .attr('y', (d) => scaleLinear(d.totalHeight))
+      .attr('height', (d) => Math.abs(scaleLinear(0) - scaleLinear(d.totalHeight)))
+      .attr('width', barWidth)
+      .attr('fill', 'none')
       .attr('stroke-width', 2)
       .attr('stroke', (d) => {
         if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
@@ -92,7 +122,6 @@ const StackedBarChart = ({
 
     // add the axes
     const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);
-
 
     const yAxis = d3.axisLeft(scaleLinear).ticks(10);
 
@@ -130,11 +159,11 @@ const StackedBarChart = ({
         }
 
         const [x0, x1] = selection;
-        const bars = g.selectAll('.bar');
+        const barOutlines = g.selectAll('.bar-outline');
 
         let highlightBars: any[] = [];
 
-        bars.each(function (d) {
+        barOutlines.each(function (d) {
           const bar = d3.select(this);
           const xMin = +bar.attr('x');
           const xMax = xMin + barWidth
