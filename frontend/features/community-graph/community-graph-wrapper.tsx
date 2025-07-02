@@ -35,7 +35,7 @@ export interface CommunityGraphWrapperdProps {
 const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
-  const layout = 'atlas2';
+  const layout = 'none';
 
 
   const [currentData, setCurrentData] = useState<CommunityGraphData | null>(null);

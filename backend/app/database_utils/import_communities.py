@@ -112,6 +112,9 @@ async def _import_single_community(session, community_data: Dict, level: int) ->
         
         # Create relationships with existing nodes
         await _link_community_to_nodes(session, community_id, node_ids)
+
+        # Calculate centroid and update community node
+        await _update_community_centroid(session, community_id, node_ids)
         
         print(f"Imported community: {title}")
         return True
@@ -184,6 +187,54 @@ async def _link_community_to_nodes(session, community_id: str, node_ids: List[st
         record = await result.single()
         if not record:
             print(f"⚠️  Node {node_id} not found in database for community {community_id}")
+
+async def _update_community_centroid(session, community_id: str, node_ids: List[str]):
+    """
+    Calculate and update the centroid of a community based on its nodes.
+    
+    This function assumes that the nodes have properties 'x' and 'y' for their coordinates.
+    """
+    if not node_ids:
+        return
+    
+    # Fetch coordinates of all nodes in the community
+    coords_query = """
+        MATCH (c:Community {id: $community_id})-[:CONTAINS_NODE]->(n)
+        WHERE n.x IS NOT NULL AND n.y IS NOT NULL
+        RETURN collect(n.x) as x_coords, collect(n.y) as y_coords
+    """
+    
+    result = await session.run(coords_query, community_id=community_id)
+    record = await result.single()
+    
+    if not record:
+        print(f"No nodes found for community {community_id}")
+        return
+    
+    x_coords = record["x_coords"]
+    y_coords = record["y_coords"]
+    
+    if not x_coords or not y_coords:
+        print(f"No valid coordinates found for community {community_id}")
+
+    # Calculate centroid
+    centroid_x = sum(x_coords) / len(x_coords)
+    centroid_y = sum(y_coords) / len(y_coords)
+
+    # Update community node with centroid coordinates
+    update_query = """
+        MATCH (c:Community {id: $community_id})
+        SET c.x = $centroid_x,
+            c.y = $centroid_y
+    """
+    await session.run(
+        update_query,
+        community_id=community_id,
+        centroid_x=centroid_x,
+        centroid_y=centroid_y
+    )
+    
+            
 
 
 async def get_communities_with_nodes(session, level: int = 2):
