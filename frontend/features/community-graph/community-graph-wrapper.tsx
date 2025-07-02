@@ -1,112 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import {
   ControlsContainer,
+  FullScreenControl,
+  SigmaContainer,
+  ZoomControl,
 } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, NodeType } from '@/types/graph-types';
+import { LinkType, NodeType } from '@/types/graph-types';
+import * as d3 from 'd3';
+import { ColorLegend } from '@/components/ui/color-legend';
+import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
+import { GraphSearch, GraphSearchOption } from '@react-sigma/graph-search';
 import '@react-sigma/graph-search/lib/style.css';
-
+import { FocusOnNode } from '../graph/focus-on-node';
+import GraphTooltip from '../graph/graph-tooltip';
 import { useEffect } from 'react';
 import { TabNode } from 'flexlayout-react';
-import { GraphWrapperFetched } from '../graph/graph-wrapper_fetched';
-// import { NodeImageProgram } from '@sigma/node-image';
-import * as d3 from 'd3';
-import { Node } from '@react-sigma/graph-search';
+import { CommunityGraphData } from './community-types';
+import { CommunityGraph } from './community-graph';
 
-
-
-export interface Main {
-    nodes:    Node[];
-    edges:    Edge[];
-    metadata: Metadata;
-}
-
-export interface Edge {
-    source:        string;
-    target:        string;
-    weight:        number;
-    connection_id: string;
-    type:          EdgeType;
-}
-
-export enum EdgeType {
-    CommunityConnection = "CommunityConnection",
-}
-
-export interface Metadata {
-    level:            number;
-    include_findings: boolean;
-    node_count:       number;
-    edge_count:       number;
-}
-
-export interface Node {
-    id:          string;
-    title:       string;
-    level:       number;
-    description: string;
-    created_at:  Date;
-    updated_at:  Date;
-    type:        NodeType2;
-    findings:    Finding[];
-}
-
-export interface Finding {
-    id:               string;
-    content:          null;
-    type:             FindingType;
-    confidence:       number;
-    created_at:       string;
-    parent_community: string;
-}
-
-export enum FindingType {
-    Finding = "Finding",
-}
-
-export enum NodeType2 {
-    Community = "Community",
-}
-
-
-export interface DiffGraphWrapperProps {
+export interface CommunityGraphWrapperdProps {
+  currentData?: CommunityGraphData;
+  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null';
+  limit?: number;
   currentNode: TabNode;
-  id: string;
 }
 
-type CommunitySummary = {
-  title: string;
-  summary: string;
-  rating: number;
-  'rating explanation': string;
-  id: string;
-  level: number;
-  number_of_nodes: number;
-};
-
-type CommunityLevels = '1' | '2' | '3' | '4' | '5';
-type CommunityData = {
-  [key in CommunityLevels]: CommunitySummary[];
-};
-
-const COMMUNITY_LEVELS: CommunityLevels[] = ['1', '2', '3'];
-
-const d3_sizeScale = d3.scaleLinear()
-  .domain([1, 1000])
-  .range([5, 200])
-  .clamp(true);
-const CommunityColorScaleD3 = d3.scaleOrdinal(d3.schemeCategory10);
 
 
 // Component that display the graph
-export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => {
-  const [currentData, setCurrentData] = useState<GraphData | null>(null);
-  const [currentSelectedLevel, setCurrentSelectedLevel] = useState<CommunityLevels | null>(
-    COMMUNITY_LEVELS[1]
-  );
+const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) => {
+  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+
+  const layout = 'atlas2';
+
+
+  const [currentData, setCurrentData] = useState<CommunityGraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const dimensions = {
@@ -131,33 +63,10 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
           throw new Error('Failed to fetch filtered graph data');
         }
 
-        const communities = await response.json() as Main;
+        const communities = await response.json() as CommunityGraphData;
         console.log('complete graph data:', communities);
-        
-        setCurrentData({
-          nodes: communities.nodes.map((node) => ({
-            id: node.id,
-            label: node.title,
-            size: d3_sizeScale(node.findings.length),
-            color: CommunityColorScaleD3(node.title),
-            type: NodeType.Entity,
-            sub_type: 'community',
-            level: node.level,
-            description: node.description,
-            findings: node.findings,
-            x: Math.random() * dimensions.width,
-            y: Math.random() * dimensions.height,
-          })),
-          links: [],
-          metadata: {
-            level: communities.metadata.level,
-            include_findings: communities.metadata.include_findings,
-            node_count: communities.metadata.node_count,
-            edge_count: communities.metadata.edge_count,
-          },
-        });
+        setCurrentData(communities);
 
-        // setCurrentData(communities);
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -168,45 +77,93 @@ export const DiffGraphWrapper = ({ currentNode, id }: DiffGraphWrapperProps) => 
   }, []);
 
 
+
+  // state management for userinteraction
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [focusNode, setFocusNode] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+
+  const onFocus = useCallback((value: GraphSearchOption | null) => {
+    if (value === null) setFocusNode(null);
+    else if (value.type === 'nodes') setFocusNode(value.id);
+  }, []);
+  const onChange = useCallback((value: GraphSearchOption | null) => {
+    if (value === null) setSelectedNode(null);
+    else if (value.type === 'nodes') setSelectedNode(value.id);
+  }, []);
+  const postSearchResult = useCallback((options: GraphSearchOption[]): GraphSearchOption[] => {
+    return options.length <= 10
+      ? options
+      : [
+          ...options.slice(0, 10),
+          {
+            type: 'message',
+            message: (
+              <span className="text-center text-muted">And {options.length - 10} others</span>
+            ),
+          },
+        ];
+  }, []);
+
+  if (!currentData) {
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="text-gray-500">Loading graph data...</div>
+      </div>
+    );
+  }
+
   if (error) {
     return <div className="text-red-500">{error}</div>;
   }
 
-  if (!currentData) {
-    return <div>No data available</div>;
-  }
-  const sigmaSettings = {
-    // NodeType: 'image',
-    // nodeProgramClasses: { image: NodeImageProgram },
-  };
   return (
-    <div className="flex flex-col items-center gap-6 p-6 w-full h-full">
+    <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
-        <GraphWrapperFetched
-          layout={'circlepack'}
-          limit={1000}
-          currentNode={currentNode}
-          currentData={currentData}
-        />
-        <ControlsContainer position={'top-right'}>
-          <div className="flex flex-row gap-2">
-            {COMMUNITY_LEVELS.map((level) => (
-              <button
-                key={level}
-                className={`px-4 py-2 rounded ${currentSelectedLevel === level ? 'font-bold' : ''}`}
-                onClick={() => {
-                  setCurrentSelectedLevel(level);
-                }}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-        </ControlsContainer>
+        <SigmaContainer style={{ width: dimensions.width, height: dimensions.height }}>
+          {/* Graph component */}
+          <CommunityGraph
+            layout={layout}
+            currentNode={currentNode}
+            hoveredNode={hoveredNode}
+            setHoveredNode={setHoveredNode}
+            data={currentData}
+            dimensions={dimensions}
+          />
+          {/* Focus on node component */}
+          <FocusOnNode node={focusNode ?? selectedNode} move={true} />
+          {/* Container for the controls */}
+          <ControlsContainer position={'top-left'}>
+            <ZoomControl />
+            <FullScreenControl />
+            <LayoutForceAtlas2Control />
+          </ControlsContainer>
+          {/* Container for the search bar */}
+          <ControlsContainer position={'top-right'}>
+            <GraphSearch
+              type="nodes"
+              value={selectedNode ? { type: 'nodes', id: selectedNode } : null}
+              onFocus={onFocus}
+              onChange={onChange}
+              postSearchResult={postSearchResult}
+            />
+          </ControlsContainer>
+
+          {/* Container for the tooltip component */}
+          <ControlsContainer>
+            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={dimensions.width * 0.66} />
+          </ControlsContainer>
+          <ControlsContainer position={'bottom-right'}>
+            <div className="flex flex-row gap-2">
+              {/* Container for the color legends */}
+
+            </div>
+          </ControlsContainer>
+        </SigmaContainer>
       </div>
     </div>
   );
 };
 
-export default DiffGraphWrapper;
+export default CommunityGraphWrapper;

@@ -22,7 +22,13 @@ const GraphTooltip = ({ node, width }: GraphTooltipProps) => {
     const highlightedNode = sigma.getGraph().getNodeAttributes(node);
 
     if (highlightedNode) {
-      const nodeData = highlightedNode.data as Node;
+      const nodeData = highlightedNode.data as Node | undefined;
+      console.log('nodeData', nodeData);
+
+      if (!nodeData) {
+        setTooltip(null);
+        return;
+      }
 
       setTooltip(
         <div>

@@ -154,4 +154,7 @@ export enum NodeType {
   Entity = 'Entity',
   Event = 'Event',
   Relationship = 'Relationship',
+  Community = 'Community',
+  Finding = 'Finding',
+  CommunityConnection = 'CommunityConnection',
 }
