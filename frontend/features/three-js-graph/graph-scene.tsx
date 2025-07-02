@@ -25,6 +25,8 @@ export function GraphScene({
 }: GraphSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(true);
+  
+  const [recalculatingLayout, setRecalculatingLayout] = useState<boolean>(false);
 
   const {
     filteredData,
@@ -49,15 +51,19 @@ export function GraphScene({
       {/* toolbar for the graph */}
       {showFilteredData ? (
         <DiffGraphToolbar
+
           graphOptions={diffGraphOptions}
           setGraphOptions={setDiffGraphOptions}
           disabledSubsetFilter={
             // Disable subset filter checkboxes if the date range filter has no second range
             dateRangeFilter && dateRangeFilter.dateRangeB === undefined
           }
+          recalculatingLayout={recalculatingLayout}
+          setRecalculatingLayout={setRecalculatingLayout}
         />
       ) : (
-        <GraphToolbar graphOptions={graphOptions} setGraphOptions={setGraphOptions} />
+        <GraphToolbar graphOptions={graphOptions} setGraphOptions={setGraphOptions} recalculatingLayout={recalculatingLayout}
+          setRecalculatingLayout={setRecalculatingLayout}/>
       )}
 
       {/* container for the 3D graph */}

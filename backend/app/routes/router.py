@@ -7,7 +7,7 @@ from nl_querying.querying.reduce_to_global_answer.final_answer_reducer import Fi
 from nl_querying.querying.intermidate_answer_generator.intermidate_answer_generator import IntermidateAnswerGenerator
 from nl_querying.querying.prepare_community_summaries.community_summary_loader import CommunitySummaryLoader
 from nl_querying.indexing.indexing_service import IndexingService3
-from models.Graph import Node
+from models.Graph import GraphData, Node
 from nl_querying.query_service import QueryService
 from nl_querying.indexing_service import IndexingService
 from nl_querying.utils.llm.llm import LLM
@@ -640,4 +640,34 @@ async def get_community_graph_endpoint(level: int = 2, include_findings: bool = 
     except Exception as e:
         print(f"Error fetching community graph: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching community graph: {str(e)}")
+    
+@router.post("/recalculate-layout")
+async def post_recalculate_layout(graph: GraphData):
+    nodes = graph.nodes
+    edges = graph.links
+        
+    G = nx.DiGraph()
+
+    for node in nodes:
+        node_id = node.id
+        G.add_node(node_id)
+        
+    for edge in edges:
+        source = edge.source
+        target = edge.target
+        G.add_edge(source, target)
+
+    pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp") 
+    pos = nx.rescale_layout_dict(pos)
+
+    for node in nodes:
+        node_id = node.id
+        x, y = pos[node_id]
+        node.x = x
+        node.y = y
+
+    graph.nodes = nodes
+
+    return graph.model_dump(exclude_unset=True, exclude_none=True)
+
     
