@@ -2,7 +2,7 @@ import { ChartType, InteractionMode, StackedBarChartProps } from './time-line-ty
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
+const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const StackedBarChart = ({
   data,
   bars,
@@ -117,7 +117,7 @@ const StackedBarChart = ({
       .attr('width', barWidth)
       .attr('fill', (d) => colorScale(d.segmentId.split('_')[2]))
       .append("title")
-      .text((d) => `${d.segmentId.split('_')[2]}\nCount: ${d[1]}`);
+      .text((d) => `${d.segmentId.split('_')[2]}\nCount: ${d[1]-d[0]}`);
 
 
     // Create complete bar rectangles for highlighting

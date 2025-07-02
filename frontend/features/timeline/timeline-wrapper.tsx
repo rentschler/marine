@@ -9,7 +9,7 @@ import BarChart from './barchart';
 import { DayBin, StackedBarChartData, ChartType, InteractionMode } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
 import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
-import { useDimensions } from '@/hooks/use-dimension';
+import { useDimensionsRef } from '@/hooks/use-dimension';
 
 interface TimelineWrapperProps {
   currentNode?: TabNode;
@@ -17,7 +17,9 @@ interface TimelineWrapperProps {
 
 export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-  const navBarDimensions = useDimensions(navRef);
+  const navBarDimensions = useDimensionsRef(navRef);
+  console.log('navBarDimensions', navBarDimensions);
+  
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -266,7 +268,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
       />
 
       {/* bar chart */}
-      <div className="flex flex-col gap-2">
         {chartType === ChartType.STACKED || chartType === ChartType.COMMUNITY ? (
           <StackedBarChart
             data={currentStackedData?.data}
@@ -296,7 +297,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             <p>Community chart coming soon...</p>
           </div>
         )}
-      </div>
     </div>
   );
 }

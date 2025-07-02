@@ -2,7 +2,7 @@ import { BarChartProps, InteractionMode } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const MARGIN = { top: 25, right: 10, bottom: 80, left: 50 };
+const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const Barchart = ({
   data,
   dimensions,
@@ -136,9 +136,7 @@ const Barchart = ({
   }, [data, width, height, onSelection, selectionA, selectionB]);
 
   return (
-    <div ref={boxRef} className="w-full h-full">
-      <svg ref={svgRef}></svg>
-    </div>
+    <svg ref={svgRef}></svg>
   );
 };
 

@@ -55,3 +55,49 @@ export const useDimensions = (source: DimensionSource): Dimensions => {
 
   return dimensions;
 };
+
+
+
+/**
+ * React hook that provides the dimensions (width and height) of a target HTMLDivElement.
+ * It listens for window resize events and updates the dimensions accordingly.
+ *
+ * @param targetRef - A React ref object pointing to the target HTMLDivElement whose dimensions are to be measured.
+ * @returns An object containing the `width` and `height` of the target element.
+ */
+export const useDimensionsRef = (targetRef: React.RefObject<HTMLDivElement>) => {
+  const getDimensions = () => {
+    return {
+      width: targetRef.current ? targetRef.current.offsetWidth : 0,
+      height: targetRef.current ? targetRef.current.offsetHeight : 0,
+    };
+  };
+
+  const [dimensions, setDimensions] = useState(getDimensions);
+
+  const handleResize = () => {
+    setDimensions(getDimensions());
+  };
+
+  useEffect(() => {
+    const element = targetRef.current;
+    if (!element) return;
+
+    // Use ResizeObserver for more accurate dimension tracking
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [targetRef.current]); // Re-run when ref changes
+
+  useLayoutEffect(() => {
+    handleResize();
+  }, [targetRef.current]); // Re-run when ref changes
+
+  return dimensions;
+};
