@@ -5,7 +5,7 @@ import { GraphLegend } from './graph-legend/graph-legend';
 import { NodeTooltip } from './graph-mesh/node-tooltip';
 import { useFilterContext } from '@/context/filter-context';
 import { useThreeGraph } from './use-three-graph';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TabNode } from 'flexlayout-react/types/model/TabNode';
 import GraphToolbar from '../../components/ui/tool-bar/graph-toolbar';
 import DiffGraphToolbar from '@/components/ui/tool-bar/diff-graph-toolbar';
@@ -39,8 +39,8 @@ export function GraphScene({
 
   // get the dimensions of the current node
   const dimensions = {
-    width: currentNode?.getRect().width || 800,
-    height: currentNode?.getRect().height || 600,
+    width: currentNode?.getRect().width || 0,
+    height: currentNode?.getRect().height || 0,
   };
   const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data);
 

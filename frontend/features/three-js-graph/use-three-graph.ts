@@ -38,72 +38,75 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
 
   useEffect(() => {
     if (!containerRef?.current || !data || (data.nodes.length == 0)) {
-      return;
+        return;
     }
 
     const result = initScene(
-      containerRef,
-      dimensions.width,
-      dimensions.height,
-      cameraRef,
-      rendererRef,
-      controlsRef,
-      zoom,
-      nodeMeshRef,
-      edgeMeshRef,
-      arrowMeshRef,
-      nodeSize,
-      edgeSize,
-      data,
-      scene,
-      nodeDataRef,
-      setTooltipState,
-      mouse,
-      raycaster
+        containerRef,
+        dimensions.width,
+        dimensions.height,
+        cameraRef,
+        rendererRef,
+        controlsRef,
+        zoom,
+        nodeMeshRef,
+        edgeMeshRef,
+        arrowMeshRef,
+        nodeSize,
+        edgeSize,
+        data,
+        scene,
+        nodeDataRef,
+        setTooltipState,
+        mouse,
+        raycaster
     );
 
     let observer: ResizeObserver;
     let mouseMoveListener: (this: HTMLDivElement, ev: MouseEvent) => any;
     let removeClickListener: () => void;
+    let animationFrameId: number;
 
     if (result) {
-      ({ observer, mouseMoveListener } = result);
-      removeClickListener = selectNode(
-        containerRef,
-        cameraRef,
-        nodeMeshRef,
-        setHighLightedNodes as any,
-        setHighLightedEdges,
-        data,
-        mouse,
-        raycaster
-      );
+        ({ observer, mouseMoveListener } = result);
+        removeClickListener = selectNode(
+            containerRef,
+            cameraRef,
+            nodeMeshRef,
+            setHighLightedNodes as any,
+            setHighLightedEdges,
+            data,
+            mouse,
+            raycaster
+        );
     }
 
     const animate = () => {
-      if (rendererRef.current && cameraRef.current) {
-        rendererRef.current.render(scene, cameraRef.current);
-        controlsRef.current?.update();
-        requestAnimationFrame(animate);
-      }
+        if (rendererRef.current && cameraRef.current) {
+            rendererRef.current.render(scene, cameraRef.current);
+            controlsRef.current?.update();
+            animationFrameId = requestAnimationFrame(animate);
+        }
     };
-    animate();
-
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
-      observer?.disconnect();
-      containerRef.current?.removeEventListener("mousemove", mouseMoveListener);
-      removeClickListener?.();
-      rendererRef.current?.dispose();
-      //controlsRef.current?.dispose();
-      nodeDataRef.current = [];
-      nodeMeshRef.current?.clear();
-      arrowMeshRef.current?.clear();
-      edgeMeshRef.current?.clear();
-      scene.clear();
-
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        observer?.disconnect();
+        containerRef.current?.removeEventListener("mousemove", mouseMoveListener);
+        removeClickListener?.();
+        rendererRef.current?.dispose();
+        //controlsRef.current?.dispose();
+        nodeDataRef.current = [];
+        nodeMeshRef.current?.clear();
+        arrowMeshRef.current?.clear();
+        edgeMeshRef.current?.clear();
+        scene.clear();
     };
-  }, [data, containerRef?.current, scene, dimensions]);
+}, [data, containerRef?.current, scene, dimensions]);
+
 
   useEffect(() => {
     if (!containerRef?.current || !data  || (data.nodes.length == 0)) return;
