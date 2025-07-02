@@ -6,19 +6,16 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
-import { DayBin, StackedBarChartData, ChartType } from './time-line-types';
+import { DayBin, StackedBarChartData, ChartType, InteractionMode } from './time-line-types';
 import { TabNode } from 'flexlayout-react';
 import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
 import { useDimensions } from '@/hooks/use-dimension';
 
 interface TimelineWrapperProps {
-  numberOfBins: number;
   currentNode?: TabNode;
 }
 
-type InteractionMode = 'single' | 'diff';
-
-export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineWrapperProps) {
+export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const navBarDimensions = useDimensions(navRef);
 
@@ -26,10 +23,10 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
   const [error, setError] = useState<string | null>(null);
 
   const [chartType, setChartType] = useState<ChartType>(ChartType.BAR);
-  const [interactionMode, setInteractionMode] = useState<InteractionMode>('single');
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>(InteractionMode.SINGLE);
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentTimeStep, setCurrentTimeStep] = useState(0);
-  const [numberBins, setNumberBins] = useState<number>(numberOfBins * 14);
+  const [numberBins, setNumberBins] = useState<number>(28);
   const [currentDateRange, setCurrentDateRange] = useState<[Date, Date] | undefined>(undefined);
 
   const [currentData, setCurrentData] = useState<DayBin[] | undefined>(undefined);
@@ -281,6 +278,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
             currentDateRange={currentDateRange}
+            interactionMode={interactionMode}
           />
         ) : chartType === ChartType.BAR ? (
           <BarChart
@@ -291,6 +289,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             selectionA={dateRangeFilter.dateRangeA}
             selectionB={dateRangeFilter.dateRangeB}
             currentDateRange={currentDateRange}
+            interactionMode={interactionMode}
           />
         ) : (
           <div className="flex items-center justify-center h-full">

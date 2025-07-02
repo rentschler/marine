@@ -2,11 +2,10 @@
 
 import { Button, Divider, Slider, Tooltip } from '@heroui/react';
 import { DateRangeFilter } from '@/types/filter-context-type';
-import { ChartType } from '@/features/timeline/time-line-types';
+import { ChartType, InteractionMode } from '@/features/timeline/time-line-types';
 
 import { forwardRef } from 'react';
 
-type InteractionMode = 'single' | 'diff';
 
 interface TimelineToolbarProps {
   chartType: ChartType;
@@ -72,11 +71,23 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
         <Divider orientation="vertical" className="h-8" />
 
         <div className="flex gap-2">
+        <Tooltip content="Disable selection to enable tooltips">
+            <Button
+              size="sm"
+              variant={interactionMode === InteractionMode.NONE ? 'solid' : 'bordered'}
+              onPress={() => {
+                setInteractionMode(InteractionMode.NONE);
+                resetSelections();
+              }}
+            >
+              No Selection
+            </Button>
+          </Tooltip>
           <Tooltip content="Select a single time range to analyze">
             <Button
               size="sm"
-              variant={interactionMode === 'single' ? 'solid' : 'bordered'}
-              onPress={() => setInteractionMode('single')}
+              variant={interactionMode === InteractionMode.SINGLE ? 'solid' : 'bordered'}
+              onPress={() => setInteractionMode(InteractionMode.SINGLE)}
             >
               Single Selection
             </Button>
@@ -84,12 +95,13 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
           <Tooltip content="Select two time ranges to compare">
             <Button
               size="sm"
-              variant={interactionMode === 'diff' ? 'solid' : 'bordered'}
-              onPress={() => setInteractionMode('diff')}
+              variant={interactionMode === InteractionMode.DIFF ? 'solid' : 'bordered'}
+              onPress={() => setInteractionMode(InteractionMode.DIFF)}
             >
               Diff Selection
             </Button>
           </Tooltip>
+    
         </div>
 
         <Divider orientation="vertical" className="h-8" />
@@ -110,19 +122,6 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
             {isAnimating ? 'Stop Animation' : 'Start Animation'}
           </Button>
         </Tooltip>
-
-        {interactionMode === 'diff' && (
-          <Tooltip content="Clear all time range selections">
-            <Button
-              size="sm"
-              variant="bordered"
-              onPress={resetSelections}
-              isDisabled={!dateRangeFilter.dateRangeA && !dateRangeFilter.dateRangeB}
-            >
-              Reset Selections
-            </Button>
-          </Tooltip>
-        )}
 
         <Divider orientation="vertical" className="h-8" />
         <Tooltip content="Change the bin size for the bar chart">

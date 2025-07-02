@@ -31,6 +31,7 @@ export interface BaseChartProps {
   selectionA?: [Date, Date] | null;
   selectionB?: [Date, Date] | null;
   currentDateRange?: [Date, Date] | null;
+  interactionMode?: InteractionMode;
 }
 
 export interface BarChartProps extends BaseChartProps {
@@ -48,4 +49,10 @@ export enum ChartType {
   BAR = 'bar',
   STACKED = 'stacked',
   COMMUNITY = 'community',
+}
+
+export enum InteractionMode {
+  SINGLE = 'single',
+  DIFF = 'diff',
+  NONE = 'none',
 }

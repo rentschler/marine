@@ -1,4 +1,4 @@
-import { ChartType, StackedBarChartProps } from './time-line-types';
+import { ChartType, InteractionMode, StackedBarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
@@ -14,6 +14,7 @@ const StackedBarChart = ({
   currentDateRange,
   numberOfBins,
   type,
+  interactionMode,
 }: StackedBarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = dimensions;
@@ -114,7 +115,10 @@ const StackedBarChart = ({
       .attr('y', (d) => scaleLinear(d[1]))
       .attr('height', (d) => Math.abs(scaleLinear(d[0]) - scaleLinear(d[1])))
       .attr('width', barWidth)
-      .attr('fill', (d) => colorScale(d.segmentId.split('_')[2]));
+      .attr('fill', (d) => colorScale(d.segmentId.split('_')[2]))
+      .append("title")
+      .text((d) => `${d.segmentId.split('_')[2]}\nCount: ${d[1]}`);
+
 
     // Create complete bar rectangles for highlighting
     g.selectAll('.bar-outline')
@@ -131,7 +135,7 @@ const StackedBarChart = ({
         if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
         if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
         return 'none';
-      });
+      })
 
     // add the axes
     const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);
@@ -194,7 +198,9 @@ const StackedBarChart = ({
         onSelection?.(startDate, endDate);
       });
 
-    g.call(brush);
+    if (interactionMode !== InteractionMode.NONE) {
+      g.call(brush);
+    }
   }, [data, width, height, onSelection, selectionA, selectionB]);
 
   return (

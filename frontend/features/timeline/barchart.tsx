@@ -1,4 +1,4 @@
-import { BarChartProps } from './time-line-types';
+import { BarChartProps, InteractionMode } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
@@ -10,6 +10,7 @@ const Barchart = ({
   selectionA,
   selectionB,
   numberOfBins,
+  interactionMode,
 }: BarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -69,7 +70,7 @@ const Barchart = ({
       .append('title')
       .text(
         (d) =>
-          d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end)
+          d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end) + '\nCount: ' + d.count
       );
 
     // add the axes
@@ -129,7 +130,9 @@ const Barchart = ({
         onSelection?.(startDate, endDate);
       });
 
-    g.call(brush);
+    if (interactionMode !== InteractionMode.NONE) {
+      g.call(brush);
+    }
   }, [data, width, height, onSelection, selectionA, selectionB]);
 
   return (
