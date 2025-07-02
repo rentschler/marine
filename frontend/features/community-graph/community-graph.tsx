@@ -88,8 +88,8 @@ export const CommunityGraph = ({
       const n = {
         ...node,
         type: 'circle',
-        x: Math.random() * 50 - 5, // Random position between -5 and 5
-        y: Math.random() * 50 - 5,
+  //      x: Math.random() * 50 - 5, // Random position between -5 and 5
+    //    y: Math.random() * 50 - 5,
         label: "Community",
         size: sizeScale(node.node_count),
         color: colorScale(node.title),
