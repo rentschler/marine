@@ -19,12 +19,9 @@ const CommunityGraphWrapper = dynamic(() => import('@/features/community-graph/c
   ssr: false,
 });
 
-interface LayoutFactoryProps {
-  layout: string;
-  numberOfBins: number;
-}
 
-export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
+
+export function LayoutFactory() {
   const factory = (node: TabNode) => {
     const component = node.getComponent();
 
@@ -34,7 +31,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
       case VisType.FILTERS:
         return <FilterDashboard />;
       case VisType.TIMELINE:
-        return <TimelineWrapper numberOfBins={numberOfBins} currentNode={node} />;
+        return <TimelineWrapper currentNode={node} />;
       case VisType.GRAPH_RAG:
         return <div className="w-full h-full"><ChatUI/></div>;
       case VisType.PLACEHOLDER:
