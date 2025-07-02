@@ -24,6 +24,17 @@ from database_utils.import_edges import import_edges
 from database_utils.import_nodes import import_nodes
 from database_utils.get_min_max_date import get_min_max_date
 from database_utils.get_graph_with_timestamps import get_graph_with_timestamps
+from database_utils.update_node_communities import update_node_communities
+from database_utils.import_communities import (
+    import_communities_to_database,
+    get_communities_with_nodes,
+    get_community_by_title,
+    get_nodes_by_community,
+    delete_communities,
+    get_community_connections,
+    get_community_connections_by_title,
+    get_community_graph
+)
 from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
@@ -35,11 +46,18 @@ import json
 import networkx as nx
 from networkx.readwrite import json_graph
 
-
 # Credentials
-NEO4J_URI = "bolt://" + os.environ.get('DB_HOST') + ":7687"
+DB_HOST = os.environ.get('DB_HOST')
+DB_PASSWORD = os.environ.get('DB_PASSWORD')
+
+if not DB_HOST:
+    raise ValueError("DB_HOST environment variable is not set")
+if not DB_PASSWORD:
+    raise ValueError("DB_PASSWORD environment variable is not set")
+
+NEO4J_URI = f"bolt://{DB_HOST}:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = os.environ.get('DB_PASSWORD')
+NEO4J_PASSWORD = DB_PASSWORD
 
 # LLM
 llm = LLM(model= "phi4:latest")
@@ -77,6 +95,16 @@ async def start_up():
                 edges = list(G.edges(data=True))
                 await import_nodes(session, nodes, pos)
                 await import_edges(session, edges)
+
+                # read communities from file and load communities summaries into db
+                level = 2
+                summaries_path = f"summaries/level_{level}"
+                imported_count = await import_communities_to_database(session, level, summaries_path)
+                print(f"Successfully imported {imported_count} communities to database")
+
+                # read communities from db and update nodes with community information
+                updated_count = await update_node_communities(session, level)
+                print(f"Successfully updated {updated_count} nodes with community information from level {level}")
 
             await driver.close()
             print("Database is ready")
@@ -714,176 +742,168 @@ async def test_query(question: str):
     parsed_answer = parser.parse_llm_final_response(final_answer[0])
     return parsed_answer
 
-@router.get("/fetch-communities")
-async def fetch_communities(level: int = 2):
+
+@router.post("/update-database-communities")
+async def update_database_communities(level: int = 2):
     """
-    Access the precomputed communities from the app/summaries/level_{level} folder.
-    The communities are stored in JSON files, each representing a community with its nodes and edges.
-    each json includes the following fields:
-    {
-        "title": "Community Title",
-        "summary": "Community Summary",
-        "rating": number,
-        "rating explanation": "Explanation of the rating",
-        findings": [{summary, explanation
-        nodes": [Node1, Node2, ...],
+    Update all nodes in the database with their community information from the specified level.
+    This will read the community summaries from summaries/level_{level} and update each node
+    with a 'community' attribute containing the community title.
     """
-
-    try:
-        print(os.listdir('summaries'))
-        files = os.listdir(f'summaries/level_{level}')
-        communities = []
-        for file in files:
-            if file.endswith('.json'):
-                with open(f'summaries/level_{level}/{file}', 'r') as f:
-                    community_data = json.load(f)
-                    communities.append(community_data)
-            
-        # query all nodes from the backend and add check if they belong to one or more communities
-        
-        return JSONResponse(content=communities)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
-
-
-@router.get("/get-community-summaries")
-async def get_community_summaries():
-    levels = [1,2, 3, 4, 5]
-    communities_per_level = {}
-    for level in levels:
-        communities = []
-        for file in os.listdir(f"summaries/level_{level}"):
-            if file.endswith(".json"):
-                with open(f"summaries/level_{level}/{file}", "r") as f:
-                    community_data = json.load(f)
-                    
-                    # format the community data
-                    community_data['id'] = f"""{level}_{community_data['title']}"""  # remove .json and prepend level
-                    community_data['level'] = level
-                    community_data['number_of_nodes'] = len(community_data.get('nodes', []))
-                    # remove the nodes 
-                    if 'nodes' in community_data:
-                        del community_data['nodes']
-                    if 'findings' in community_data:
-                        del community_data['findings']
-                    communities.append(community_data)
-        communities_per_level[level] = communities
-
-    return JSONResponse(content=communities_per_level)
-@router.get("/get-community-summaries-graph")
-async def get_community_summaries_graph(level: int = 2):
-    communities = []
-    for file in os.listdir(f"summaries/level_{level}"):
-        if file.endswith(".json"):
-            with open(f"summaries/level_{level}/{file}", "r") as f:
-                community_data = json.load(f)
-                
-                # format the community data
-                community_data['id'] = f"""{level}_{community_data['title']}"""  # remove .json and prepend level
-                community_data['level'] = level
-                community_data['number_of_nodes'] = len(community_data.get('nodes', []))
-                # remove the nodes 
-                if 'nodes' in community_data:
-                    del community_data['nodes']
-                if 'findings' in community_data:
-                    del community_data['findings']
-                communities.append(community_data)
-                
-                
-    # fetch graph data from the database
-    # query all nodes from the backend and add check if they belong to one or more communities
     try:
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
-                request = FilterRequestBody()
-                graph = await get_filtered_graph(session, request)
-    
-    
-                    # Convert the communities_per_level to a graphx graph
-                G = nx.Graph()
-                for community in communities:
-                    community_id = community['id']
-                    G.add_node(community_id, **community)
-                    # Add edges between communities if they share the same community
-                
+                updated_count = await update_node_communities(session, level)
+                return {
+                    "status": "success",
+                    "message": f"Successfully updated {updated_count} nodes with community information from level {level}",
+                    "updated_count": updated_count
+                }
     except Exception as e:
-        print(f"Error fetching graph data: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching graph data")
-                
-    
-
-    return JSONResponse(content=communities_per_level)
+        print(f"Error updating database with community information: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating database: {str(e)}")
 
 
-@router.post("/fetch-graph-with-communities")
-async def fetch_graph_with_communities(request: FilterRequestBody):
+@router.post("/import-communities")
+async def import_communities(level: int = 2):
     """
-    Access the precomputed communities from the app/summaries/level_{level} folder.
-    The communities are stored in JSON files, each representing a community with its nodes and edges.
-    each json includes the following fields:
-    {
-        "title": "Community Title",
-        "summary": "Community Summary",
-        "rating": number,
-        "rating explanation": "Explanation of the rating",
-        findings": [{summary, explanation
-        nodes": [Node1, Node2, ...],
+    Import level 2 communities into the database with proper graph structure.
+    This creates Community nodes, Finding nodes, and relationships between them.
     """
-    level = 2
+    summaries_path = f"summaries/level_{level}"
     try:
-        print(os.listdir('summaries'))
-        files = os.listdir(f'summaries/level_{level}')
-        communities = []
-        for file in files:
-            if file.endswith('.json'):
-                with open(f'summaries/level_{level}/{file}', 'r') as f:
-                    community_data = json.load(f)
-                    communities.append(community_data)
-            
-        # query all nodes from the backend and add check if they belong to one or more communities
-        try:
-            async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
-                async with driver.session() as session:
-                    # request = FilterRequestBody()
-                    graph = await get_filtered_graph(session, request)
-                    nodes_per_community = {community['title']: [] for community in communities}
-                    for node in graph.nodes:
-                        node_communities = []
-                        for community in communities:
-                            if node.id in community['nodes']:
-                                node_communities.append(community['title'])
-                                nodes_per_community[community['title']].append(node)
-                        node.communities = node_communities
-                        
-                    # validate that each nodes has exactly one community
-                    for node in graph.nodes:
-                        if node.communities and len(node.communities) != 1:
-                            print(f"Node {node.id} has {len(node.communities)} communities: {node.communities}")
-                            
-                    # print(f"Found {len(graph.nodes)} nodes in the graph with {len(communities)} communities")
-                    # # # calculate the centroids of each community
-                    # for community in communities:
-                    #     if community['nodes']:
-                    #         nodes = [node for node in graph.nodes if node.id in community['nodes']]
-                    #         if nodes:
-                    #             x_coords = [node.x for node in nodes]
-                    #             y_coords = [node.y for node in nodes]
-                    #             community['centroid'] = {
-                    #                 'x': sum(x_coords) / len(x_coords),
-                    #                 'y': sum(y_coords) / len(y_coords)
-                    #             }
-                    #             print(f"Community {community['title']} centroid: {community['centroid']}")
-                    #         else:
-                    #             community['centroid'] = {'x': 0, 'y': 0}
-                    #     else:
-                    #         community['centroid'] = {'x': 0, 'y': 0}
-                    
-                    return graph.model_dump(exclude_unset=True, exclude_none=True)
-        except Exception as e:
-            print(f"Error fetching graph data: {e}")
-            raise HTTPException(status_code=500, detail="Error fetching graph data")
-        
-        return JSONResponse(content=communities)
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                imported_count = await import_communities_to_database(session, level, summaries_path)
+                return {
+                    "status": "success",
+                    "message": f"Successfully imported {imported_count} communities to database",
+                    "imported_count": imported_count
+                }
     except Exception as e:
+        print(f"Error importing communities: {e}")
+        raise HTTPException(status_code=500, detail=f"Error importing communities: {str(e)}")
+
+
+@router.get("/communities")
+async def get_communities(level: int = 2):
+    """
+    Retrieve all communities with their findings and nodes.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                communities = await get_communities_with_nodes(session, level)
+                return JSONResponse(content=communities)
+    except Exception as e:
+        print(f"Error fetching communities: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
+
+
+@router.get("/communities/{title}")
+async def get_community(title: str, level: int = 2):
+    """
+    Retrieve a specific community by title.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                community = await get_community_by_title(session, title, level)
+                if community:
+                    return JSONResponse(content=community)
+                else:
+                    raise HTTPException(status_code=404, detail=f"Community '{title}' not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching community: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community: {str(e)}")
+
+
+@router.get("/communities/{title}/nodes")
+async def get_community_nodes(title: str, level: int = 2):
+    """
+    Get all nodes that belong to a specific community.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                nodes = await get_nodes_by_community(session, title, level)
+                return JSONResponse(content=nodes)
+    except Exception as e:
+        print(f"Error fetching community nodes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community nodes: {str(e)}")
+
+
+@router.delete("/communities")
+async def delete_communities_endpoint(level: int = 2):
+    """
+    Delete all communities and their findings for a specific level.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                deleted_count = await delete_communities(session, level)
+                return {
+                    "status": "success",
+                    "message": f"Successfully deleted {deleted_count} community nodes",
+                    "deleted_count": deleted_count
+                }
+    except Exception as e:
+        print(f"Error deleting communities: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting communities: {str(e)}")
+
+
+@router.get("/community-connections")
+async def get_community_connections_endpoint(level: int = 2):
+    """
+    Get all community connections for a specific level.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                connections = await get_community_connections(session, level)
+                return JSONResponse(content=connections)
+    except Exception as e:
+        print(f"Error fetching community connections: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community connections: {str(e)}")
+
+
+@router.get("/community-connections/{title}")
+async def get_community_connections_by_title_endpoint(title: str, level: int = 2):
+    """
+    Get all connections for a specific community.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                connections = await get_community_connections_by_title(session, title, level)
+                return JSONResponse(content=connections)
+    except Exception as e:
+        print(f"Error fetching community connections: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community connections: {str(e)}")
+
+
+
+@router.get("/get-community-graph")
+async def get_community_graph_endpoint(level: int = 2, include_findings: bool = True):
+    """
+    Get a community graph with nodes representing communities and edges representing connections between them.
+    CommunityConnection nodes are transformed into edges to reduce clutter.
+    
+    Args:
+        level: Community level to fetch (default: 2)
+        include_findings: Whether to include Finding nodes in the response (default: True)
+    
+    Returns:
+        JSON response with nodes (communities + optional findings) and edges (community connections)
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                graph_data = await get_community_graph(session, level)
+                return JSONResponse(content=graph_data)
+    except Exception as e:
+        print(f"Error fetching community graph: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching community graph: {str(e)}")
     

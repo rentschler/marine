@@ -28,6 +28,9 @@ class NodeType(str, Enum):
     Event = "Event"
     Relationship = "Relationship"
     Missing = "MISSING"
+    Community = "Community"
+    CommunityConnection = "CommunityConnection"
+    Finding = "Finding"
 
 class SubType(str, Enum):
     AccessPermission = "AccessPermission"
@@ -130,6 +133,7 @@ class Node(BaseModel):
     operational_role: Optional[str] = None
     subset: Optional[str] = None
     communities: Optional[List[str]] = None
+    community: Optional[str] = None
 
 class Graph(BaseModel):
     mode: str
@@ -144,3 +148,4 @@ class GraphData(BaseModel):
     graph: Graph
     nodes: List[Node]
     links: List[Link]
+

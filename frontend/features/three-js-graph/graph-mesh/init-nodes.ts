@@ -6,7 +6,19 @@ import { SubTypeColorMap } from './node-subtype-colormap';
 import * as d3 from 'd3';
 
 export function getNodes(height: number, width: number, graph: GraphData, nodeSize: number) {
-  const CommunityColorScaleD3 = d3.scaleOrdinal(d3.schemeCategory10);
+  const CommunityColorScaleD3 = d3.scaleOrdinal(d3.schemeTableau10.concat("black")).domain([
+    "Nemo Reef Unauthorized Activity Analysis",
+    "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
+    "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
+    "Efforts to Protect Nemo Reef from Unauthorized Activities",
+    "Environmental Conservation and Restricted Access Issues",
+    "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
+    "Nemo Reef & Haacklee Harbor & Marine Monitoring",
+    "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
+    "Nemo Reef: Unified Environmental and Operational Dynamics",
+    "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
+    "Event Communication and Access Management Analysis"
+  ]);
   const subsetColorScale = d3
     .scaleOrdinal<string>()
     .domain([SubsetType.A, SubsetType.B, SubsetType.A_INTERSECT_B])
@@ -58,7 +70,7 @@ export function getNodes(height: number, width: number, graph: GraphData, nodeSi
     nodeMesh.setMatrixAt(i, dummy.matrix);
 
     const colorHex = node.subset ? subsetColorScale(node.subset) : SubTypeColorMap[nodeSubType];
-    const community = node.communities && node.communities[0];
+    const community = node.community;
 
     const color = community
       ? new THREE.Color(CommunityColorScaleD3(community))

@@ -46,7 +46,7 @@ export function LayoutFactory({ layout, numberOfBins }: LayoutFactoryProps) {
       case VisType.RAG_GRAPH:
         return <div>RAG Graph</div>;
       case VisType.COMMUNITY_GRAPH:
-        return <CommunityGraphWrapper currentNode={node} id={node.getId()} />;
+        return <CommunityGraphWrapper currentNode={node} />;
       default:
         return null;
     }
