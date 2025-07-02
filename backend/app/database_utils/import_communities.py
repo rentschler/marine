@@ -2,8 +2,8 @@ import os
 import json
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
-
+from typing import Dict, List
+from models.Graph import EDefault, Graph, GraphData, Link, Node, NodeType
 
 async def import_communities_to_database(session, level: int = 2, summaries_path: str = "summaries/level_2"):
     """
@@ -113,11 +113,11 @@ async def _import_single_community(session, community_data: Dict, level: int) ->
         # Create relationships with existing nodes
         await _link_community_to_nodes(session, community_id, node_ids)
         
-        print(f"✅ Imported community: {title}")
+        print(f"Imported community: {title}")
         return True
         
     except Exception as e:
-        print(f"❌ Error importing community {community_data.get('title', 'Unknown')}: {e}")
+        print(f"Error importing community {community_data.get('title', 'Unknown')}: {e}")
         return False
 
 
@@ -411,100 +411,81 @@ async def get_community_connections_by_title(session, title: str, level: int = 2
     
     return connections
 
-
-async def get_community_graph(session, level: int = 2, include_findings: bool = True):
+    # Process community nodes and edges
+async def get_community_graph(session, level: int = 2):
     """
-    Fetch all Community nodes, their related Findings, and transform CommunityConnection nodes into edges.
-    
+    Fetch all Community nodes, and transform CommunityConnection nodes into virtual edges.
+
     Args:
         session: Neo4j database session
         level: Community level to fetch
-        include_findings: Whether to include Finding nodes
-    
+
     Returns:
         Dictionary with nodes and edges for the community graph
     """
-    # Query to get communities and their findings
-    if include_findings:
-        community_query = """
-        MATCH (c:Community {level: $level})
-        OPTIONAL MATCH (c)-[:CONTAINS_FINDING]->(f:Finding)
-        RETURN c, collect(f) as findings
-        """
-    else:
-        community_query = """
-        MATCH (c:Community {level: $level})
-        RETURN c, [] as findings
-        """
-    
-    # Query to get CommunityConnection nodes and transform them into edges
-    connection_query = """
-    MATCH (c1:Community {level: $level})-[:CONNECTED_TO]->(cc:CommunityConnection)<-[:CONNECTED_TO]-(c2:Community {level: $level})
-    WHERE c1.title < c2.title  // Avoid duplicate edges
-    RETURN c1.title as source, c2.title as target, cc.connection_count as weight, cc.id as connection_id
+    # Cypher query
+    community_query = """
+    MATCH (c1:Community)-[:CONNECTED_TO]->(cc:CommunityConnection)<-[:CONNECTED_TO]-(c2:Community)
+    WHERE cc.level = $level AND elementId(c1) < elementId(c2)
+    CALL apoc.create.vRelationship(
+        c1,
+        'CONNECTED_VIA',
+        {
+            elementId: elementId(cc),
+            dbId: elementId(cc),
+            community1_title: cc.community1_title,
+            community2_title: cc.community2_title,
+            connection_count: cc.connection_count,
+            created_at: cc.created_at,
+            uuid: cc.id,
+            level: cc.level
+        },
+        c2
+    ) YIELD rel
+    RETURN c1, rel, c2
     """
-    
-    # Execute queries
-    community_result = await session.run(community_query, level=level)
-    connection_result = await session.run(connection_query, level=level)
-    
-    # Process communities and findings
-    nodes = []
-    communities = {}
-    
-    async for record in community_result:
-        community = record["c"]
-        findings = record["findings"]
-        
-        # Create community node
-        community_node = {
-            "id": community["id"],
-            "title": community["title"],
-            "level": community["level"],
-            "description": community.get("description", ""),
-            "created_at": community.get("created_at", ""),
-            "updated_at": community.get("updated_at", ""),
-            "type": "Community",
-            "findings": []
-        }
-        
-        # Add findings if requested
-        if include_findings:
-            for finding in findings:
-                if finding:  # Check if finding is not None
-                    finding_node = {
-                        "id": finding["id"],
-                        "content": finding["content"],
-                        "type": finding.get("type", "Finding"),
-                        "confidence": finding.get("confidence", 1.0),
-                        "created_at": finding.get("created_at", ""),
-                        "parent_community": community["title"]
-                    }
-                    community_node["findings"].append(finding_node)
-        
-        nodes.append(community_node)
-        communities[community["title"]] = community_node
-    
-    # Process connections as edges
+
+    result = await session.run(community_query, level=level)
+
+    # Collect nodes and edges
+    nodes = {}
     edges = []
-    async for record in connection_result:
-        edge = {
-            "source": record["source"],
-            "target": record["target"],
-            "weight": record["weight"],
-            "connection_id": record["connection_id"],
-            "type": "CommunityConnection"
-        }
-        edges.append(edge)
-        
-    
+
+    async for record in result:
+        c1 = record["c1"]
+        c2 = record["c2"]
+        rel = record["rel"]
+
+        # Extract node info (use elementId as unique key)
+        for node in [c1, c2]:
+            node_id = node.element_id
+            if node_id not in nodes:
+                nodes[node_id] = {
+                    **node._properties,
+                    "id": node_id,
+                    "labels": list(node.labels),
+                    "type": NodeType.Community
+                }
+
+        # Extract edge info
+        edges.append({
+            "source": c1.element_id,
+            "target": c2.element_id,
+            "type": rel.type,
+            **rel._properties,
+        })
+
+    graph_meta = Graph(
+        mode="default",  
+        edge_default=EDefault(),
+        node_default=EDefault(),
+        name="Knowledge Graph"
+    )
+
     return {
-        "nodes": nodes,
-        "edges": edges,
-        "metadata": {
-            "level": level,
-            "include_findings": include_findings,
-            "node_count": len(nodes),
-            "edge_count": len(edges)
-        }
-    } 
+        "directed": False,
+        "multigraph": False,
+        "graph": graph_meta.model_dump(exclude_unset=True, exclude_none=True),
+        "nodes": list(nodes.values()),
+        "links": edges
+    }
