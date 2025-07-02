@@ -117,7 +117,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
             day: d.timestamp ? new Date(d.timestamp) : null,
             type: d.type,
             label: d.label,
-            sub_type: d.sub_type,
+            sub_type: chartType === ChartType.COMMUNITY ? d.community || "Community" : d.sub_type,
             id: d.id,
             x: d.x ?? 0,
             y: d.y ?? 0,
@@ -206,7 +206,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins, chartType]);
 
   const resetSelections = useCallback(() => {
     setDateRangeFilter({
@@ -270,7 +270,7 @@ export default function TimelineWrapper({ numberOfBins, currentNode }: TimelineW
 
       {/* bar chart */}
       <div className="flex flex-col gap-2">
-        {chartType === ChartType.STACKED ? (
+        {chartType === ChartType.STACKED || chartType === ChartType.COMMUNITY ? (
           <StackedBarChart
             data={currentStackedData?.data}
             bars={currentStackedData?.bars}

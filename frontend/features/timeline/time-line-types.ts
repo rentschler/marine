@@ -41,6 +41,7 @@ export interface StackedBarChartProps extends BaseChartProps {
   data?: StackedSeries;
   bars?: string[];
   segments?: string[];
+  type?: ChartType;
 }
 
 export enum ChartType {

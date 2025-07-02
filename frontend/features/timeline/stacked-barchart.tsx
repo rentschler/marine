@@ -1,4 +1,4 @@
-import { StackedBarChartProps } from './time-line-types';
+import { ChartType, StackedBarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
@@ -13,6 +13,7 @@ const StackedBarChart = ({
   selectionB,
   currentDateRange,
   numberOfBins,
+  type,
 }: StackedBarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = dimensions;
@@ -55,7 +56,19 @@ const StackedBarChart = ({
     const scaleLinear = d3.scaleLinear().domain([minY, maxY]).range([boundsHeight, 0]).nice();
 
     // color scale
-    const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+    const colorScale = type === ChartType.STACKED ? d3.scaleOrdinal(d3.schemeTableau10) : d3.scaleOrdinal(d3.schemeTableau10.concat("black")).domain([
+      "Nemo Reef Unauthorized Activity Analysis",
+      "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
+      "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
+      "Efforts to Protect Nemo Reef from Unauthorized Activities",
+      "Environmental Conservation and Restricted Access Issues",
+      "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
+      "Nemo Reef & Haacklee Harbor & Marine Monitoring",
+      "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
+      "Nemo Reef: Unified Environmental and Operational Dynamics",
+      "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
+      "Event Communication and Access Management Analysis"
+    ]);
 
     // Group data by bar (time bin) to calculate total heights
     const barGroups = new Map();
