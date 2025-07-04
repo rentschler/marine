@@ -8,6 +8,8 @@ import { initScene } from "./scene/init-scene";
 import { selectNode } from "./scene/select-node";
 import { updateGraphMesh } from "./graph-mesh/update-graph-mesh";
 import { Dimensions } from "@/types/dimension-type";
+import { useFilterContext } from "@/context/filter-context";
+import { getColorScale } from "./graph-mesh/color-scales";
 
 export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | null> | null, dimensions: Dimensions, data: GraphData | undefined) => {
   const scene = useMemo(() => new THREE.Scene(), []);
@@ -26,6 +28,9 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
   const nodeSize = 12;
   const edgeSize = 1;
   const zoom = 2500;
+
+  const { colorPalette, communities } = useFilterContext();
+  const colorScale = getColorScale(colorPalette, communities);
 
   const [tooltipState, setTooltipState] = useState({
     visible: false,
@@ -59,7 +64,9 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         nodeDataRef,
         setTooltipState,
         mouse,
-        raycaster
+        raycaster,
+        colorPalette,
+        colorScale
     );
 
     let observer: ResizeObserver;
@@ -105,8 +112,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         edgeMeshRef.current?.clear();
         scene.clear();
     };
-}, [data, containerRef?.current, scene, dimensions]);
-
+}, [data, containerRef?.current, scene, dimensions, colorPalette]);
 
   useEffect(() => {
     if (!containerRef?.current || !data  || (data.nodes.length == 0)) return;
@@ -121,7 +127,9 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       highLightedNodes,
       highLightedEdges,
       nodeSize,
-      edgeSize
+      edgeSize,
+      colorPalette,
+      colorScale
     );
   }, [highLightedNodes, highLightedEdges]);
 

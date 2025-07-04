@@ -5,7 +5,7 @@ import { MutableRefObject } from "react";
 import { GraphData } from "@/types/graph-types";
 import { getEdges } from "./init-edges";
 import { getNodes } from "./init-nodes";
-
+import { ColorPalette } from "@/types/filter-context-type";
 
 export function initGraphMesh(
     edgeMeshRef: MutableRefObject<THREE.InstancedMesh | null>,
@@ -18,6 +18,8 @@ export function initGraphMesh(
     edgeSize: number,
     nodeSize: number,
     nodeDataRef: MutableRefObject<{ label: string }[]>,
+    colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
+    colorScale: d3.ScaleOrdinal<string, string>
 ){
     if (edgeMeshRef.current) {
     scene.remove(edgeMeshRef.current as THREE.InstancedMesh);
@@ -25,7 +27,7 @@ export function initGraphMesh(
   if (arrowMeshRef.current) {
     scene.remove(arrowMeshRef.current as THREE.InstancedMesh);
   }
-  const { edgeMesh, arrowMesh } = getEdges(containerHeight, containerWidth, graph, edgeSize, nodeSize);
+  const { edgeMesh, arrowMesh } = getEdges(containerHeight, containerWidth, graph, edgeSize, nodeSize, colorPalette, colorScale);
 
   if (!edgeMesh || !arrowMesh) {
     console.error("Failed to create edge or arrow mesh");
@@ -46,6 +48,8 @@ export function initGraphMesh(
     containerWidth,
     graph,
     nodeSize,
+    colorPalette,
+    colorScale
   );
 
   scene.add(nodeMesh);

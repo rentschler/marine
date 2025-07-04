@@ -4,26 +4,17 @@ import { GraphData, Node, SubsetType, SubType } from '@/types/graph-types';
 import * as THREE from 'three';
 import { SubTypeColorMap } from './node-subtype-colormap';
 import * as d3 from 'd3';
+import { getColor } from './color-scales';
+import { ColorPalette } from '@/types/filter-context-type';
 
-export function getNodes(height: number, width: number, graph: GraphData, nodeSize: number) {
-  const CommunityColorScaleD3 = d3.scaleOrdinal(d3.schemeTableau10.concat("black")).domain([
-    "Nemo Reef Unauthorized Activity Analysis",
-    "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
-    "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
-    "Efforts to Protect Nemo Reef from Unauthorized Activities",
-    "Environmental Conservation and Restricted Access Issues",
-    "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
-    "Nemo Reef & Haacklee Harbor & Marine Monitoring",
-    "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
-    "Nemo Reef: Unified Environmental and Operational Dynamics",
-    "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
-    "Event Communication and Access Management Analysis"
-  ]);
-  const subsetColorScale = d3
-    .scaleOrdinal<string>()
-    .domain([SubsetType.A, SubsetType.B, SubsetType.A_INTERSECT_B])
-    .range(['#ff0000', '#00ff00', '#aaaaaa']);
-  
+export function getNodes(
+  height: number, 
+  width: number, 
+  graph: GraphData, 
+  nodeSize: number,
+  colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
+  colorScale: d3.ScaleOrdinal<string, string>
+) {
   const nodes: Node[] = graph.nodes;
 
   const baseRadius = nodeSize;
@@ -69,13 +60,9 @@ export function getNodes(height: number, width: number, graph: GraphData, nodeSi
     dummy.updateMatrix();
     nodeMesh.setMatrixAt(i, dummy.matrix);
 
-    const colorHex = node.subset ? subsetColorScale(node.subset) : SubTypeColorMap[nodeSubType];
-    const community = node.community;
-
-    const color = community
-      ? new THREE.Color(CommunityColorScaleD3(community))
-      : new THREE.Color(colorHex);
-    nodeMesh.setColorAt(i, color);
+    // Use the new color system
+    const colorHex = getColor(colorPalette, colorScale, node);
+    nodeMesh.setColorAt(i, new THREE.Color(colorHex));
 
     nodeData.push({
       position,

@@ -2,7 +2,9 @@
 
 import { GraphData, Node, Link, SubType } from "@/types/graph-types";
 import * as THREE from "three";
-import { LinkTypeColorMap } from "./edge-subtype-colormap";
+import { ColorPalette } from "@/types/filter-context-type";
+import { getColor } from "./color-scales";
+import * as d3 from 'd3';
 
 export function getEdges(
   height: number,
@@ -10,6 +12,8 @@ export function getEdges(
   graph: GraphData,
   edgeSize: number,
   nodeSize: number,
+  colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
+  colorScale: d3.ScaleOrdinal<string, string>
 ) {
   const nodes: Node[] = graph.nodes;
   const edges: Link[] = graph.links;
@@ -99,12 +103,7 @@ export function getEdges(
     arrowObject.updateMatrix();
     arrowMesh.setMatrixAt(index, arrowObject.matrix);
 
-    const color = new THREE.Color();
-    let colorHex = "#987f00";
-    if (sub_type) {
-      colorHex = LinkTypeColorMap[sub_type];
-    }
-    color.set(colorHex);
+    const color = new THREE.Color(getColor(colorPalette, colorScale, undefined, edge));
     edgeMesh.setColorAt(index, color);
     arrowMesh.setColorAt(index, color);
 

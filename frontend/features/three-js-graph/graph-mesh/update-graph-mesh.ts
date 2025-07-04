@@ -5,8 +5,7 @@ import { MutableRefObject } from "react";
 import { GraphData, Link, Node } from "@/types/graph-types";
 import { updateEdgeMesh } from "./update-edge-mesh";
 import { updateNodeMesh } from "./update-node-mesh";
-
-
+import { ColorPalette } from "@/types/filter-context-type";
 
 export function updateGraphMesh(
     edgeMeshRef: MutableRefObject<THREE.InstancedMesh | null>,
@@ -19,6 +18,8 @@ export function updateGraphMesh(
     highlightedEdges: Link[],
     nodeSize: number,
     edgeSize: number,
+    colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
+    colorScale: d3.ScaleOrdinal<string, string>
 ){
     if (edgeMeshRef.current && arrowMeshRef.current) {
         updateEdgeMesh(
@@ -29,7 +30,9 @@ export function updateGraphMesh(
         graph,
         highlightedEdges,
         edgeSize,
-        nodeSize
+        nodeSize,
+        colorPalette,
+        colorScale
         );
     }
     if (nodeMeshRef.current) {
@@ -39,6 +42,8 @@ export function updateGraphMesh(
         nodeMeshRef.current,
         graph,
         selectedNodes,
+        colorPalette,
+        colorScale
         );
     }
 }

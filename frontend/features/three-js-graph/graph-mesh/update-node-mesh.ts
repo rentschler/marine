@@ -3,6 +3,9 @@ import * as d3 from "d3";
 import { GraphData, Node, SubsetType, SubType } from "@/types/graph-types";
 import * as THREE from "three";
 import { SubTypeColorMap } from "./node-subtype-colormap";
+import { getColor, getColorScale } from "./color-scales";
+import { ColorPalette } from "@/types/filter-context-type";
+import { useFilterContext } from "@/context/filter-context";
 
 export function updateNodeMesh(
     height: number,
@@ -10,6 +13,8 @@ export function updateNodeMesh(
     nodeMesh: THREE.InstancedMesh,
     graph: GraphData,
     selectedNodes: Node[],
+    colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
+    colorScale: d3.ScaleOrdinal<string, string>
 ){
     const nodes = graph.nodes;
     const maxDimension = Math.max(height, width);
@@ -67,18 +72,10 @@ export function updateNodeMesh(
 
         nodeMesh.setMatrixAt(i, nodeObject.matrix);
 
-    // const subsetColorScale = d3.scaleOrdinal<string>()
-    //   .domain([SubsetType.A, SubsetType.B, SubsetType.A_INTERSECT_B])
-    //   .range(['#ff0000', '#00ff00', '#aaaaaa']);
-
-    // const colorHex = node.subset ? subsetColorScale(node.subset) : SubTypeColorMap[nodeSubType];
-    // const community = node.communities && node.communities[0];
-    // console.log('first', community)
-    
-    // const color = community
-    //   ? new THREE.Color(CommunityColorScaleD3(community))
-    //   : new THREE.Color(colorHex);
-    // nodeMesh.setColorAt(i, color);
+        const color = new THREE.Color(getColor(colorPalette, colorScale, node));
+        console.log("! updating node mesh", color);
+        
+        nodeMesh.setColorAt(i, color);
     }
 
     nodeMesh.instanceMatrix.needsUpdate = true;

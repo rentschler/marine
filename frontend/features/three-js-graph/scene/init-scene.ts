@@ -8,7 +8,7 @@ import { getCamera, getCustomControls, getRenderer } from "./controls";
 import { initGraphMesh } from "../graph-mesh/init-graph-mesh";
 import { handleMouseMove } from "./handel-mouse-move";
 import { NodeTooltipProps } from "../graph-mesh/node-tooltip";
-
+import { ColorPalette } from "@/types/filter-context-type";
 
 export function initScene(
     container: MutableRefObject<HTMLDivElement | null>,
@@ -29,6 +29,8 @@ export function initScene(
     setTooltipState: (value: NodeTooltipProps) => void,
     mouse: THREE.Vector2,
     raycaster: THREE.Raycaster,
+    colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
+    colorScale: d3.ScaleOrdinal<string, string>
 ){
     const currentContainer = container.current;
 
@@ -104,6 +106,8 @@ export function initScene(
     edgeSize,
     nodeSize,
     nodeDataRef,
+    colorPalette,
+    colorScale
   );
 
   return { observer, mouseMoveListener};
