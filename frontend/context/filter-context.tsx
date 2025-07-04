@@ -1,10 +1,12 @@
 'use client';
 
+import { getNodeColorScale } from '@/features/three-js-graph/graph-mesh/color-scales';
 import {
   DateRangeFilter,
   DiffGraphOptions,
   FilterContextType,
   GraphOptions,
+  ColorPalette,
 } from '@/types/filter-context-type';
 import { GraphData, LinkType, NodeType, SubsetType } from '@/types/graph-types';
 
@@ -38,9 +40,24 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     useState<DiffGraphOptions>(defaultDiffGraphOptions);
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
   const [filteredData, setFilteredData] = useState<GraphData | undefined>(undefined);
+  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.NODE_TYPE);
 
   const [error, setError] = useState<string | null>(null);
 
+const communities = [
+    "Nemo Reef Unauthorized Activity Analysis",
+    "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
+    "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
+    "Efforts to Protect Nemo Reef from Unauthorized Activities",
+    "Environmental Conservation and Restricted Access Issues",
+    "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
+    "Nemo Reef & Haacklee Harbor & Marine Monitoring",
+    "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
+    "Nemo Reef: Unified Environmental and Operational Dynamics",
+    "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
+    "Event Communication and Access Management Analysis"
+  ]
+  
   /**
    * Fetch data for the current graph based on selected filters.
    */
@@ -149,6 +166,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setGraphOptions,
         diffGraphOptions,
         setDiffGraphOptions,
+        colorPalette,
+        setColorPalette,
+        communities,
       }}
     >
       {children}

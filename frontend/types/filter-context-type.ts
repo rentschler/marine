@@ -1,6 +1,13 @@
 import { GraphData, SubsetType } from './graph-types';
 import { Dispatch, SetStateAction } from 'react';
 
+export enum ColorPalette {
+  NODE_TYPE = 'NODE_TYPE',
+  EDGE_TYPE = 'EDGE_TYPE', 
+  COMMUNITY = 'COMMUNITY',
+  COMPARISON = 'COMPARISON'
+}
+
 export interface DateRangeFilter {
   dateRangeA?: [Date, Date];
   dateRangeB?: [Date, Date];
@@ -15,6 +22,7 @@ export interface GraphOptions {
 export interface DiffGraphOptions extends GraphOptions {
   subsetFilter: SubsetType;
 }
+
 export interface FilterContextType {
   selectedNodeTypes: string[];
   setSelectedNodeTypes: (types: string[]) => void;
@@ -32,4 +40,7 @@ export interface FilterContextType {
   setGraphOptions: Dispatch<SetStateAction<GraphOptions>>;
   diffGraphOptions: DiffGraphOptions;
   setDiffGraphOptions: Dispatch<SetStateAction<DiffGraphOptions>>;
+  colorPalette: ColorPalette;
+  setColorPalette: Dispatch<SetStateAction<ColorPalette>>;
+  communities: string[];
 }
