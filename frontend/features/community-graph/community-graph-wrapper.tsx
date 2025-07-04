@@ -21,6 +21,9 @@ import { useEffect } from 'react';
 import { TabNode } from 'flexlayout-react';
 import { CommunityGraphData } from './community-types';
 import { CommunityGraph } from './community-graph';
+import { useFilterContext } from '@/context/filter-context';
+import { ColorPalette } from '@/types/filter-context-type';
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
 
 export interface CommunityGraphWrapperdProps {
   currentData?: CommunityGraphData;
@@ -29,14 +32,14 @@ export interface CommunityGraphWrapperdProps {
   currentNode: TabNode;
 }
 
-
-
 // Component that display the graph
-const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) => {
+const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
   const layout = 'none';
 
+  const { communities } = useFilterContext();
+  const colorScale = getColorScale(ColorPalette.COMMUNITY, communities);
 
   const [currentData, setCurrentData] = useState<CommunityGraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,10 +66,9 @@ const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) =
           throw new Error('Failed to fetch filtered graph data');
         }
 
-        const communities = await response.json() as CommunityGraphData;
+        const communities = (await response.json()) as CommunityGraphData;
         console.log('complete graph data:', communities);
         setCurrentData(communities);
-
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -75,8 +77,6 @@ const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) =
 
     fetchData();
   }, []);
-
-
 
   // state management for userinteraction
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -130,6 +130,7 @@ const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) =
             setHoveredNode={setHoveredNode}
             data={currentData}
             dimensions={dimensions}
+            colorScale={colorScale}
           />
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
@@ -152,13 +153,13 @@ const CommunityGraphWrapper = ({ currentNode,  }: CommunityGraphWrapperdProps) =
 
           {/* Container for the tooltip component */}
           <ControlsContainer>
-            <GraphTooltip node={hoveredNode ?? focusNode ?? selectedNode} width={dimensions.width * 0.66} />
+            <GraphTooltip
+              node={hoveredNode ?? focusNode ?? selectedNode}
+              width={dimensions.width * 0.66}
+            />
           </ControlsContainer>
           <ControlsContainer position={'bottom-right'}>
-            <div className="flex flex-row gap-2">
-              {/* Container for the color legends */}
-
-            </div>
+            <div className="flex flex-row gap-2">{/* Container for the color legends */}</div>
           </ControlsContainer>
         </SigmaContainer>
       </div>

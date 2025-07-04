@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Graph from 'graphology';
 import { useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { GraphData, LinkType, Node, NodeType, Link } from '@/types/graph-types';
 import * as d3 from 'd3';
 import { useLayoutForceAtlas2 } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
@@ -23,22 +22,11 @@ interface CommunityGraphProps extends CommunityGraphWrapperdProps {
   setHoveredNode: (node: string | null) => void;
   data?: CommunityGraphData;
   dimensions: Dimensions;
+  colorScale: d3.ScaleOrdinal<string, string>;
 }
 
 const sizeScale = d3.scaleLinear().domain([1, 1000]).range([5, 100]).clamp(true);
-const colorScale = d3.scaleOrdinal(d3.schemeTableau10.concat("black")).domain([
-  "Nemo Reef Unauthorized Activity Analysis",
-  "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
-  "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
-  "Efforts to Protect Nemo Reef from Unauthorized Activities",
-  "Environmental Conservation and Restricted Access Issues",
-  "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
-  "Nemo Reef & Haacklee Harbor & Marine Monitoring",
-  "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
-  "Nemo Reef: Unified Environmental and Operational Dynamics",
-  "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
-  "Event Communication and Access Management Analysis"
-]);
+
 
 // Component that load the graph
 export const CommunityGraph = ({
@@ -48,6 +36,7 @@ export const CommunityGraph = ({
   setHoveredNode,
   data,
   dimensions,
+  colorScale,
 }: CommunityGraphProps) => {
   const loadGraph = useLoadGraph();
 
