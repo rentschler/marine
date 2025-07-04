@@ -10,6 +10,7 @@ import { DayBin, StackedBarChartData, ChartType, InteractionMode } from './time-
 import { TabNode } from 'flexlayout-react';
 import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
 import { useDimensionsRef } from '@/hooks/use-dimension';
+import { ColorPalette } from '@/types/filter-context-type';
 
 interface TimelineWrapperProps {
   currentNode?: TabNode;
@@ -18,6 +19,8 @@ interface TimelineWrapperProps {
 export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const navBarDimensions = useDimensionsRef(navRef);  
+
+  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.EDGE_TYPE);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,7 +116,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             day: d.timestamp ? new Date(d.timestamp) : null,
             type: d.type,
             label: d.label,
-            sub_type: chartType === ChartType.COMMUNITY ? d.community || "Community" : d.sub_type,
+            sub_type: colorPalette === ColorPalette.COMMUNITY ? d.community || "Community" : d.sub_type,
             id: d.id,
             x: d.x ?? 0,
             y: d.y ?? 0,
@@ -196,7 +199,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins, chartType]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins, chartType, colorPalette]);
 
   const resetSelections = useCallback(() => {
     setDateRangeFilter({
@@ -256,10 +259,12 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
         dateRangeFilter={dateRangeFilter}
         numberBins={numberBins}
         setNumberBins={setNumberBins}
+        colorPalette={colorPalette}
+        setColorPalette={setColorPalette}
       />
 
       {/* bar chart */}
-        {chartType === ChartType.STACKED || chartType === ChartType.COMMUNITY ? (
+        {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EDGE_TYPE ? (
           <StackedBarChart
             data={currentStackedData?.data}
             bars={currentStackedData?.bars}
@@ -272,7 +277,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             currentDateRange={currentDateRange}
             interactionMode={interactionMode}
           />
-        ) : chartType === ChartType.BAR ? (
+        ) : colorPalette === ColorPalette.COMPARISON ? (
           <BarChart
             data={currentData}
             numberOfBins={numberBins}

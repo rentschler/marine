@@ -24,6 +24,7 @@ import { CommunityGraph } from './community-graph';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPalette } from '@/types/filter-context-type';
 import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+import { GraphLegend } from '../three-js-graph/graph-legend/graph-legend';
 
 export interface CommunityGraphWrapperdProps {
   currentData?: CommunityGraphData;
@@ -160,6 +161,7 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           </ControlsContainer>
           <ControlsContainer position={'bottom-right'}>
             <div className="flex flex-row gap-2">{/* Container for the color legends */}</div>
+            <GraphLegend defaultShow={true} colorPalette={ColorPalette.COMMUNITY} setColorPalette={()=>null} communities={communities} />
           </ControlsContainer>
         </SigmaContainer>
       </div>

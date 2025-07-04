@@ -1,10 +1,11 @@
 'use client';
 
 import { Button, Divider, Slider, Tooltip } from '@heroui/react';
-import { DateRangeFilter } from '@/types/filter-context-type';
+import { ColorPalette, DateRangeFilter } from '@/types/filter-context-type';
 import { ChartType, InteractionMode } from '@/features/timeline/time-line-types';
 
 import { forwardRef } from 'react';
+import { ColorPaletteSelector } from './color-palette-selector';
 
 
 interface TimelineToolbarProps {
@@ -18,6 +19,8 @@ interface TimelineToolbarProps {
   dateRangeFilter: DateRangeFilter;
   numberBins: number;
   setNumberBins: (bins: number) => void;
+  colorPalette: ColorPalette;
+  setColorPalette: (palette: ColorPalette) => void;
 }
 
 const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
@@ -33,6 +36,8 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
       dateRangeFilter,
       numberBins,
       setNumberBins,
+      colorPalette,
+      setColorPalette,
     },
     ref
   ) => {
@@ -139,6 +144,8 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
             />
           </div>
         </Tooltip>
+        <Divider orientation="vertical" className="h-8" />
+        <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
       </div>
     );
   }
