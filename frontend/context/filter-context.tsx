@@ -1,6 +1,5 @@
 'use client';
 
-import { getNodeColorScale } from '@/features/three-js-graph/graph-mesh/color-scales';
 import {
   DateRangeFilter,
   DiffGraphOptions,
@@ -106,6 +105,7 @@ const communities = [
    */
   useEffect(() => {
     const fetchData = async () => {
+      console.log('fetching diff data', dateRangeFilter, diffGraphOptions);
       try {
         const filterBody = {
           minDegree: 0,

@@ -7,6 +7,7 @@ import { forwardRef } from 'react';
 import { LoadingButton } from '@/components/loading-button/loading-button';
 import { recalculateLayout } from './recalculate-layout';
 import { useFilterContext } from '@/context/filter-context';
+import { ColorPaletteSelector } from './color-palette-selector';
 
 interface GraphToolbarProps {
   graphOptions: GraphOptions;
@@ -35,6 +36,11 @@ const { currentData, setCurrentData } = useFilterContext();
       <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100 w-full">
         {/* tool bar */}
         <div className="flex flex-row items-center gap-2 justify-between p-1 w-full" style={{ zIndex: 100 }}>
+          {/* Color Palette Selector */}
+          <ColorPaletteSelector />
+          
+          <Divider orientation="vertical" className="h-8" />
+          
           {/* toggle dateRangeFilter.neighboorNodes */}
           <div className="flex flex-row items-center gap-2">
             <input
