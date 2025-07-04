@@ -5,8 +5,12 @@ import { ColorPalette } from '@/types/filter-context-type';
 import { useFilterContext } from '@/context/filter-context';
 import { memo, useCallback } from 'react';
 
-export const ColorPaletteSelector = memo(function ColorPaletteSelector() {
-  const { colorPalette, setColorPalette } = useFilterContext();
+interface ColorPaletteSelectorProps {
+  colorPalette: ColorPalette;
+  setColorPalette: (colorPalette: ColorPalette) => void;
+}
+
+export const ColorPaletteSelector = ({ colorPalette, setColorPalette }: ColorPaletteSelectorProps) => {
 
   const colorPaletteOptions = [
     { key: ColorPalette.NODE_TYPE, label: 'Node Type' },
@@ -40,4 +44,4 @@ export const ColorPaletteSelector = memo(function ColorPaletteSelector() {
       </Select>
     </div>
   );
-}); 
+}; 

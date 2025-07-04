@@ -9,24 +9,25 @@ import { useEffect, useRef, useState } from 'react';
 import { TabNode } from 'flexlayout-react/types/model/TabNode';
 import GraphToolbar from '../../components/ui/tool-bar/graph-toolbar';
 import DiffGraphToolbar from '@/components/ui/tool-bar/diff-graph-toolbar';
+import { ColorPalette } from '@/types/filter-context-type';
 
 interface GraphSceneProps {
   showFilteredData: boolean;
-  defaultShowEdges?: boolean;
-  defaultShowNodes?: boolean;
+  defaultShow: boolean;
   currentNode?: TabNode;
 }
 
 export function GraphScene({
   showFilteredData,
-  defaultShowEdges = true,
-  defaultShowNodes = true,
+  defaultShow,
   currentNode,
 }: GraphSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(true);
   
   const [recalculatingLayout, setRecalculatingLayout] = useState<boolean>(false);
+
+  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.NODE_TYPE);
 
   const {
     filteredData,
@@ -36,6 +37,7 @@ export function GraphScene({
     graphOptions,
     setGraphOptions,
     dateRangeFilter,
+    communities,
   } = useFilterContext();
   const data = showFilteredData ? filteredData : currentData;
 
@@ -44,7 +46,7 @@ export function GraphScene({
     width: currentNode?.getRect().width || 0,
     height: currentNode?.getRect().height || 0,
   };
-  const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data);
+  const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data, colorPalette);
 
   if(!data || data.nodes.length == 0) {
     return null;
@@ -55,6 +57,8 @@ export function GraphScene({
       {/* toolbar for the graph */}
       {showFilteredData ? (
         <DiffGraphToolbar
+          colorPalette={colorPalette}
+          setColorPalette={setColorPalette}
 
           graphOptions={diffGraphOptions}
           setGraphOptions={setDiffGraphOptions}
@@ -67,7 +71,9 @@ export function GraphScene({
         />
       ) : (
         <GraphToolbar graphOptions={graphOptions} setGraphOptions={setGraphOptions} recalculatingLayout={recalculatingLayout}
-          setRecalculatingLayout={setRecalculatingLayout}/>
+          setRecalculatingLayout={setRecalculatingLayout}        colorPalette={colorPalette}
+          setColorPalette={setColorPalette}
+/>
       )}
 
       {/* container for the 3D graph */}
@@ -82,7 +88,7 @@ export function GraphScene({
       {ready && (
         <>
           <div className="absolute z-[100]" style={{ bottom: '10px', right: '10px' }}>
-            <GraphLegend defaultShowEdges={defaultShowEdges} defaultShowNodes={defaultShowNodes} />
+            <GraphLegend defaultShow={defaultShow} colorPalette={colorPalette} setColorPalette={setColorPalette} communities={communities} />
           </div>
           <NodeTooltip {...tooltipState} />
         </>

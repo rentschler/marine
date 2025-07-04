@@ -19,84 +19,38 @@ function splitIntoColumns<T>(entries: T[], maxItemsPerCol: number): T[][] {
 }
 
 interface LegendItemProps {
-  defaultShowEdges?: boolean;
-  defaultShowNodes?: boolean;
+  defaultShow: boolean;
+  colorPalette: ColorPalette;
+  setColorPalette: (colorPalette: ColorPalette) => void;
+  communities: string[];
 }
 
-export function GraphLegend({ defaultShowEdges = true, defaultShowNodes = true }: LegendItemProps) {
-  const [showEdges, setShowEdges] = useState(defaultShowEdges);
-  const [showNodes, setShowNodes] = useState(defaultShowNodes);
-  
-  const { colorPalette, currentData, filteredData, communities } = useFilterContext();
-  
-  // Get the current data to extract communities
-  const data = filteredData || currentData;
-  // Create the appropriate color scale based on the palette
-  const colorScale = getColorScale(colorPalette, communities);
-  // Get legend data based on current color palette
-  const legendData = getLegendData(colorPalette, communities);
-  const legendColumns = splitIntoColumns(legendData, MAX_ITEMS_PER_COLUMN);
+export function GraphLegend({ defaultShow = true, colorPalette, setColorPalette, communities }: LegendItemProps) {
+  const [show, setShow] = useState(ColorPalette.NODE_TYPE);
 
-  // Determine if we should show edges and nodes based on color palette
-  const shouldShowEdges = colorPalette === ColorPalette.EDGE_TYPE;
-  const shouldShowNodes = colorPalette !== ColorPalette.EDGE_TYPE;
+  const colorScale = getColorScale(colorPalette, communities);
+  
+
 
   return (
     <Card className="p-2 flex flex-col gap-2 text-xs" style={{ width: '350px' }}>
-      <ColorPaletteSelector />
-      {/* Edge Section - only show for edge type coloring */}
-      {shouldShowEdges && (
+      <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
+      {Object.values(ColorPalette).map((palette) => (
+      
         <section>
           <button
-            onClick={() => setShowEdges((prev) => !prev)}
+            onClick={() => setColorPalette(palette)}
             className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
           >
-            {showEdges ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            Edge Colors
+            {colorPalette === palette ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {palette === ColorPalette.NODE_TYPE && 'Node Type Colors'}
+            {palette === ColorPalette.COMMUNITY && 'Community Colors'}
+            {palette === ColorPalette.COMPARISON && 'Comparison Colors'}
+            {palette === ColorPalette.EDGE_TYPE && 'Edge Type Colors'}
           </button>
 
-          <AnimatePresence initial={false}>
-            {showEdges && (
-              <motion.div
-                key="edges"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="overflow-hidden"
-              >
-                <div className="grid grid-cols-2 gap-x-2">
-                  {legendColumns.map((column, colIdx) => (
-                    <div key={colIdx} className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
-                      {column.map((item) => (
-                        <LegendItem key={item.label} color={item.color} label={item.label} />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </section>
-      )}
-
-      {shouldShowEdges && shouldShowNodes && <hr className="border-gray-200 my-1" />}
-
-      {/* Node Section - show for all except edge type coloring */}
-      {shouldShowNodes && (
-        <section>
-          <button
-            onClick={() => setShowNodes((prev) => !prev)}
-            className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
-          >
-            {showNodes ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            {colorPalette === ColorPalette.NODE_TYPE && 'Node Type Colors'}
-            {colorPalette === ColorPalette.COMMUNITY && 'Community Colors'}
-            {colorPalette === ColorPalette.COMPARISON && 'Comparison Colors'}
-          </button>
-
-          <AnimatePresence initial={false}>
-            {showNodes && (
+            <AnimatePresence initial={false}>
+            {colorPalette === palette && (
               <motion.div
                 key="nodes"
                 initial={{ height: 0, opacity: 0 }}
@@ -106,7 +60,7 @@ export function GraphLegend({ defaultShowEdges = true, defaultShowNodes = true }
                 className="overflow-hidden"
               >
                 <div className="grid grid-cols-2 gap-x-2">
-                  {legendColumns.map((column, colIdx) => (
+                  {splitIntoColumns(getLegendData(palette, communities), MAX_ITEMS_PER_COLUMN).map((column, colIdx) => (
                     <div key={colIdx} className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
                       {column.map((item) => (
                         <LegendItem key={item.label} color={item.color} label={item.label} />
@@ -118,7 +72,7 @@ export function GraphLegend({ defaultShowEdges = true, defaultShowNodes = true }
             )}
           </AnimatePresence>
         </section>
-      )}
+      ))}
     </Card>
   );
 }

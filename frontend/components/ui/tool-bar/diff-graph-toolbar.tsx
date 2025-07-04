@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Divider } from '@heroui/react';
-import { DateRangeFilter, DiffGraphOptions, GraphOptions } from '@/types/filter-context-type';
+import { ColorPalette, DateRangeFilter, DiffGraphOptions, GraphOptions } from '@/types/filter-context-type';
 import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
 import { LoadingButton } from '@/components/loading-button/loading-button';
@@ -15,11 +15,13 @@ interface DiffGraphToolbarProps {
   disabledSubsetFilter?: boolean;
   recalculatingLayout: boolean;
   setRecalculatingLayout: (value: boolean) => void;
+  colorPalette: ColorPalette;
+  setColorPalette: (colorPalette: ColorPalette) => void;
 }
 
 const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
-  ({ graphOptions, setGraphOptions, disabledSubsetFilter, recalculatingLayout, setRecalculatingLayout }, ref) => {
-    const { filteredData, setFilteredData} = useFilterContext();
+  ({ graphOptions, setGraphOptions, disabledSubsetFilter, recalculatingLayout, setRecalculatingLayout, colorPalette, setColorPalette }, ref) => {
+    const { filteredData, setFilteredData } = useFilterContext();
 
     const handleClick = async () => {
       console.log("Button clicked Diff");
@@ -40,7 +42,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
         <div className="flex flex-row items-center justify-between p-1 gap-2 w-full" style={{ zIndex: 100 }}>
           <div className="flex flex-row gap-2">
             {/* Color Palette Selector */}
-            <ColorPaletteSelector />
+            <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
             
             <Divider orientation="vertical" className="h-8" />
             

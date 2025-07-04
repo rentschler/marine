@@ -10,8 +10,9 @@ import { updateGraphMesh } from "./graph-mesh/update-graph-mesh";
 import { Dimensions } from "@/types/dimension-type";
 import { useFilterContext } from "@/context/filter-context";
 import { getColorScale } from "./graph-mesh/color-scales";
+import { ColorPalette } from "@/types/filter-context-type";
 
-export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | null> | null, dimensions: Dimensions, data: GraphData | undefined) => {
+export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | null> | null, dimensions: Dimensions, data: GraphData | undefined, colorPalette: ColorPalette) => {
   const scene = useMemo(() => new THREE.Scene(), []);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -29,7 +30,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
   const edgeSize = 1;
   const zoom = 2500;
 
-  const { colorPalette, communities } = useFilterContext();
+  const { communities } = useFilterContext();
   const colorScale = getColorScale(colorPalette, communities);
 
   const [tooltipState, setTooltipState] = useState({

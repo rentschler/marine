@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Divider } from '@heroui/react';
-import { DateRangeFilter, DiffGraphOptions, GraphOptions } from '@/types/filter-context-type';
+import { ColorPalette, GraphOptions } from '@/types/filter-context-type';
 import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
 import { LoadingButton } from '@/components/loading-button/loading-button';
@@ -14,10 +14,12 @@ interface GraphToolbarProps {
   setGraphOptions: (value: React.SetStateAction<GraphOptions>) => void;
   recalculatingLayout: boolean;
   setRecalculatingLayout: (value: boolean) => void;
+  colorPalette: ColorPalette;
+  setColorPalette: (colorPalette: ColorPalette) => void;
 }
 
 const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
-  ({ graphOptions, setGraphOptions, recalculatingLayout, setRecalculatingLayout }, ref) => {
+  ({ graphOptions, setGraphOptions, recalculatingLayout, setRecalculatingLayout, colorPalette, setColorPalette }, ref) => {
 const { currentData, setCurrentData } = useFilterContext();
 
     const handleClick = async () => {
@@ -37,7 +39,7 @@ const { currentData, setCurrentData } = useFilterContext();
         {/* tool bar */}
         <div className="flex flex-row items-center gap-2 justify-between p-1 w-full" style={{ zIndex: 100 }}>
           {/* Color Palette Selector */}
-          <ColorPaletteSelector />
+          <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
           
           <Divider orientation="vertical" className="h-8" />
           
