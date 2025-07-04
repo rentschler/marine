@@ -17,9 +17,7 @@ interface TimelineWrapperProps {
 
 export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-  const navBarDimensions = useDimensionsRef(navRef);
-  console.log('navBarDimensions', navBarDimensions);
-  
+  const navBarDimensions = useDimensionsRef(navRef);  
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +62,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
           } // Update the time range in the filter context
           if (currentData) {
             const bin = currentData[nextStep];
-            console.log('timerange updated', bin.start, bin.end);
             setDateRangeFilter({
               dateRangeA: [bin.start, bin.end],
               dateRangeB: undefined,
@@ -129,9 +126,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
         const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
         setCurrentDateRange([minDate, maxDate]);
 
-        console.log('start date', minDate);
-        console.log('end date', maxDate);
-
         // Calculate bin size in milliseconds
         const binSize = (maxDate.getTime() - minDate.getTime()) / numberBins;
 
@@ -155,7 +149,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
 
 
         setCurrentData(bins);
-        console.log('bins', bins);
 
         setLoading(false);
 
@@ -187,12 +180,10 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
           return obj;
         });
 
-        // console.log('aggregatedArray', aggregatedArray);
 
         // stack the data using the subtype and the day
         const series = d3.stack().keys(groups).order(d3.stackOrderDescending)(aggregatedArray);
 
-        // console.log('series', series);
         setCurrentStackedData({
           data: series,
           bars: binIndices.map((i) => new Date(minDate.getTime() + i * binSize).toString()),

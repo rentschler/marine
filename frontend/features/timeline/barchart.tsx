@@ -1,6 +1,7 @@
 import { BarChartProps, InteractionMode } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { SubsetType } from '@/types/graph-types';
 
 const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const Barchart = ({

@@ -46,6 +46,10 @@ export function GraphScene({
   };
   const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data);
 
+  if(!data || data.nodes.length == 0) {
+    return null;
+  }
+
   return (
     <div className="h-full w-full relative ">
       {/* toolbar for the graph */}
