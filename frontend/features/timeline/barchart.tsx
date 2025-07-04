@@ -15,6 +15,13 @@ const Barchart = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const { width, height } = dimensions;
+  const colors = ['#ff0000', '#008000', '#4682b4', '#aaaaaa']; // Red, Green, Blue, Grey#
+  const colorScale = d3.scaleOrdinal(colors).domain([
+    SubsetType.A,
+    SubsetType.B, 
+    SubsetType.A_INTERSECT_B,
+    SubsetType.A_UNION_B
+  ]);
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -63,9 +70,9 @@ const Barchart = ({
       .attr('width', (d) => scaleTime(d.end) - scaleTime(d.start))
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
       .attr('fill', (d, i) => {
-        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
-        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
-        return 'steelblue';
+        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return colorScale(SubsetType.A);
+        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return colorScale(SubsetType.B);
+        return colorScale(SubsetType.A_UNION_B);
       })
       .append('title')
       .text(
