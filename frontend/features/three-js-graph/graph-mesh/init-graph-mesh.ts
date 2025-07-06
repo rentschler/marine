@@ -6,6 +6,8 @@ import { GraphData } from "@/types/graph-types";
 import { getEdges } from "./init-edges";
 import { getNodes } from "./init-nodes";
 import { ColorPalette } from "@/types/filter-context-type";
+import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { createEntityLabelMesh } from "./create-entity-label-mesh";
 
 export function initGraphMesh(
     edgeMeshRef: MutableRefObject<THREE.InstancedMesh | null>,
@@ -54,6 +56,13 @@ export function initGraphMesh(
 
   scene.add(nodeMesh);
   nodeMeshRef.current = nodeMesh;
+
+  const labels:CSS2DObject[] = createEntityLabelMesh({
+    graph,
+    height: containerHeight,
+    width: containerWidth,
+  });
+  labels.forEach(label => scene.add(label));
 
   nodeDataRef.current = nodeData;
 }

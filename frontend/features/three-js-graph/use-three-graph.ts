@@ -11,6 +11,8 @@ import { Dimensions } from "@/types/dimension-type";
 import { useFilterContext } from "@/context/filter-context";
 import { getColorScale } from "./graph-mesh/color-scales";
 import { ColorPalette } from "@/types/filter-context-type";
+import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
+
 
 export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | null> | null, dimensions: Dimensions, data: GraphData | undefined, colorPalette: ColorPalette) => {
   const scene = useMemo(() => new THREE.Scene(), []);
@@ -70,6 +72,13 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         colorScale
     );
 
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(dimensions.width, dimensions.height);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    containerRef.current.appendChild(labelRenderer.domElement);
+
     let observer: ResizeObserver;
     let mouseMoveListener: (this: HTMLDivElement, ev: MouseEvent) => any;
     let removeClickListener: () => void;
@@ -94,6 +103,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
             rendererRef.current.render(scene, cameraRef.current);
             controlsRef.current?.update();
             animationFrameId = requestAnimationFrame(animate);
+            labelRenderer.render(scene, cameraRef.current);
         }
     };
     animationFrameId = requestAnimationFrame(animate);
