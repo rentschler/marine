@@ -37,7 +37,7 @@ export function GraphLegend({ defaultShow = true, colorPalette, setColorPalette,
       <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
       {Object.values(ColorPalette).map((palette) => (
       
-        <section>
+        <section key={palette}>
           <button
             onClick={() => setColorPalette(palette)}
             className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
