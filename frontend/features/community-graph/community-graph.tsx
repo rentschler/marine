@@ -83,7 +83,7 @@ export const CommunityGraph = ({
         size: sizeScale(node.node_count),
         color: colorScale(node.title),
         data: {
-          "title": node.title,
+          "label": node.title,
           "node count": node.node_count,
           "summary": node.summary,
         },

@@ -140,13 +140,14 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
           {/* Container for the controls */}
-          <ControlsContainer position={'top-left'}>
+          <Card className="absolute top-0 left-0 py-3" style={{ zIndex: 100, paddingInlineStart: '12px', marginTop: '5px'}}>
             <ZoomControl />
             <FullScreenControl />
             <LayoutForceAtlas2Control />
-          </ControlsContainer>
+          </Card>
+
           {/* Container for the search bar */}
-          <ControlsContainer position={'top-right'}>
+          {/* <ControlsContainer position={'top-right'}>
             <GraphSearch
               type="nodes"
               value={selectedNode ? { type: 'nodes', id: selectedNode } : null}
@@ -154,37 +155,48 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
               onChange={onChange}
               postSearchResult={postSearchResult}
             />
-          </ControlsContainer>
+          </ControlsContainer> */}
 
           {/* Container for the tooltip component */}
-          <ControlsContainer>
-            <GraphTooltip
-              node={hoveredNode ?? focusNode ?? selectedNode}
-              width={dimensions.width * 0.66}
-            />
-          </ControlsContainer>
-          <div className="absolute bottom-0 right-0 m-3 p-2">
-            <Card className="p-2 flex flex-col gap-2 text-xs" style={{ width: '350px' }}>
-              {/* Container for the color legends */}
-              <button
-                onClick={() => setShowLegend(!showLegend)}
-                className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
-              >
-                {showLegend ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                Community Colors
-              </button>
+          {hoveredNode && (
+            <div
+              className="absolute bottom-0 right-100 m-3 p-2"
+              style={{
+                width: '70%',
+                maxWidth: currentNode.getRect().width - 400,
+                zIndex: 100,
+                pointerEvents: 'none',
+              }}
+            >
+              <GraphTooltip
+                node={hoveredNode ?? focusNode ?? selectedNode}
+                width={dimensions.width * 0.66}
+              />
+            </div>
+          )}
+          <Card
+            className="absolute bottom-0 right-0 m-3 p-2 flex flex-col gap-2 text-xs"
+            style={{ width: '350px' }}
+          >
+            {/* Container for the color legends */}
+            <button
+              onClick={() => setShowLegend(!showLegend)}
+              className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
+            >
+              {showLegend ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              Community Colors
+            </button>
 
-              <AnimatePresence initial={false}>
-                {showLegend && (
-                  <LegendContent
-                    palette={ColorPalette.COMMUNITY}
-                    communities={communities}
-                    maxItemsPerColumn={1}
-                  />
-                )}
-              </AnimatePresence>
-            </Card>
-          </div>
+            <AnimatePresence initial={false}>
+              {showLegend && (
+                <LegendContent
+                  palette={ColorPalette.COMMUNITY}
+                  communities={communities}
+                  maxItemsPerColumn={1}
+                />
+              )}
+            </AnimatePresence>
+          </Card>
         </SigmaContainer>
       </div>
     </div>
