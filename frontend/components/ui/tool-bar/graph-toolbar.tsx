@@ -47,7 +47,7 @@ const { currentData, setCurrentData } = useFilterContext();
           <div className="flex flex-row items-center gap-2">
             <input
               type="checkbox"
-              id="neighboorNodesSwitch2"
+              id="neighboorNodesSwitch"
               checked={graphOptions.neighboorNodes}
               onChange={(e) =>
                 setGraphOptions((prev) => ({
@@ -56,7 +56,7 @@ const { currentData, setCurrentData } = useFilterContext();
                 }))
               }
             />
-            <label htmlFor="neighboorNodesSwitch2" className="text-sm font-medium text-gray-700">
+            <label htmlFor="neighboorNodesSwitch" className="text-sm font-medium text-gray-700">
               Include Neighbor Nodes in Diff Graph
             </label>
             <Divider orientation="vertical" className="h-8" />
@@ -64,7 +64,7 @@ const { currentData, setCurrentData } = useFilterContext();
           <div className="flex flex-row items-center gap-2">
             <input
               type="checkbox"
-              id="collapseCommsSwitch2"
+              id="collapseCommsSwitch"
               checked={graphOptions.collapseComms}
               onChange={(e) =>
                 setGraphOptions((prev) => ({
@@ -74,7 +74,7 @@ const { currentData, setCurrentData } = useFilterContext();
                 }))
               }
             />
-            <label htmlFor="collapseCommsSwitch2" className="text-sm font-medium text-gray-700">
+            <label htmlFor="collapseCommsSwitch" className="text-sm font-medium text-gray-700">
               Collapse Communication Edges
             </label>
           </div>

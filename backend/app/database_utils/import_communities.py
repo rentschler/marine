@@ -474,8 +474,44 @@ async def get_community_graph(session, level: int = 2):
     Returns:
         Dictionary with nodes and edges for the community graph
     """
-    # Cypher query
-    community_query = """
+    # First, get all communities for this level
+    communities_query = """
+    MATCH (c:Community {level: $level})
+    RETURN c
+    """
+    
+    communities_result = await session.run(communities_query, level=level)
+    
+    # Collect all community nodes
+    nodes = {}
+    async for record in communities_result:
+        c = record["c"]
+        node_id = c.element_id
+        nodes[node_id] = {
+            **c._properties,
+            "id": node_id,
+            "labels": list(c.labels),
+            "type": NodeType.Community
+        }
+    
+    # If there are no communities, return empty graph
+    if not nodes:
+        graph_meta = Graph(
+            mode="default",  
+            edge_default=EDefault(),
+            node_default=EDefault(),
+            name="Knowledge Graph"
+        )
+        return {
+            "directed": False,
+            "multigraph": False,
+            "graph": graph_meta.model_dump(exclude_unset=True, exclude_none=True),
+            "nodes": [],
+            "links": []
+        }
+    
+    # Then get connections between communities (if any exist)
+    connections_query = """
     MATCH (c1:Community)-[:CONNECTED_TO]->(cc:CommunityConnection)<-[:CONNECTED_TO]-(c2:Community)
     WHERE cc.level = $level AND elementId(c1) < elementId(c2)
     CALL apoc.create.vRelationship(
@@ -496,27 +532,14 @@ async def get_community_graph(session, level: int = 2):
     RETURN c1, rel, c2
     """
 
-    result = await session.run(community_query, level=level)
+    connections_result = await session.run(connections_query, level=level)
 
-    # Collect nodes and edges
-    nodes = {}
+    # Collect edges
     edges = []
-
-    async for record in result:
+    async for record in connections_result:
         c1 = record["c1"]
         c2 = record["c2"]
         rel = record["rel"]
-
-        # Extract node info (use elementId as unique key)
-        for node in [c1, c2]:
-            node_id = node.element_id
-            if node_id not in nodes:
-                nodes[node_id] = {
-                    **node._properties,
-                    "id": node_id,
-                    "labels": list(node.labels),
-                    "type": NodeType.Community
-                }
 
         # Extract edge info
         edges.append({

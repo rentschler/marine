@@ -24,7 +24,10 @@ import { CommunityGraph } from './community-graph';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPalette } from '@/types/filter-context-type';
 import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
-import { GraphLegend } from '../three-js-graph/graph-legend/graph-legend';
+import { GraphLegend, LegendContent } from '../three-js-graph/graph-legend/graph-legend';
+import { AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Card } from '@heroui/react';
 
 export interface CommunityGraphWrapperdProps {
   currentData?: CommunityGraphData;
@@ -44,6 +47,7 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
 
   const [currentData, setCurrentData] = useState<CommunityGraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showLegend, setShowLegend] = useState(false);
 
   const dimensions = {
     width: currentNode.getRect().width - 10,
@@ -159,10 +163,28 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
               width={dimensions.width * 0.66}
             />
           </ControlsContainer>
-          <ControlsContainer position={'bottom-right'}>
-            <div className="flex flex-row gap-2">{/* Container for the color legends */}</div>
-            <GraphLegend defaultShow={true} colorPalette={ColorPalette.COMMUNITY} setColorPalette={()=>null} communities={communities} />
-          </ControlsContainer>
+          <div className="absolute bottom-0 right-0 m-3 p-2">
+            <Card className="p-2 flex flex-col gap-2 text-xs" style={{ width: '350px' }}>
+              {/* Container for the color legends */}
+              <button
+                onClick={() => setShowLegend(!showLegend)}
+                className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
+              >
+                {showLegend ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                Community Colors
+              </button>
+
+              <AnimatePresence initial={false}>
+                {showLegend && (
+                  <LegendContent
+                    palette={ColorPalette.COMMUNITY}
+                    communities={communities}
+                    maxItemsPerColumn={1}
+                  />
+                )}
+              </AnimatePresence>
+            </Card>
+          </div>
         </SigmaContainer>
       </div>
     </div>
