@@ -76,7 +76,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          communities: graphOptions.selectedCommunities.length > 0 ? graphOptions.selectedCommunities : undefined,
+          communities: graphOptions.selectedCommunities.length > 0 ? graphOptions.selectedCommunities : [],
           collapseComms: graphOptions.collapseComms,
           recalculateLayout: graphOptions.recalculateLayout ?? false,
 
@@ -120,7 +120,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: 1000,
           nodeTypes: Object.values(NodeType),
           edgeTypes: Object.values(LinkType),
-          communities: diffGraphOptions.selectedCommunities.length > 0 ? diffGraphOptions.selectedCommunities : undefined,
+          communities: diffGraphOptions.selectedCommunities.length > 0 ? diffGraphOptions.selectedCommunities : [],
           startDateA: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
           endDateA: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
           startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),

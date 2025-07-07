@@ -10,3 +10,4 @@ class FilterRequestBody(BaseModel):
     startDate: Optional[str] = None
     endDate: Optional[str] = None
     collapseComms: Optional[bool] = False
+    communities: Optional[List[str]] = []

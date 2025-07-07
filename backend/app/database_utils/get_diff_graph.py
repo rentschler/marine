@@ -13,6 +13,13 @@ def build_edge_filters(filters: DiffRequestBody) -> str:
     return " AND ".join(conditions) if conditions else "true"
 
 
+def build_community_filter(filters: DiffRequestBody, node_name: str) -> str:
+    if not filters.communities or len(filters.communities) == 0:
+        return "true"
+    community_list = ", ".join(f"'{c}'" for c in filters.communities)
+    return f"{node_name}.community IN [{community_list}]"
+
+
 def build_node_date_filter_range(start: str, end: str) -> str:
     if not start or not end:
         return "true"
@@ -38,6 +45,7 @@ async def get_diff_graph(session, filters: DiffRequestBody):
     entity_query = f"""
         MATCH (n)
         WHERE n.type = "Entity"
+        AND {build_community_filter(filters, "n")} 
         WITH n, SIZE([(n)--() | 1]) AS degree
         WHERE degree >= $minDegree AND degree <= $maxDegree
         RETURN DISTINCT n
@@ -68,6 +76,8 @@ async def get_diff_graph(session, filters: DiffRequestBody):
                 WHERE e.type = "Entity" AND c.type = "Event"
                 AND elementId(e) IN $entity_ids
                 AND {date_filter_A}
+                AND {build_community_filter(filters, "e")}
+                AND {build_community_filter(filters, "c")}
                 RETURN DISTINCT c
             """
             records_events_A = await session.run(
@@ -97,6 +107,8 @@ async def get_diff_graph(session, filters: DiffRequestBody):
                 WHERE e.type = "Entity" AND c.type = "Event"
                 AND elementId(e) IN $entity_ids
                 AND {date_filter_B}
+                AND {build_community_filter(filters, "e")}
+                AND {build_community_filter(filters, "c")}
                 RETURN DISTINCT c
             """
             records_events_B = await session.run(
@@ -145,6 +157,8 @@ async def get_diff_graph(session, filters: DiffRequestBody):
             MATCH (c)-[]->(r)
             WHERE c.type = "Event" AND r.type = "Relationship"
             AND elementId(c) IN $event_ids
+            AND {build_community_filter(filters, "c")}
+            AND {build_community_filter(filters, "r")}
             RETURN DISTINCT r
         """
         records_relationships = await session.run(

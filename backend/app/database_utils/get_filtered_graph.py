@@ -22,6 +22,12 @@ def build_node_date_filter(filters: FilterRequestBody) -> str:
     # Return a clause that can be added to a Cypher WHERE condition
     return f"(c.timestamp IS NOT NULL AND c.timestamp >= '{start_date}' AND c.timestamp < '{end_date}')"
 
+def build_community_filter(filters: FilterRequestBody, node_name: str) -> str:
+    if not filters.communities or len(filters.communities) == 0:
+        return "true"
+    community_list = ", ".join(f"'{c}'" for c in filters.communities)
+    return f"{node_name}.community IN [{community_list}]"
+
 async def get_filtered_graph(session, filters: FilterRequestBody):
     nodes_dict = {}
 
@@ -31,9 +37,13 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
 
     # Build date filter condition
     date_filter = build_node_date_filter(filters)
+    # Build community filter condition
+    community_filter = build_community_filter(filters, "n")
+    
     entity_query = f"""
         MATCH (n)
         WHERE n.type = "Entity"
+        AND {community_filter}
         WITH n, SIZE([(n)--() | 1]) AS degree
         WHERE degree >= $minDegree AND degree <= $maxDegree
         RETURN DISTINCT n
@@ -55,6 +65,8 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             WHERE e.type = "Entity" AND c.type = "Event"
             AND elementId(e) IN $entity_ids
             AND {date_filter}
+            AND {build_community_filter(filters, "e")}
+            AND {build_community_filter(filters, "c")}
             RETURN DISTINCT c
         """
         print(event_query)
@@ -78,6 +90,8 @@ async def get_filtered_graph(session, filters: FilterRequestBody):
             MATCH (c)-[]->(r)
             WHERE c.type = "Event" AND r.type = "Relationship"
             AND elementId(c) IN $event_ids
+            AND {build_community_filter(filters, "c")}
+            AND {build_community_filter(filters, "r")}
             RETURN DISTINCT r
         """
         records_relationships = await session.run(relationship_query, event_ids=list(event_ids))
