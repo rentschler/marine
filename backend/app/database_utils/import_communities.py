@@ -266,6 +266,28 @@ async def get_communities_with_nodes(session, level: int = 2):
     return communities
 
 
+async def get_communities_names(session):
+    """
+    Retrieve communities names for each level.
+    """
+    query = """
+    MATCH (c:Community)
+    RETURN c.title, c.level
+    """
+    result = await session.run(query)
+    communities_per_level = {}
+
+    async for record in result:
+        level = record["c.level"]
+        if level not in communities_per_level:
+            communities_per_level[level] = []
+        communities_per_level[level].append({
+            "title": record["c.title"],
+            "level": level
+        })
+    
+    return communities_per_level
+
 async def get_community_by_title(session, title: str, level: int = 2):
     """
     Retrieve a specific community by title.

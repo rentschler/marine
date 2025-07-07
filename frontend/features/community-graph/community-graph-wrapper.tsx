@@ -31,7 +31,7 @@ import { Card } from '@heroui/react';
 
 export interface CommunityGraphWrapperdProps {
   currentData?: CommunityGraphData;
-  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null';
+  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null' 
   limit?: number;
   currentNode: TabNode;
 }
@@ -40,7 +40,7 @@ export interface CommunityGraphWrapperdProps {
 const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
-  const layout = 'none';
+  const layout = 'null';
 
   const { communities } = useFilterContext();
   const colorScale = getColorScale(ColorPalette.COMMUNITY, communities);
@@ -71,9 +71,9 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           throw new Error('Failed to fetch filtered graph data');
         }
 
-        const communities = (await response.json()) as CommunityGraphData;
-        console.log('complete graph data:', communities);
-        setCurrentData(communities);
+        const communityGraphData = (await response.json()) as CommunityGraphData;
+        console.log('complete graph data:', communityGraphData);
+        setCurrentData(communityGraphData);
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -188,7 +188,7 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
             </button>
 
             <AnimatePresence initial={false}>
-              {showLegend && (
+              {showLegend && communities && (
                 <LegendContent
                   palette={ColorPalette.COMMUNITY}
                   communities={communities}

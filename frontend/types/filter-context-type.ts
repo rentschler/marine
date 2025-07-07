@@ -42,5 +42,14 @@ export interface FilterContextType {
   setDiffGraphOptions: Dispatch<SetStateAction<DiffGraphOptions>>;
   colorPalette: ColorPalette;
   setColorPalette: Dispatch<SetStateAction<ColorPalette>>;
-  communities: string[];
+  communities?: string[];
+}
+
+export interface Community {
+  title: string;
+  level: number;
+}
+
+export interface CommunitiesResponse {
+  [level: string]: Community[];
 }

@@ -88,7 +88,7 @@ export function GraphScene({
       {ready && (
         <>
           <div className="absolute z-[100]" style={{ bottom: '10px', right: '10px' }}>
-            <GraphLegend defaultShow={defaultShow} colorPalette={colorPalette} setColorPalette={setColorPalette} communities={communities} />
+            {communities && <GraphLegend defaultShow={defaultShow} colorPalette={colorPalette} setColorPalette={setColorPalette} communities={communities} />}
           </div>
           <NodeTooltip {...tooltipState} />
         </>
