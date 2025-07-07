@@ -123,7 +123,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         edgeMeshRef.current?.clear();
         scene.clear();
     };
-}, [data, containerRef?.current]);
+}, [data, containerRef?.current, dimensions]);
 
   useEffect(() => {
     if (!containerRef?.current || !data  || (data.nodes.length == 0)) return;
@@ -142,7 +142,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       colorPalette,
       colorScale
     );
-  }, [highLightedNodes, highLightedEdges, colorPalette, dimensions]);
+  }, [highLightedNodes, highLightedEdges, colorPalette]);
 
   return {
     tooltipState,

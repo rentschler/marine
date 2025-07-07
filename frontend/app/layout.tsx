@@ -12,10 +12,10 @@ import { FilterProvider } from "@/context/filter-context";
 
 export const metadata: Metadata = {
   title: {
-    default: "AVA Template",
-    template: "AVA Template",
+    default: "MARINE 360°",
+    template: "MARINE 360°",
   },
-  description: "AVA Template",
+  description: "MARINE 360°",
   icons: {
     icon: "/favicon.ico",
   },
