@@ -7,9 +7,11 @@ import { memo, useCallback, useMemo } from 'react';
 interface CommunitySelectorProps {
   selectedCommunities: string[];
   setSelectedCommunities: (communities: string[]) => void;
+  showCount?: boolean;
+  showButtons?: boolean;
 }
 
-export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommunities }: CommunitySelectorProps) => {
+export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommunities, showCount = true, showButtons = true }: CommunitySelectorProps) => {
   const { communities } = useFilterContext();
 
   const handleSelectionChange = useCallback((keys: any) => {
@@ -43,7 +45,8 @@ export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommuni
     <div className="flex items-center gap-2">
       <label className="text-sm font-medium text-gray-700">Communities:</label>
       <div className="flex flex-col gap-1">
-        <div className="flex gap-1">
+        {showButtons && (
+          <div className="flex gap-1">
           <Button
             size="sm"
             variant="flat"
@@ -60,7 +63,8 @@ export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommuni
           >
             Deselect All
           </Button>
-        </div>
+          </div>
+        )}
         <Select
           size="sm"
           selectedKeys={new Set(selectedCommunities)}
@@ -76,12 +80,12 @@ export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommuni
             </SelectItem>
           ))}
         </Select>
-        {isSomeSelected && (
+        {isSomeSelected && showCount && (
           <span className="text-xs text-gray-500">
             {selectedCommunities.length} of {communities.length} selected
           </span>
         )}
-        {isAllSelected && (
+        {isAllSelected && showCount && (
           <span className="text-xs text-gray-500">
             All communities selected
           </span>
