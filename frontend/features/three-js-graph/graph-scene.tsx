@@ -48,9 +48,9 @@ export function GraphScene({
   };
   const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data, colorPalette);
 
-  if(!data || data.nodes.length == 0) {
-    return null;
-  }
+  // if(!data || data.nodes.length == 0) {
+  //   return null;
+  // }
 
   return (
     <div className="h-full w-full relative ">

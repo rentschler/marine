@@ -36,7 +36,7 @@ export function GraphLegend({
 
   return (
     <Card className="p-2 flex flex-col gap-2 text-xs" style={{ width: '350px' }}>
-      <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
+      {/* <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} /> */}
       {Object.values(ColorPalette).map((palette) => (
         <section key={palette}>
           <button

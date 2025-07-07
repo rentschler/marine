@@ -8,6 +8,7 @@ import { LoadingButton } from '@/components/loading-button/loading-button';
 import { recalculateLayout } from './recalculate-layout';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPaletteSelector } from './color-palette-selector';
+import { CommunitySelector } from './community-selector';
 
 interface DiffGraphToolbarProps {
   graphOptions: DiffGraphOptions;
@@ -41,8 +42,13 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
         {/* tool bar */}
         <div className="flex flex-row items-center justify-between p-1 gap-2 w-full" style={{ zIndex: 100 }}>
           <div className="flex flex-row gap-2">
-            {/* Color Palette Selector */}
-            <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
+            {/* Community Selector */}
+          <CommunitySelector
+            selectedCommunities={graphOptions.selectedCommunities}
+            setSelectedCommunities={(communities) =>
+              setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
+            }
+          />
             
             <Divider orientation="vertical" className="h-8" />
             

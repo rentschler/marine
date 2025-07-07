@@ -17,6 +17,7 @@ export interface GraphOptions {
   neighboorNodes: boolean;
   collapseComms: boolean;
   recalculateLayout?: boolean;
+  selectedCommunities: string[];
 }
 
 export interface DiffGraphOptions extends GraphOptions {
