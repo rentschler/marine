@@ -8,6 +8,7 @@ import { LoadingButton } from '@/components/loading-button/loading-button';
 import { recalculateLayout } from './recalculate-layout';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPaletteSelector } from './color-palette-selector';
+import { CommunitySelector } from './community-selector';
 
 interface GraphToolbarProps {
   graphOptions: GraphOptions;
@@ -19,35 +20,56 @@ interface GraphToolbarProps {
 }
 
 const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
-  ({ graphOptions, setGraphOptions, recalculatingLayout, setRecalculatingLayout, colorPalette, setColorPalette }, ref) => {
-const { currentData, setCurrentData } = useFilterContext();
+  (
+    {
+      graphOptions,
+      setGraphOptions,
+      recalculatingLayout,
+      setRecalculatingLayout,
+      colorPalette,
+      setColorPalette,
+    },
+    ref
+  ) => {
+    const { currentData, setCurrentData } = useFilterContext();
 
     const handleClick = async () => {
-      console.log("Button clicked");
+      console.log('Button clicked');
       setRecalculatingLayout(true);
       try {
         const dataToSend = currentData;
         if (!dataToSend) return;
 
-        await recalculateLayout(dataToSend,setCurrentData);
+        await recalculateLayout(dataToSend, setCurrentData);
       } finally {
         setRecalculatingLayout(false);
       }
     };
     return (
-      <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100 w-full">
+      <div
+        ref={ref}
+        className="flex items-center justify-between p-1 bg-gray-100 w-full relative z-10"
+      >
         {/* tool bar */}
-        <div className="flex flex-row items-center gap-2 justify-between p-1 w-full" style={{ zIndex: 100 }}>
-          {/* Color Palette Selector */}
-          <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
-          
+        <div
+          className="flex flex-row items-center gap-2 justify-between p-1 w-full"
+          style={{ zIndex: 100 }}
+        >
+          {/* Community Selector */}
+          <CommunitySelector
+            selectedCommunities={graphOptions.selectedCommunities}
+            setSelectedCommunities={(communities) =>
+              setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
+            }
+          />
+
           <Divider orientation="vertical" className="h-8" />
-          
+
           {/* toggle dateRangeFilter.neighboorNodes */}
           <div className="flex flex-row items-center gap-2">
             <input
               type="checkbox"
-              id="neighboorNodesSwitch2"
+              id="neighboorNodesSwitch"
               checked={graphOptions.neighboorNodes}
               onChange={(e) =>
                 setGraphOptions((prev) => ({
@@ -56,34 +78,34 @@ const { currentData, setCurrentData } = useFilterContext();
                 }))
               }
             />
-            <label htmlFor="neighboorNodesSwitch2" className="text-sm font-medium text-gray-700">
+            <label htmlFor="neighboorNodesSwitch" className="text-sm font-medium text-gray-700">
               Include Neighbor Nodes in Diff Graph
             </label>
             <Divider orientation="vertical" className="h-8" />
-          {/* toggle dateRangeFilter.collapseComms */}
-          <div className="flex flex-row items-center gap-2">
-            <input
-              type="checkbox"
-              id="collapseCommsSwitch2"
-              checked={graphOptions.collapseComms}
-              onChange={(e) =>
-                setGraphOptions((prev) => ({
-                  ...prev,
-                  neighboorNodes: e.target.checked ? true : prev.neighboorNodes, // ensure neighboorNodes is true if collapseComms is true
-                  collapseComms: e.target.checked,
-                }))
-              }
-            />
-            <label htmlFor="collapseCommsSwitch2" className="text-sm font-medium text-gray-700">
-              Collapse Communication Edges
-            </label>
-          </div>
+            {/* toggle dateRangeFilter.collapseComms */}
+            <div className="flex flex-row items-center gap-2">
+              <input
+                type="checkbox"
+                id="collapseCommsSwitch"
+                checked={graphOptions.collapseComms}
+                onChange={(e) =>
+                  setGraphOptions((prev) => ({
+                    ...prev,
+                    neighboorNodes: e.target.checked ? true : prev.neighboorNodes, // ensure neighboorNodes is true if collapseComms is true
+                    collapseComms: e.target.checked,
+                  }))
+                }
+              />
+              <label htmlFor="collapseCommsSwitch" className="text-sm font-medium text-gray-700">
+                Collapse Communication Edges
+              </label>
+            </div>
           </div>
           <LoadingButton
-              loading={recalculatingLayout}
-              text="Recalculate Layout"
-              onClick={handleClick}
-            />
+            loading={recalculatingLayout}
+            text="Recalculate Layout"
+            onClick={handleClick}
+          />
         </div>
       </div>
     );

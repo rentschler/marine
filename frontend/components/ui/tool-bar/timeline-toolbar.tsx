@@ -6,7 +6,7 @@ import { ChartType, InteractionMode } from '@/features/timeline/time-line-types'
 
 import { forwardRef } from 'react';
 import { ColorPaletteSelector } from './color-palette-selector';
-
+import { CommunitySelector } from './community-selector';
 
 interface TimelineToolbarProps {
   chartType: ChartType;
@@ -21,6 +21,8 @@ interface TimelineToolbarProps {
   setNumberBins: (bins: number) => void;
   colorPalette: ColorPalette;
   setColorPalette: (palette: ColorPalette) => void;
+  selectedCommunities: string[];
+  setSelectedCommunities: (communities: string[]) => void;
 }
 
 const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
@@ -38,45 +40,15 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
       setNumberBins,
       colorPalette,
       setColorPalette,
+      selectedCommunities,
+      setSelectedCommunities,
     },
     ref
   ) => {
     return (
       <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100">
         <div className="flex gap-2">
-          <Tooltip content="Switch to regular bar chart view">
-            <Button
-              size="sm"
-              variant={chartType === ChartType.BAR ? 'solid' : 'bordered'}
-              onPress={() => setChartType(ChartType.BAR)}
-            >
-              Bar Chart
-            </Button>
-          </Tooltip>
-          <Tooltip content="Switch to stacked bar chart view">
-            <Button
-              size="sm"
-              variant={chartType === ChartType.STACKED ? 'solid' : 'bordered'}
-              onPress={() => setChartType(ChartType.STACKED)}
-            >
-              Stacked Chart
-            </Button>
-          </Tooltip>
-          <Tooltip content="Switch to community chart view">
-            <Button
-              size="sm"
-              variant={chartType === ChartType.COMMUNITY ? 'solid' : 'bordered'}
-              onPress={() => setChartType(ChartType.COMMUNITY)}
-            >
-              Community Chart
-            </Button>
-          </Tooltip>
-        </div>
-
-        <Divider orientation="vertical" className="h-8" />
-
-        <div className="flex gap-2">
-        <Tooltip content="Disable selection to enable tooltips">
+          <Tooltip content="Disable selection to enable tooltips">
             <Button
               size="sm"
               variant={interactionMode === InteractionMode.NONE ? 'solid' : 'bordered'}
@@ -106,7 +78,6 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
               Diff Selection
             </Button>
           </Tooltip>
-    
         </div>
 
         <Divider orientation="vertical" className="h-8" />
@@ -146,6 +117,17 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
         </Tooltip>
         <Divider orientation="vertical" className="h-8" />
         <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
+
+        <Divider orientation="vertical" className="h-8" />
+
+        <div className="flex gap-2">
+          <CommunitySelector
+            selectedCommunities={selectedCommunities}
+            setSelectedCommunities={setSelectedCommunities}
+            showCount={false}
+            showButtons={false}
+          />
+        </div>
       </div>
     );
   }

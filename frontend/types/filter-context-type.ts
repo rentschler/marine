@@ -17,6 +17,7 @@ export interface GraphOptions {
   neighboorNodes: boolean;
   collapseComms: boolean;
   recalculateLayout?: boolean;
+  selectedCommunities: string[];
 }
 
 export interface DiffGraphOptions extends GraphOptions {
@@ -42,5 +43,14 @@ export interface FilterContextType {
   setDiffGraphOptions: Dispatch<SetStateAction<DiffGraphOptions>>;
   colorPalette: ColorPalette;
   setColorPalette: Dispatch<SetStateAction<ColorPalette>>;
-  communities: string[];
+  communities?: string[];
+}
+
+export interface Community {
+  title: string;
+  level: number;
+}
+
+export interface CommunitiesResponse {
+  [level: string]: Community[];
 }

@@ -11,6 +11,7 @@ import { TabNode } from 'flexlayout-react';
 import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
 import { useDimensionsRef } from '@/hooks/use-dimension';
 import { ColorPalette } from '@/types/filter-context-type';
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
 
 interface TimelineWrapperProps {
   currentNode?: TabNode;
@@ -36,6 +37,8 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const [currentStackedData, setCurrentStackedData] = useState<StackedBarChartData | undefined>(
     undefined
   );
+  const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
+
 
   const {
     selectedNodeTypes,
@@ -44,7 +47,9 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     dateRangeFilter,
     setDateRangeFilter,
     setDiffGraphOptions,
+    communities,
   } = useFilterContext();
+
 
   // get the dimensions of the current node
   const dimensions = currentNode
@@ -97,11 +102,15 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const requestBody = {
+          communities: selectedCommunities && selectedCommunities.length > 0 ? selectedCommunities : [],
+        }
         const response = await fetch('/api/graph-data-timestamps', {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -199,7 +208,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins, chartType, colorPalette]);
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins, chartType, colorPalette, selectedCommunities]);
 
   const resetSelections = useCallback(() => {
     setDateRangeFilter({
@@ -261,6 +270,8 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
         setNumberBins={setNumberBins}
         colorPalette={colorPalette}
         setColorPalette={setColorPalette}
+        selectedCommunities={selectedCommunities}
+        setSelectedCommunities={setSelectedCommunities}
       />
 
       {/* bar chart */}
@@ -276,6 +287,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             selectionB={dateRangeFilter.dateRangeB}
             currentDateRange={currentDateRange}
             interactionMode={interactionMode}
+            colorScale={getColorScale(colorPalette, communities)}
           />
         ) : colorPalette === ColorPalette.COMPARISON ? (
           <BarChart

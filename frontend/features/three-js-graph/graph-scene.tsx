@@ -48,9 +48,11 @@ export function GraphScene({
   };
   const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data, colorPalette);
 
-  if(!data || data.nodes.length == 0) {
-    return null;
-  }
+  const selectedCommunities = showFilteredData ? diffGraphOptions.selectedCommunities : graphOptions.selectedCommunities;
+
+  // if(!data || data.nodes.length == 0) {
+  //   return null;
+  // }
 
   return (
     <div className="h-full w-full relative ">
@@ -88,7 +90,7 @@ export function GraphScene({
       {ready && (
         <>
           <div className="absolute z-[100]" style={{ bottom: '10px', right: '10px' }}>
-            <GraphLegend defaultShow={defaultShow} colorPalette={colorPalette} setColorPalette={setColorPalette} communities={communities} />
+            {communities && <GraphLegend defaultShow={defaultShow} colorPalette={colorPalette} setColorPalette={setColorPalette} communities={communities} selectedCommunities={selectedCommunities} />}
           </div>
           <NodeTooltip {...tooltipState} />
         </>

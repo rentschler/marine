@@ -2,6 +2,7 @@ import { useSigma } from '@react-sigma/core';
 import { useEffect, useState } from 'react';
 import { Node } from '@/types/graph-types';
 import * as d3 from 'd3';
+import { Card, CardBody, CardHeader } from '@heroui/react';
 
 interface GraphTooltipProps {
   node: string | null;
@@ -31,16 +32,22 @@ const GraphTooltip = ({ node, width }: GraphTooltipProps) => {
       }
 
       setTooltip(
-        <div>
-          <h3>label: {nodeData.label}</h3>
-          {Object.entries(nodeData)
+        <Card>
+          {nodeData.label && <CardHeader className="text-xs font-bold mb-1">{nodeData.label}</CardHeader>}
+          <CardBody>
+            {Object.entries(nodeData)
             .filter(([key]) => !['x', 'y', 'label'].includes(key))
             .map(([key, value]) => (
-              <p key={key}>
-                {key}: {key === 'timestamp' ? d3.timeFormat('%Y-%m-%d %H:%M')(new Date(value)) : value}
+              <p key={key} className="break-words whitespace-normal">
+                <span className="font-medium">{key}:</span>{' '}
+                {key === 'timestamp' 
+                  ? d3.timeFormat('%Y-%m-%d %H:%M')(new Date(value)) 
+                  : String(value)
+                }
               </p>
             ))}
-        </div>
+          </CardBody>
+        </Card>
       );
     }
   }, [node, sigma]);
@@ -48,8 +55,8 @@ const GraphTooltip = ({ node, width }: GraphTooltipProps) => {
   if (!tooltip) return null;
 
   return (
-    <div className=" bg-white p-4 rounded-lg shadow-lg" style={{ width: width }}>
-      <div className="text-sm font-bold">{tooltip}</div>
+    <div className="p-2 " style={{ width: width - 20 }}>
+      <div className="">{tooltip}</div>
     </div>
   );
 };

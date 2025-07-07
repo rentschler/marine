@@ -43,6 +43,7 @@ export interface StackedBarChartProps extends BaseChartProps {
   bars?: string[];
   segments?: string[];
   type?: ChartType;
+  colorScale?: d3.ScaleOrdinal<string, string>;
 }
 
 export enum ChartType {

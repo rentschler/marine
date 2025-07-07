@@ -6,6 +6,7 @@ import {
   FilterContextType,
   GraphOptions,
   ColorPalette,
+  CommunitiesResponse,
 } from '@/types/filter-context-type';
 import { GraphData, LinkType, NodeType, SubsetType } from '@/types/graph-types';
 
@@ -21,12 +22,14 @@ const defaultGraphOptions: GraphOptions = {
   neighboorNodes: true,
   collapseComms: false,
   recalculateLayout: false,
+  selectedCommunities: [],
 };
 const defaultDiffGraphOptions: DiffGraphOptions = {
   neighboorNodes: true,
   collapseComms: false,
   recalculateLayout: false,
   subsetFilter: SubsetType.A_UNION_B,
+  selectedCommunities: [],
 };
 
 export function FilterProvider({ children }: { children: ReactNode }) {
@@ -40,23 +43,28 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [currentData, setCurrentData] = useState<GraphData | undefined>(undefined);
   const [filteredData, setFilteredData] = useState<GraphData | undefined>(undefined);
   const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.NODE_TYPE);
+  const [communities, setCommunities] = useState<string[]>([]);
 
   const [error, setError] = useState<string | null>(null);
 
-const communities = [
-    "Nemo Reef Unauthorized Activity Analysis",
-    "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
-    "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
-    "Efforts to Protect Nemo Reef from Unauthorized Activities",
-    "Environmental Conservation and Restricted Access Issues",
-    "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
-    "Nemo Reef & Haacklee Harbor & Marine Monitoring",
-    "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
-    "Nemo Reef: Unified Environmental and Operational Dynamics",
-    "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
-    "Event Communication and Access Management Analysis"
-  ]
-  
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        const response = await fetch('/api/communities/names');
+        if (!response.ok) {
+          throw new Error('Failed to fetch communities');
+        }
+        const data: CommunitiesResponse = await response.json();
+        setCommunities(data["2"].map((community) => community.title));
+      } catch (error) {
+        console.error('Error fetching communities:', error);
+        setError('Failed to fetch communities');
+      }
+    };
+    
+    fetchCommunities();
+  }, []);
+
   /**
    * Fetch data for the current graph based on selected filters.
    */
@@ -68,6 +76,7 @@ const communities = [
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
+          communities: graphOptions.selectedCommunities.length > 0 ? graphOptions.selectedCommunities : [],
           collapseComms: graphOptions.collapseComms,
           recalculateLayout: graphOptions.recalculateLayout ?? false,
 
@@ -111,6 +120,7 @@ const communities = [
           maxDegree: 1000,
           nodeTypes: Object.values(NodeType),
           edgeTypes: Object.values(LinkType),
+          communities: diffGraphOptions.selectedCommunities.length > 0 ? diffGraphOptions.selectedCommunities : [],
           startDateA: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
           endDateA: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
           startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),

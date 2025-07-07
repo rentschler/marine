@@ -13,7 +13,7 @@ from nl_querying.indexing_service import IndexingService
 from nl_querying.utils.llm.llm import LLM
 from database_utils.get_filtered_graph import get_filtered_graph
 from database_utils.get_diff_graph import get_diff_graph
-from models.diff_request_body import DiffRequestBody
+from models.diff_request_body import DiffRequestBody, TimestampRequestBody
 from models.filter_request_body import FilterRequestBody
 from models.message import Message, MessageType
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
@@ -26,6 +26,7 @@ from database_utils.get_min_max_date import get_min_max_date
 from database_utils.get_graph_with_timestamps import get_graph_with_timestamps
 from database_utils.update_node_communities import update_node_communities
 from database_utils.import_communities import (
+    get_communities_names,
     import_communities_to_database,
     get_communities_with_nodes,
     get_community_by_title,
@@ -168,12 +169,12 @@ async def diff_graph(request: DiffRequestBody):
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/graph-data-timestamps")
-async def graph_with_timestamps():
+@router.post("/graph-data-timestamps")
+async def graph_with_timestamps(request: TimestampRequestBody):
     try:
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
-                graph = await get_graph_with_timestamps(session)
+                graph = await get_graph_with_timestamps(session, request)
                 return graph.model_dump(exclude_unset=True, exclude_none=True)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -528,6 +529,20 @@ async def get_communities(level: int = 2):
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             async with driver.session() as session:
                 communities = await get_communities_with_nodes(session, level)
+                return JSONResponse(content=communities)
+    except Exception as e:
+        print(f"Error fetching communities: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching communities: {str(e)}")
+
+@router.get("/communities/names")
+async def get_communities_names_endpoint():
+    """
+    Retrieve all communities names for each level.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                communities = await get_communities_names(session)
                 return JSONResponse(content=communities)
     except Exception as e:
         print(f"Error fetching communities: {e}")

@@ -18,19 +18,6 @@ const defaultModel = Model.fromJson({
     borderEnableTabScrollbar: true,
     tabEnableClose: false
   },
-  borders: [
-    {
-      type: 'border',
-      location: 'right',
-      children: [
-        {
-          type: 'tab',
-          name: 'Filters',
-          component: VisType.FILTERS,
-        },
-      ],
-    },
-  ],
   layout: {
     type: 'row',
     weight: 100,

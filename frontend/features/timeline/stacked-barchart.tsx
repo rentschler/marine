@@ -1,6 +1,7 @@
 import { ChartType, InteractionMode, StackedBarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
 
 const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const StackedBarChart = ({
@@ -15,6 +16,7 @@ const StackedBarChart = ({
   numberOfBins,
   type,
   interactionMode,
+  colorScale,
 }: StackedBarChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const { width, height } = dimensions;
@@ -57,19 +59,6 @@ const StackedBarChart = ({
     const scaleLinear = d3.scaleLinear().domain([minY, maxY]).range([boundsHeight, 0]).nice();
 
     // color scale
-    const colorScale = type === ChartType.STACKED ? d3.scaleOrdinal(d3.schemeTableau10) : d3.scaleOrdinal(d3.schemeTableau10.concat("black")).domain([
-      "Nemo Reef Unauthorized Activity Analysis",
-      "Comprehensive Overview of Nemo Reef Monitoring and Management Community",
-      "Oceanus City Council: Governance, Oversight, and Community Interactions at Nemo Reef",
-      "Efforts to Protect Nemo Reef from Unauthorized Activities",
-      "Environmental Conservation and Restricted Access Issues",
-      "Himark Harbor: Centralized Maritime Coordination by Rodriguez",
-      "Nemo Reef & Haacklee Harbor & Marine Monitoring",
-      "Himmap Harbor and Dolphin Bay: Ecological and Regulatory Overview",
-      "Nemo Reef: Unified Environmental and Operational Dynamics",
-      "Nemo Reef Community: Environmental Compliance and Operational Dynamics",
-      "Event Communication and Access Management Analysis"
-    ]);
 
     // Group data by bar (time bin) to calculate total heights
     const barGroups = new Map();
@@ -81,7 +70,7 @@ const StackedBarChart = ({
             start: new Date(segment.data.start),
             end: new Date(segment.data.end),
             segments: [],
-            totalHeight: 0
+            totalHeight: 0,
           });
         }
         const barGroup = barGroups.get(barId);
@@ -96,7 +85,7 @@ const StackedBarChart = ({
       .join('g')
       .attr('class', 'layer')
       .attr('id', (d) => `bar-layer-${d.key}`)
-      .attr('fill', (d) => colorScale(d.key))
+      .attr('fill', (d) => colorScale?.(d.key) ?? 'black')
       .selectAll('.bar')
       .data((D) =>
         D.map((d, i) => {
@@ -115,10 +104,12 @@ const StackedBarChart = ({
       .attr('y', (d) => scaleLinear(d[1]))
       .attr('height', (d) => Math.abs(scaleLinear(d[0]) - scaleLinear(d[1])))
       .attr('width', barWidth)
-      .attr('fill', (d) => colorScale(d.segmentId.split('_')[2]))
-      .append("title")
-      .text((d) => `${d.segmentId.split('_')[2]}\nCount: ${d[1]-d[0]}`);
-
+      .attr('fill', (d) => colorScale?.(d.segmentId.split('_')[2]) ?? 'black')
+      .append('title')
+      .text(
+        (d) =>
+          `${d.segmentId.split('_')[2]}\n${d3.timeFormat('%Y-%m-%d %H:%M')(d.start)} - ${d3.timeFormat('%Y-%m-%d %H:%M')(d.end)}\nCount: ${d[1] - d[0]}`
+      );
 
     // Create complete bar rectangles for highlighting
     g.selectAll('.bar-outline')
@@ -135,7 +126,7 @@ const StackedBarChart = ({
         if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
         if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
         return 'none';
-      })
+      });
 
     // add the axes
     const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);
@@ -183,7 +174,7 @@ const StackedBarChart = ({
         barOutlines.each(function (d) {
           const bar = d3.select(this);
           const xMin = +bar.attr('x');
-          const xMax = xMin + barWidth
+          const xMax = xMin + barWidth;
 
           // check if the bar is intersect with the selection
           const isBrushed = x0 <= xMax && x1 >= xMin;

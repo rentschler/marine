@@ -24,11 +24,14 @@ import { CommunityGraph } from './community-graph';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPalette } from '@/types/filter-context-type';
 import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
-import { GraphLegend } from '../three-js-graph/graph-legend/graph-legend';
+import { GraphLegend, LegendContent } from '../three-js-graph/graph-legend/graph-legend';
+import { AnimatePresence } from 'framer-motion';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Card } from '@heroui/react';
 
 export interface CommunityGraphWrapperdProps {
   currentData?: CommunityGraphData;
-  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null';
+  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null' 
   limit?: number;
   currentNode: TabNode;
 }
@@ -37,13 +40,14 @@ export interface CommunityGraphWrapperdProps {
 const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => {
   const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
-  const layout = 'none';
+  const layout = 'null';
 
   const { communities } = useFilterContext();
   const colorScale = getColorScale(ColorPalette.COMMUNITY, communities);
 
   const [currentData, setCurrentData] = useState<CommunityGraphData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showLegend, setShowLegend] = useState(false);
 
   const dimensions = {
     width: currentNode.getRect().width - 10,
@@ -67,9 +71,9 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           throw new Error('Failed to fetch filtered graph data');
         }
 
-        const communities = (await response.json()) as CommunityGraphData;
-        console.log('complete graph data:', communities);
-        setCurrentData(communities);
+        const communityGraphData = (await response.json()) as CommunityGraphData;
+        console.log('complete graph data:', communityGraphData);
+        setCurrentData(communityGraphData);
       } catch (error) {
         console.error('Error fetching filtered graph data:', error);
         setError('Failed to fetch filtered graph data');
@@ -136,13 +140,14 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           {/* Focus on node component */}
           <FocusOnNode node={focusNode ?? selectedNode} move={true} />
           {/* Container for the controls */}
-          <ControlsContainer position={'top-left'}>
+          <Card className="absolute top-0 left-0 py-3" style={{ zIndex: 100, paddingInlineStart: '12px', marginTop: '5px'}}>
             <ZoomControl />
             <FullScreenControl />
             <LayoutForceAtlas2Control />
-          </ControlsContainer>
+          </Card>
+
           {/* Container for the search bar */}
-          <ControlsContainer position={'top-right'}>
+          {/* <ControlsContainer position={'top-right'}>
             <GraphSearch
               type="nodes"
               value={selectedNode ? { type: 'nodes', id: selectedNode } : null}
@@ -150,19 +155,48 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
               onChange={onChange}
               postSearchResult={postSearchResult}
             />
-          </ControlsContainer>
+          </ControlsContainer> */}
 
           {/* Container for the tooltip component */}
-          <ControlsContainer>
-            <GraphTooltip
-              node={hoveredNode ?? focusNode ?? selectedNode}
-              width={dimensions.width * 0.66}
-            />
-          </ControlsContainer>
-          <ControlsContainer position={'bottom-right'}>
-            <div className="flex flex-row gap-2">{/* Container for the color legends */}</div>
-            <GraphLegend defaultShow={true} colorPalette={ColorPalette.COMMUNITY} setColorPalette={()=>null} communities={communities} />
-          </ControlsContainer>
+          {hoveredNode && (
+            <div
+              className="absolute bottom-0 right-100 m-3 p-2"
+              style={{
+                width: '70%',
+                maxWidth: currentNode.getRect().width - 400,
+                zIndex: 100,
+                pointerEvents: 'none',
+              }}
+            >
+              <GraphTooltip
+                node={hoveredNode ?? focusNode ?? selectedNode}
+                width={dimensions.width * 0.66}
+              />
+            </div>
+          )}
+          <Card
+            className="absolute bottom-0 right-0 m-3 p-2 flex flex-col gap-2 text-xs"
+            style={{ width: '350px' }}
+          >
+            {/* Container for the color legends */}
+            <button
+              onClick={() => setShowLegend(!showLegend)}
+              className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
+            >
+              {showLegend ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              Community Colors
+            </button>
+
+            <AnimatePresence initial={false}>
+              {showLegend && communities && (
+                <LegendContent
+                  palette={ColorPalette.COMMUNITY}
+                  communities={communities}
+                  maxItemsPerColumn={1}
+                />
+              )}
+            </AnimatePresence>
+          </Card>
         </SigmaContainer>
       </div>
     </div>

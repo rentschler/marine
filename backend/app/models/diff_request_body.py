@@ -21,4 +21,8 @@ class DiffRequestBody(BaseModel):
     subsetFilter: Optional[str] = None
     neighboorNodes: Optional[bool] = False
     collapseComms: Optional[bool] = False
+    communities: Optional[List[str]] = []
+
+class TimestampRequestBody(BaseModel):
+    communities: Optional[List[str]] = []
 

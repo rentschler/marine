@@ -8,6 +8,7 @@ import { LoadingButton } from '@/components/loading-button/loading-button';
 import { recalculateLayout } from './recalculate-layout';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPaletteSelector } from './color-palette-selector';
+import { CommunitySelector } from './community-selector';
 
 interface DiffGraphToolbarProps {
   graphOptions: DiffGraphOptions;
@@ -41,8 +42,13 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
         {/* tool bar */}
         <div className="flex flex-row items-center justify-between p-1 gap-2 w-full" style={{ zIndex: 100 }}>
           <div className="flex flex-row gap-2">
-            {/* Color Palette Selector */}
-            <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
+            {/* Community Selector */}
+          <CommunitySelector
+            selectedCommunities={graphOptions.selectedCommunities}
+            setSelectedCommunities={(communities) =>
+              setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
+            }
+          />
             
             <Divider orientation="vertical" className="h-8" />
             
@@ -67,7 +73,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
           <div className="flex flex-row items-center gap-2">
             <input
               type="checkbox"
-              id="neighboorNodesSwitch2"
+              id="neighboorNodesSwitchDiff"
               checked={graphOptions.neighboorNodes}
               onChange={(e) =>
                 setGraphOptions((prev) => ({
@@ -76,7 +82,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 }))
               }
             />
-            <label htmlFor="neighboorNodesSwitch2" className="text-sm font-medium text-gray-700">
+            <label htmlFor="neighboorNodesSwitchDiff" className="text-sm font-medium text-gray-700">
               Include Neighbor Nodes in Diff Graph
             </label>
             <Divider orientation="vertical" className="h-8" />
@@ -84,7 +90,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
           <div className="flex flex-row items-center gap-2">
             <input
               type="checkbox"
-              id="collapseCommsSwitch2"
+              id="collapseCommsSwitchDiff"
               checked={graphOptions.collapseComms}
               onChange={(e) =>
                 setGraphOptions((prev) => ({
@@ -94,7 +100,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 }))
               }
             />
-            <label htmlFor="collapseCommsSwitch2" className="text-sm font-medium text-gray-700">
+            <label htmlFor="collapseCommsSwitchDiff" className="text-sm font-medium text-gray-700">
               Collapse Communication Edges
             </label>
           </div>
