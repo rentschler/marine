@@ -4,7 +4,7 @@ type LegendItemProps = {
 };
 
 export function LegendItem({ color, label }: LegendItemProps) {
-  const maxLength = 30;
+  const maxLength = 40;
   const truncatedLabel = label.length > maxLength ? `${label.slice(0, maxLength)}...` : label;
   const showTooltip = label.length > maxLength;
 

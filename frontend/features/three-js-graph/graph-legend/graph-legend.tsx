@@ -89,7 +89,7 @@ export function LegendContent({ palette, communities, maxItemsPerColumn, selecte
           (column, colIdx) => (
             <div key={colIdx} className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
               {column.map((item) => (
-                selectedCommunities && selectedCommunities.length > 0 ?
+                selectedCommunities && selectedCommunities.length > 0  && palette === ColorPalette.COMMUNITY ?
                   selectedCommunities.includes(item.label) ? (
                     <LegendItem key={item.label} color={item.color} label={item.label} />
                   ) : null
