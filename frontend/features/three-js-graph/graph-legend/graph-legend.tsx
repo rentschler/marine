@@ -21,6 +21,7 @@ interface LegendItemProps {
   colorPalette: ColorPalette;
   setColorPalette: (colorPalette: ColorPalette) => void;
   communities: string[];
+  selectedCommunities: string[];
 }
 
 export function GraphLegend({
@@ -28,6 +29,7 @@ export function GraphLegend({
   colorPalette,
   setColorPalette,
   communities,
+  selectedCommunities,
 }: LegendItemProps) {
   const [show, setShow] = useState(ColorPalette.NODE_TYPE);
 
@@ -54,6 +56,7 @@ export function GraphLegend({
               <LegendContent
                 palette={palette}
                 communities={communities}
+                selectedCommunities={selectedCommunities}
                 maxItemsPerColumn={maxItemsPerColumn}
               />
             )}
@@ -68,9 +71,10 @@ interface LegendContentProps {
   palette: ColorPalette;
   communities: string[];
   maxItemsPerColumn: number;
+  selectedCommunities?: string[];
 }
 
-export function LegendContent({ palette, communities, maxItemsPerColumn }: LegendContentProps) {
+export function LegendContent({ palette, communities, maxItemsPerColumn, selectedCommunities }: LegendContentProps) {
   return (
     <motion.div
       key="nodes"
@@ -85,7 +89,13 @@ export function LegendContent({ palette, communities, maxItemsPerColumn }: Legen
           (column, colIdx) => (
             <div key={colIdx} className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
               {column.map((item) => (
-                <LegendItem key={item.label} color={item.color} label={item.label} />
+                selectedCommunities && selectedCommunities.length > 0 ?
+                  selectedCommunities.includes(item.label) ? (
+                    <LegendItem key={item.label} color={item.color} label={item.label} />
+                  ) : null
+                : (
+                  <LegendItem key={item.label} color={item.color} label={item.label} />
+                )
               ))}
             </div>
           )
