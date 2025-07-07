@@ -114,6 +114,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     const fetchData = async () => {
+      if(dateRangeFilter.dateRangeA === undefined && dateRangeFilter.dateRangeB === undefined) {
+        return;
+      }
       try {
         const filterBody = {
           minDegree: 0,
