@@ -34,7 +34,8 @@ from database_utils.import_communities import (
     delete_communities,
     get_community_connections,
     get_community_connections_by_title,
-    get_community_graph
+    get_community_graph,
+    shorten_community_titles
 )
 from fastapi import APIRouter, HTTPException, WebSocket
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -686,3 +687,21 @@ async def post_recalculate_layout(graph: GraphData):
     return graph.model_dump(exclude_unset=True, exclude_none=True)
 
     
+
+@router.post("/update-community-titles")
+async def update_community_titles_endpoint():
+    """
+    Update the community titles in the database.
+    """
+    try:
+        async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
+            async with driver.session() as session:
+                updated_count = await shorten_community_titles(session, level=2)
+                return {
+                    "status": "success",
+                    "message": f"Successfully updated {updated_count} community titles",
+                    "updated_count": updated_count
+                }
+    except Exception as e:
+        print(f"Error updating community titles: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating community titles: {str(e)}")
