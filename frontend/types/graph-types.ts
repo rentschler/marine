@@ -27,7 +27,7 @@ export enum LinkType {
   EvidenceFor = 'evidence_for',
   Received = 'received',
   Sent = 'sent',
-  Missing = 'MISSING',
+  Refers_to = 'refers_to',
   Communication = 'Communication',
 }
 

@@ -12,7 +12,7 @@ async def import_edges(session, edges):
     for u, v, edge_attrs in edges:
         edge_attrs = flatten_attrs(edge_attrs)
         edge_attrs = convert_selected_dates(edge_attrs)
-        rel_type = edge_attrs.get("type", "MISSING")
+        rel_type = edge_attrs.get("type", "refers_to")
         query = f"""
         MATCH (a {{id: $u}}), (b {{id: $v}})
         MERGE (a)-[r:{rel_type}]->(b)
