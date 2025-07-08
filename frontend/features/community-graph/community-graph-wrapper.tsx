@@ -126,7 +126,7 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
     <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
-        <SigmaContainer style={{ width: dimensions.width, height: dimensions.height }}>
+        <SigmaContainer style={{ width: dimensions.width || 10, height: dimensions.height || 10 }}>
           {/* Graph component */}
           <CommunityGraph
             layout={layout}
