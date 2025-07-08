@@ -42,6 +42,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from neo4j import AsyncGraphDatabase
 import os
 from langchain_ollama import OllamaLLM
+import numpy as np
 
 
 import json
@@ -657,6 +658,7 @@ async def get_community_graph_endpoint(level: int = 2, include_findings: bool = 
         print(f"Error fetching community graph: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching community graph: {str(e)}")
     
+    
 @router.post("/recalculate-layout")
 async def post_recalculate_layout(graph: GraphData):
     nodes = graph.nodes
@@ -672,8 +674,7 @@ async def post_recalculate_layout(graph: GraphData):
         source = edge.source
         target = edge.target
         G.add_edge(source, target)
-
-    pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp") 
+    pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp", args=" -GK=3")
     pos = nx.rescale_layout_dict(pos)
 
     for node in nodes:
