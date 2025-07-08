@@ -22,9 +22,7 @@ const StackedBarChart = ({
   const { width, height } = dimensions;
 
   useEffect(() => {
-    console.log('stacked barchart data', data);
     if (!data || !svgRef.current || !bars || !segments) return;
-    console.log('stacked barchart data', data);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -51,7 +49,6 @@ const StackedBarChart = ({
     const scaleTime = d3.scaleTime().domain([minDate, maxDate]).range([0, boundsWidth]);
 
     const barWidth = (scaleTime(maxDate) - scaleTime(minDate)) / numberOfBins;
-    console.log('barWidth', barWidth, numberOfBins);
 
     // scale the y axis
     const minY = d3.min(data.flat(), (d) => d[0]) ?? 0;

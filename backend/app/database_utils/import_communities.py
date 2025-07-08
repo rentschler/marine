@@ -3,6 +3,7 @@ import json
 import uuid
 from datetime import datetime
 from typing import Dict, List
+from database_utils.get_short_title import get_short_title
 from models.Graph import EDefault, Graph, GraphData, Link, Node, NodeType
 
 async def import_communities_to_database(session, level: int = 2, summaries_path: str = "summaries/level_2"):
@@ -53,14 +54,49 @@ async def import_communities_to_database(session, level: int = 2, summaries_path
             continue
     
     print(f"Successfully imported {imported_count} communities to database")
-    
     # Calculate and store community connections
     if len(community_titles) > 1:
         print("Calculating community connections...")
         connection_count = await _calculate_community_connections(session, community_titles, level)
         print(f"Found {connection_count} community connections")
+    else:
+        print("No community connections found")
     
     return imported_count
+    
+async def shorten_community_titles(session, level: int = 2, summaries_path: str = "summaries/level_2"):
+    
+    # Load community data from summaries
+    if not os.path.exists(summaries_path):
+        print(f"Summaries path {summaries_path} does not exist")
+        return 0
+    
+    imported_count = 0
+    community_titles = []
+    
+    # Read all community files
+    for file_name in os.listdir(summaries_path):
+        if not file_name.endswith('.json'):
+            continue
+            
+        try:
+            with open(os.path.join(summaries_path, file_name), 'r', encoding='utf-8') as f:
+                community_data = json.load(f)
+                community_data["title"] = get_short_title(community_data["title"])
+                with open(os.path.join(summaries_path, file_name), 'w', encoding='utf-8') as f:
+                    json.dump(community_data, f, indent=4)
+                imported_count += 1
+                community_titles.append(community_data["title"])
+        except json.JSONDecodeError as e:
+            print(f"Error loading community file {file_name}: {e}")
+            continue
+        except Exception as e:
+            print(f"Error importing community from {file_name}: {e}")
+            continue
+    
+    print(f"Successfully updated {imported_count} community titles")
+    
+
 
 
 async def _import_single_community(session, community_data: Dict, level: int) -> bool:

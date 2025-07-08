@@ -66,7 +66,7 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
           <Divider orientation="vertical" className="h-8" />
 
           {/* toggle dateRangeFilter.neighboorNodes */}
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex flex-row items-center gap-2" >
             <input
               type="checkbox"
               id="neighboorNodesSwitch"
@@ -77,11 +77,12 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
                   neighboorNodes: e.target.checked,
                 }))
               }
+              style={{ visibility: 'hidden' }}
             />
-            <label htmlFor="neighboorNodesSwitch" className="text-sm font-medium text-gray-700">
+            <label htmlFor="neighboorNodesSwitch" className="text-sm font-medium text-gray-700" style={{ visibility: 'hidden' }}>
               Include Neighbor Nodes in Diff Graph
             </label>
-            <Divider orientation="vertical" className="h-8" />
+            <Divider orientation="vertical" className="h-8"style={{ visibility: 'hidden' }} />
             {/* toggle dateRangeFilter.collapseComms */}
             <div className="flex flex-row items-center gap-2">
               <input

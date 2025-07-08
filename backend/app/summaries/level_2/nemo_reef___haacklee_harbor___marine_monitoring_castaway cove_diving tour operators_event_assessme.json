@@ -1,117 +1,117 @@
 {
-  "title": "Nemo Reef & Haacklee Harbor & Marine Monitoring",
-  "summary": "The community associated with Nemo Reef engages in multifaceted operations including tourism, environmental stewardship, and regulatory oversight. These activities center around Haacklee Harbor's strategic actions involving both ecological challenges and clandestine events necessitating careful coordination. Simultaneously, efforts for Marine Area Monitoring aim to reduce unauthorized vessel traffic through coordinated communication among various stakeholders.",
-  "rating": 7.5,
-  "rating explanation": "The impact severity rating is moderate to high due to complex regulatory manipulations, environmental concerns related to Nemo Reef, secretive maritime operations around Haacklee Harbor, and enforcement challenges involving unauthorized tourism facilitated by particular tour operators.",
-  "findings": [
-    {
-      "summary": "Tourism-driven ecological challenges at Nemo Reef",
-      "explanation": "Nemo Reef attracts significant tourism activities [Data: TourActivity (807, 61, 188, 70, 816)], leading to vessel movement that necessitates environmental monitoring [Monitoring (33, 60, 83, 164); VesselMovement (887, 363)]. These factors highlight the tension between tourism interests and ecological preservation at this sensitive reef."
-    },
-    {
-      "summary": "Regulatory complexities in access permits",
-      "explanation": "The issuance of special access permissions [Data: AccessPermission (181, 96, 562)] by authorities aims to control human activity within Nemo Reef, balancing its ecological sensitivity and local jurisdictional obligations. The complexity and restricted nature of these permissions reflect challenges in reconciling tourism with conservation."
-    },
-    {
-      "summary": "Comprehensive environmental assessment at Nemo Reef",
-      "explanation": "Conducted assessments [Data: Assessment (223, 701)] underline Nemo Reef's dual identity as both a problematic yet appealing tourist spot due to its ecological uniqueness. These evaluations are crucial for guiding policy decisions regarding access and preservation initiatives."
-    },
-    {
-      "summary": "Proactive enforcement of protected area policies",
-      "explanation": "[Data: Enforcement (998)], the enforcement strategies at Nemo Reef demonstrate authorities' commitment to preserving the reef through active monitoring and interception of unauthorized activities aimed at preventing ecosystem damage."
-    },
-    {
-      "summary": "Haacklee Harbor\u2019s intricate maritime operations",
-      "explanation": "Haacklee Harbor serves as a key player within a network that manages both legitimate commercial ventures and secretive operations requiring specific coordination [Event_Communication_95, Event_Assessment_329]. This involves vessel charters and events related to Nemo Reef that may entail sensitive regulatory circumventions."
-    },
-    {
-      "summary": "Osprey\u2019s strategic role in chartering vessels",
-      "explanation": "Osprey is crucial for managing logistics around maritime tours [Data: Event_VesselMovement_806]. By negotiating with operators like Knowles, Osprey navigates the regulatory landscape while optimizing tourism-related operations."
-    },
-    {
-      "summary": "Knowles\u2019 involvement in restricted marine movements",
-      "explanation": "[Data: Event_VesselMovement_887, Relationships (Relationship_AccessPermission_560)], Knowles' activities involve regulated maneuvers with special permissions and limited communication periods. This highlights its role in executing operations requiring discretion around Nemo Reef."
-    },
-    {
-      "summary": "Confidential and high-stakes maritime operations",
-      "explanation": "Nadia Conti's involvement suggests secrecy and urgency, indicated by the cancellation of events and document disposal [Data: Event_Communication_331]. These actions raise potential legal concerns regarding compliance within protected marine zones."
-    },
-    {
-      "summary": "Environmental evaluation amid regulatory challenges",
-      "explanation": "Ongoing assessments reveal environmental risks from maritime activities, especially near Nemo Reef. This demands a balance between maintaining ecological health and facilitating commercial interests [Data: Event_Assessment_966]."
-    }
-  ],
-  "nodes": [
-    "Event_TourActivity_70",
-    "Nemo Reef",
-    "Event_Assessment_701",
-    "Event_Monitoring_164",
-    "Event_Enforcement_998",
-    "Event_Monitoring_83",
-    "Event_VesselMovement_363",
-    "Relationship_Jurisdiction_575",
-    "Protected areas",
-    "Event_Monitoring_60",
-    "Relationship_Jurisdiction_29",
-    "Event_Communication_62",
-    "Event_TourActivity_61",
-    "Relationship_Jurisdiction_162",
-    "Event_Assessment_966",
-    "Relationship_Jurisdiction_19",
-    "Event_Communication_35",
-    "Event_Monitoring_33",
-    "Event_Enforcement_34",
-    "Event_TourActivity_140",
-    "Relationship_AccessPermission_502",
-    "Event_Communication_808",
-    "Event_VesselMovement_806",
-    "Event_Communication_141",
-    "Event_Communication_136",
-    "Osprey",
-    "Event_Communication_654",
-    "Event_TourActivity_807",
-    "Relationship_AccessPermission_397",
-    "Tourists",
-    "Event_TourActivity_816",
-    "Castaway Cove",
-    "Event_Communication_817",
-    "Relationship_Coordinates_509",
-    "Event_TourActivity_96",
-    "Event_Communication_97",
-    "Knowles",
-    "Relationship_Coordinates_621",
-    "Event_Communication_987",
-    "Relationship_Coordinates_629",
-    "Event_Communication_1003",
-    "Event_VesselMovement_1002",
-    "Event_Communication_884",
-    "Event_VesselMovement_883",
-    "Event_Communication_886",
-    "Relationship_AccessPermission_560",
-    "Relationship_AccessPermission_562",
-    "Event_Communication_888",
-    "Event_VesselMovement_887",
-    "Event_Assessment_329",
-    "Haacklee Harbor",
-    "Event_Communication_331",
-    "Event_Communication_95",
-    "Relationship_AccessPermission_181",
-    "Relationship_Coordinates_43",
-    "Event_Communication_305",
-    "Event_Communication_330",
-    "Event_Communication_332",
-    "Event_Enforcement_193",
-    "Mariner's Dream",
-    "Event_TourActivity_188",
-    "Relationship_AccessPermission_96",
-    "Event_Communication_189",
-    "Diving Tour Operators",
-    "Relationship_AccessPermission_118",
-    "Event_HarborReport_215",
-    "Event_Communication_216",
-    "Southern islands",
-    "Event_Assessment_223",
-    "Event_Assessment_198",
-    "Southern coastline"
-  ]
+    "title": "Nemo Reef & Haacklee Harbor",
+    "summary": "The community associated with Nemo Reef engages in multifaceted operations including tourism, environmental stewardship, and regulatory oversight. These activities center around Haacklee Harbor's strategic actions involving both ecological challenges and clandestine events necessitating careful coordination. Simultaneously, efforts for Marine Area Monitoring aim to reduce unauthorized vessel traffic through coordinated communication among various stakeholders.",
+    "rating": 7.5,
+    "rating explanation": "The impact severity rating is moderate to high due to complex regulatory manipulations, environmental concerns related to Nemo Reef, secretive maritime operations around Haacklee Harbor, and enforcement challenges involving unauthorized tourism facilitated by particular tour operators.",
+    "findings": [
+        {
+            "summary": "Tourism-driven ecological challenges at Nemo Reef",
+            "explanation": "Nemo Reef attracts significant tourism activities [Data: TourActivity (807, 61, 188, 70, 816)], leading to vessel movement that necessitates environmental monitoring [Monitoring (33, 60, 83, 164); VesselMovement (887, 363)]. These factors highlight the tension between tourism interests and ecological preservation at this sensitive reef."
+        },
+        {
+            "summary": "Regulatory complexities in access permits",
+            "explanation": "The issuance of special access permissions [Data: AccessPermission (181, 96, 562)] by authorities aims to control human activity within Nemo Reef, balancing its ecological sensitivity and local jurisdictional obligations. The complexity and restricted nature of these permissions reflect challenges in reconciling tourism with conservation."
+        },
+        {
+            "summary": "Comprehensive environmental assessment at Nemo Reef",
+            "explanation": "Conducted assessments [Data: Assessment (223, 701)] underline Nemo Reef's dual identity as both a problematic yet appealing tourist spot due to its ecological uniqueness. These evaluations are crucial for guiding policy decisions regarding access and preservation initiatives."
+        },
+        {
+            "summary": "Proactive enforcement of protected area policies",
+            "explanation": "[Data: Enforcement (998)], the enforcement strategies at Nemo Reef demonstrate authorities' commitment to preserving the reef through active monitoring and interception of unauthorized activities aimed at preventing ecosystem damage."
+        },
+        {
+            "summary": "Haacklee Harbor\u2019s intricate maritime operations",
+            "explanation": "Haacklee Harbor serves as a key player within a network that manages both legitimate commercial ventures and secretive operations requiring specific coordination [Event_Communication_95, Event_Assessment_329]. This involves vessel charters and events related to Nemo Reef that may entail sensitive regulatory circumventions."
+        },
+        {
+            "summary": "Osprey\u2019s strategic role in chartering vessels",
+            "explanation": "Osprey is crucial for managing logistics around maritime tours [Data: Event_VesselMovement_806]. By negotiating with operators like Knowles, Osprey navigates the regulatory landscape while optimizing tourism-related operations."
+        },
+        {
+            "summary": "Knowles\u2019 involvement in restricted marine movements",
+            "explanation": "[Data: Event_VesselMovement_887, Relationships (Relationship_AccessPermission_560)], Knowles' activities involve regulated maneuvers with special permissions and limited communication periods. This highlights its role in executing operations requiring discretion around Nemo Reef."
+        },
+        {
+            "summary": "Confidential and high-stakes maritime operations",
+            "explanation": "Nadia Conti's involvement suggests secrecy and urgency, indicated by the cancellation of events and document disposal [Data: Event_Communication_331]. These actions raise potential legal concerns regarding compliance within protected marine zones."
+        },
+        {
+            "summary": "Environmental evaluation amid regulatory challenges",
+            "explanation": "Ongoing assessments reveal environmental risks from maritime activities, especially near Nemo Reef. This demands a balance between maintaining ecological health and facilitating commercial interests [Data: Event_Assessment_966]."
+        }
+    ],
+    "nodes": [
+        "Event_TourActivity_70",
+        "Nemo Reef",
+        "Event_Assessment_701",
+        "Event_Monitoring_164",
+        "Event_Enforcement_998",
+        "Event_Monitoring_83",
+        "Event_VesselMovement_363",
+        "Relationship_Jurisdiction_575",
+        "Protected areas",
+        "Event_Monitoring_60",
+        "Relationship_Jurisdiction_29",
+        "Event_Communication_62",
+        "Event_TourActivity_61",
+        "Relationship_Jurisdiction_162",
+        "Event_Assessment_966",
+        "Relationship_Jurisdiction_19",
+        "Event_Communication_35",
+        "Event_Monitoring_33",
+        "Event_Enforcement_34",
+        "Event_TourActivity_140",
+        "Relationship_AccessPermission_502",
+        "Event_Communication_808",
+        "Event_VesselMovement_806",
+        "Event_Communication_141",
+        "Event_Communication_136",
+        "Osprey",
+        "Event_Communication_654",
+        "Event_TourActivity_807",
+        "Relationship_AccessPermission_397",
+        "Tourists",
+        "Event_TourActivity_816",
+        "Castaway Cove",
+        "Event_Communication_817",
+        "Relationship_Coordinates_509",
+        "Event_TourActivity_96",
+        "Event_Communication_97",
+        "Knowles",
+        "Relationship_Coordinates_621",
+        "Event_Communication_987",
+        "Relationship_Coordinates_629",
+        "Event_Communication_1003",
+        "Event_VesselMovement_1002",
+        "Event_Communication_884",
+        "Event_VesselMovement_883",
+        "Event_Communication_886",
+        "Relationship_AccessPermission_560",
+        "Relationship_AccessPermission_562",
+        "Event_Communication_888",
+        "Event_VesselMovement_887",
+        "Event_Assessment_329",
+        "Haacklee Harbor",
+        "Event_Communication_331",
+        "Event_Communication_95",
+        "Relationship_AccessPermission_181",
+        "Relationship_Coordinates_43",
+        "Event_Communication_305",
+        "Event_Communication_330",
+        "Event_Communication_332",
+        "Event_Enforcement_193",
+        "Mariner's Dream",
+        "Event_TourActivity_188",
+        "Relationship_AccessPermission_96",
+        "Event_Communication_189",
+        "Diving Tour Operators",
+        "Relationship_AccessPermission_118",
+        "Event_HarborReport_215",
+        "Event_Communication_216",
+        "Southern islands",
+        "Event_Assessment_223",
+        "Event_Assessment_198",
+        "Southern coastline"
+    ]
 }
