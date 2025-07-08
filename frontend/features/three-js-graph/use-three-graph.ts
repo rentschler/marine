@@ -81,11 +81,12 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
 
     let observer: ResizeObserver;
     let mouseMoveListener: (this: HTMLDivElement, ev: MouseEvent) => any;
+    let mouseLeaveListener:(this: HTMLDivElement, ev: MouseEvent) => any;
     let removeClickListener: () => void;
     let animationFrameId: number;
 
     if (result) {
-        ({ observer, mouseMoveListener } = result);
+        ({ observer, mouseMoveListener, mouseLeaveListener } = result);
         removeClickListener = selectNode(
             containerRef,
             cameraRef,
@@ -114,6 +115,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         }
         observer?.disconnect();
         containerRef.current?.removeEventListener("mousemove", mouseMoveListener);
+        containerRef.current?.removeEventListener("mouseleave", mouseLeaveListener);
         removeClickListener?.();
         rendererRef.current?.dispose();
         //controlsRef.current?.dispose();

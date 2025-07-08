@@ -90,6 +90,11 @@ export function initScene(
 
   currentContainer.addEventListener("mousemove", mouseMoveListener);
 
+  const mouseLeaveListener = () => {
+    setTooltipState(prev => ({ ...prev, visible: false }));
+  };
+
+  currentContainer.addEventListener("mouseleave", mouseLeaveListener);
 
   cameraRef.current.aspect = width / height;
   cameraRef.current.updateProjectionMatrix();
@@ -110,5 +115,5 @@ export function initScene(
     colorScale
   );
 
-  return { observer, mouseMoveListener};
+  return { observer, mouseMoveListener, mouseLeaveListener};
 }
