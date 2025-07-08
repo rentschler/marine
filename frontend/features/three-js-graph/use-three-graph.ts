@@ -29,7 +29,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
   const nodeDataRef = useRef<{ label: string }[]>([]);
 
   const nodeSize = 12;
-  const edgeSize = 1;
+  const edgeSize = 2;
   const zoom = 2500;
 
   const { communities } = useFilterContext();
