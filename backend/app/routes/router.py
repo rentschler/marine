@@ -674,7 +674,7 @@ async def post_recalculate_layout(graph: GraphData):
         source = edge.source
         target = edge.target
         G.add_edge(source, target)
-    pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp", args=" -GK=3")
+    pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp")
     pos = nx.rescale_layout_dict(pos)
 
     for node in nodes:
