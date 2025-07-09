@@ -211,7 +211,8 @@ async def get_diff_graph(session, filters: DiffRequestBody):
 
             edge_query = f"""
                 MATCH (a)-[r]->(b)
-                WHERE (a.id IN $node_ids OR b.id IN $node_ids) AND ({edge_filter})
+                WHERE (a.id IN $node_ids OR b.id IN $node_ids)
+                AND ({edge_filter})
                 RETURN DISTINCT r, a, b
             """
             link_result = await session.run(edge_query, node_ids=list(merged_node_ids))

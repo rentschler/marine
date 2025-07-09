@@ -79,6 +79,8 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       labelRenderer.domElement.style.position = 'absolute';
       labelRenderer.domElement.style.top = '0px';
       labelRenderer.domElement.style.pointerEvents = 'none';
+      labelRenderer.domElement.style.width = "100%";
+      labelRenderer.domElement.style.height = "100%";
       containerRef.current?.appendChild(labelRenderer.domElement);
       labelRendererRef.current = labelRenderer;
     } else {

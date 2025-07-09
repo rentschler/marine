@@ -56,11 +56,17 @@ def turn_communication_into_edge(graph: GraphData) -> GraphData:
         if link.id not in removed_link_ids:
             new_links.append(link)
 
+    linked_node_ids = {link.source for link in new_links} | {link.target for link in new_links}
+
+    connected_nodes = [node for node in new_nodes if node.id in linked_node_ids]
+
+
+
     # Return new GraphData
     return GraphData(
         directed=graph.directed,
         multigraph=graph.multigraph,
         graph=graph.graph,
-        nodes=new_nodes,
+        nodes=connected_nodes,
         links=new_links
     )
