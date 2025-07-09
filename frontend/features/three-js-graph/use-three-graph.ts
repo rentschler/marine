@@ -22,6 +22,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
   const nodeMeshRef = useRef<THREE.InstancedMesh | null>(null);
   const edgeMeshRef = useRef<THREE.InstancedMesh | null>(null);
   const arrowMeshRef = useRef<THREE.InstancedMesh | null>(null);
+  const labelRendererRef = useRef<CSS2DRenderer | null>(null);
 
   const mouse = new THREE.Vector2();
   const raycaster = new THREE.Raycaster();
@@ -72,12 +73,17 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         colorScale
     );
 
-    const labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(dimensions.width, dimensions.height);
-    labelRenderer.domElement.style.position = 'absolute';
-    labelRenderer.domElement.style.top = '0px';
-    labelRenderer.domElement.style.pointerEvents = 'none';
-    containerRef.current.appendChild(labelRenderer.domElement);
+    if (!labelRendererRef.current) {
+      const labelRenderer = new CSS2DRenderer();
+      labelRenderer.setSize(dimensions.width, dimensions.height);
+      labelRenderer.domElement.style.position = 'absolute';
+      labelRenderer.domElement.style.top = '0px';
+      labelRenderer.domElement.style.pointerEvents = 'none';
+      containerRef.current?.appendChild(labelRenderer.domElement);
+      labelRendererRef.current = labelRenderer;
+    } else {
+      labelRendererRef.current.setSize(dimensions.width, dimensions.height);
+    }
 
     let observer: ResizeObserver;
     let mouseMoveListener: (this: HTMLDivElement, ev: MouseEvent) => any;
@@ -104,7 +110,9 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
             rendererRef.current.render(scene, cameraRef.current);
             controlsRef.current?.update();
             animationFrameId = requestAnimationFrame(animate);
-            labelRenderer.render(scene, cameraRef.current);
+            if (labelRendererRef.current){
+            labelRendererRef.current.render(scene, cameraRef.current);
+        }
         }
     };
     animationFrameId = requestAnimationFrame(animate);
@@ -125,7 +133,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
         edgeMeshRef.current?.clear();
         scene.clear();
     };
-}, [data, containerRef?.current, dimensions]);
+}, [data, containerRef, dimensions]);
 
   useEffect(() => {
     if (!containerRef?.current || !data  || (data.nodes.length == 0)) return;
@@ -144,6 +152,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       colorPalette,
       colorScale
     );
+    
   }, [highLightedNodes, highLightedEdges, colorPalette]);
 
   return {
