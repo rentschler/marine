@@ -33,7 +33,8 @@ class LLM:
         """
         self.model = model
         self.host = "https://ollama.joos.dbvis.de/v1"
-        self.client = AsyncOpenAI(api_key='ollama', base_url=self.host)
+        self.client = AsyncOpenAI(api_key="ollama", base_url=self.host)
+
 
     async def invoke_prompt(self, system_prompt: str, user_prompt: str) -> str:
         """
@@ -61,7 +62,9 @@ class LLM:
                 {"role": "user", "content": user_prompt}
             ]
         )
-        return clean_json_string(response.choices[0].message.content)
+        cleaned = self.extract_json_block(clean_json_string(response.choices[0].message.content))
+        cleaned = self.sanitize_json_string(cleaned)
+        return cleaned
     
     async def invoke_llm_parallel(self, calls: List[ParallelLLMCall]) -> List[ParallelLLMCall]:
         semaphore = asyncio.Semaphore(4)  
@@ -118,15 +121,17 @@ class LLM:
                 You help to summarize Communitions and extract relevant Informations and Entities regarding a Question.
 
                 ---Goal---
-                You are provided with the description of a relationship between two Entities and Communtions,
-                which support that relationship. Answer the question with the information in the subtree. If there
-                is no important information regarding the question in the subtree, say so, dont make anything up.
-                It is important that you include all relevant Entities and Informations. But don't make anything up.
-                Only use the Information provided to you.
+                You are provided with Radio communications between entities (persons, vessels, locations, groups, organisations).
+                Your task is to give detailed summaries for the communitcations in regart to a user question.
+                It is very important to look at every detail in the communications:
+                - Who is talking?
+                - What is the topic?
+                - Are other entities part of this?
+                - When do they talk? (time)
 
                 ---Output Structure---
-                Provide a markdown text summary. 
-                Not longer then 5 sentences.
+                Provide a text summary. 
+                Not longer then 8 sentences.
                 """
 
                 user_prompt = f"""
@@ -174,6 +179,13 @@ class LLM:
             return json_str
 
         json_str = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', json_str)
+
+        json_str = re.sub(
+            r'<think\b[^>]*>.*?</think>',
+            '',
+            json_str,
+            flags=re.DOTALL | re.IGNORECASE
+        )
 
         return json_str
 

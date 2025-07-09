@@ -63,7 +63,7 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = DB_PASSWORD
 
 # LLM
-llm = LLM(model= "phi4:latest")
+llm = LLM(model= "gemma3:12b")
 
 # services
 indexing_service = IndexingService(llm=llm)

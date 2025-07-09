@@ -3,12 +3,7 @@ import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 import { Providers } from "./providers";
 import { fontSans } from "@/config/fonts";
-
-import { title } from "@/components/primitives";
-import { ThemeSwitch } from "@/components/theme-switch";
 import React from "react";
-import { CustomLink } from "@/components/ui/link";
-import { FilterProvider } from "@/context/filter-context";
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +19,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
 };
 

@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 from typing import List, Set
 
+from retriver.summary import Finding, Summary
 from database_utils import get_node_by_id
 from database_utils.get_edge_by_target_source import get_edge_by_source_target
 from database_utils.get_nighbor_entities import get_neighbor_entities
@@ -33,6 +34,199 @@ class KnowleadgeGraphRetriver:
         except json.JSONDecodeError as e:
             print(f"[ERROR] JSON decode failed: {e}")
             self.summary = {}
+
+    async def extract_query_params_from_summaries_and_question(self, question: str) -> QueryParams:
+        summaries: List[Summary] = self._laod_summaries()
+
+        query_params: List[QueryParams] = []
+        for summary in summaries:
+            query_param = await self._parse_summary_with_question(question=question, summary=summary)
+            query_params.append(query_param)
+
+        data = {
+            'Persons': set(),
+            'Vessels': set(),
+            'Locations': set(),
+            'Groups': set(),
+            'Organizations': set(),
+            'RelationshipTypes': set(),
+            'EventTypes': set()
+        }
+
+        for query_param in query_params:
+            for key in data:
+                items = getattr(query_param, key, [])
+                data[key].update(items)
+
+        return QueryParams(**{k: list(v) for k, v in data.items()})
+
+
+    def _laod_summaries(self, path: str = "summaries/level_2") -> List[Summary]:
+        summaries: List[Summary] = []
+        if not os.path.isdir(path):
+            return summaries
+        
+        for file_name in os.listdir(path):
+            if file_name.endswith(".json"):
+                with open(os.path.join(path, file_name), "r", encoding="utf-8") as f:
+                    try:
+                        data = json.load(f)
+                        summary_obj = Summary(
+                            title=data.get("title"),
+                            summary=data.get("summary"),
+                            rating=data.get("rating"),
+                            rating_explanation=data.get("rating explanation"),
+                            findings=[
+                                Finding(
+                                    summary=finding.get("summary"),
+                                    explanation=finding.get("explanation")
+                                )
+                                for finding in data.get("findings", [])
+                            ],
+                            nodes=data.get("nodes")
+                        )
+                        summaries.append(summary_obj)
+                    except json.JSONDecodeError as e:
+                        print(f"Error loading Summary: {file_name}")
+                        raise e
+        return summaries
+
+    async def _parse_summary_with_question(self, question: str, summary: Summary) -> QueryParams:
+        system_prompt = """
+        ---Role---
+        You are an AI assistant that helps a human to perform a general information discovery.
+        Information discovery is the process of identifying and assessing relevant information associated with certain
+        entities (e.g., organizations and individuals) within a Community Summary.
+
+        ---Goal---
+        Indentify all relevent Entities from the summary, which could be relevent for the question asked by the user.
+        hen indentify which Relationship types could be relevant for the Question and the Entities (e.g. If Persons and vessels 
+        are relevent the Operates Relationship is relevant).
+        Then indentify which Event types could be relevant for the Question and the Entities (e.g. If a Vessel and a Location are relevant
+        the Monitoring Event Type is relevent).
+
+        ---Output Structure---
+        The Output should ONLY include a JSON-Object of the following format:
+        {{
+        "Persons": <list all relevant Persons>,
+        "Vessels": <list all relevant Vessels>,
+        "Locations": <list all relevant Locations>,
+        "Groups": <list all relevant Groups>,
+        "Organizations": <list all relevant Organizations>,
+        "RelationshipTypes": <list all relevant RelationshipTypes>,
+        "EventTypes": <list all relevant EventTypes>
+        }}
+
+        ---Grounding Rules---
+        Do not include anything that is not provided in the summary Object.
+        If the user ask for general information (e.g is there a person or vessel, etc.) it is important, that you include all Entity with this type,
+        so no information is lost.
+        It is very important that you only include the json object in this structure and dont explain or justify, 
+        because this object is used in a downstream task.
+        ---Examples---
+        Question: Are there Person with are often seen at Nemo Reef?
+        Output: 
+        {{
+        "Persons": ["Sam", "Kelly", "Nadia Conti", "Elise", "Liam Thorne", "Samantha Blake", "Davis", "Rodriguez", "Sailor Shift", "Clepper Jensen", "Miranda Jordan", "The Intern", "The Lookout", "The Accountant", "Mrs. Money", "The Middleman", "Boss", "Small Fry"],    
+        "Vessels": [],    
+        "Locations": ["Nemo Reef"],
+        "Groups": [],
+        "Organizations": [],    
+        "RelationshipTypes": ["AccessPermission"],   
+        "EventTypes": ["Monitoring"]}"
+        }}
+
+        Question: Which vessels frequently enter Paackland Harbor?
+        Output:
+        {{
+        "Persons": [],
+        "Vessels": ["Neptune", "Marlin", "Serenity", "Mako", "Horizon", "Seawatch", "EcoVigil", "Sentinel", "Osprey", "Defender"],
+        "Locations": ["Paackland Harbor"],
+        "Groups": [],
+        "Organizations": [],
+        "RelationshipTypes": ["AccessPermission"],
+        "EventTypes": ["VesselMovement", "Monitoring"]
+        }}
+
+        Question: Which organizations have jurisdiction over Eastern reefs?
+        {{
+        "Persons": [],
+        "Vessels": [],
+        "Locations": ["Eastern reefs"],
+        "Groups": [],
+        "Organizations": ["Oceanus City Council", "Green Guardians"],
+        "RelationshipTypes": ["Jurisdiction"],
+        "EventTypes": ["Assessment", "Monitoring"]
+        }}
+
+        Question: Are diving tours conducted around Dolphin Bay?
+        {{
+        "Persons": [],
+        "Vessels": [],
+        "Locations": ["Dolphin Bay"],
+        "Groups": ["Diving Tour Operators", "Tourists"],
+        "Organizations": [],
+        "RelationshipTypes": ["AccessPermission"],
+        "EventTypes": ["TourActivity"]
+        }}
+
+        Question:Are there suspicious activities near Restricted Zone involving vessels?
+        {{
+        "Persons": [],
+        "Vessels": ["Neptune", "Marlin", "Serenity", "Mako", "Horizon", "Seawatch", "EcoVigil", "Sentinel", "Osprey", "Defender"],
+        "Locations": ["Restricted Zone"],
+        "Groups": [],
+        "Organizations": [],
+        "RelationshipTypes": ["Suspicious"],
+        "EventTypes": ["Enforcement", "Monitoring"]
+        }}
+        Question: I think some Persons are covering themself with a cover name. Are there some hints for this?
+        {{
+        "Persons": ["Sam", "Kelly", "Nadia Conti", "Elise", "Liam Thorne", "Samantha Blake", "Davis", "Rodriguez", "Sailor Shift", "Clepper Jensen", "Miranda Jordan", "The Intern", "The Lookout", "The Accountant", "Mrs. Money", "The Middleman", "Boss", "Small Fry"],
+        "Vessels": [],
+        "Locations": [],
+        "Groups": [],
+        "Organizations": [],
+        "RelationshipTypes": ["Suspicious", "Colleagues","Friends"],
+        "EventTypes": []
+        }}
+        """
+        user_prompt = f"""
+        ---Summary---
+        {summary}
+
+        ---User Question---
+        {question}
+
+        ---Graph Summary---
+        This is a summary of all Entities, all possible Events and Relationship:
+        {self.summary}
+        Only use Entities, Events and Relationships, which are included.
+        """
+
+        try:
+            response = await self.llm.invoke_prompt(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt
+            )
+            response_dict = json.loads(response.strip())
+            query_params = QueryParams(
+                Persons=response_dict.get("Persons", []),
+                Vessels=response_dict.get("Vessels", []),
+                Locations=response_dict.get("Locations", []),
+                Groups=response_dict.get("Groups", []),
+                Organizations=response_dict.get("Organizations", []),
+                RelationshipTypes=response_dict.get("RelationshipTypes", []),
+                EventTypes=response_dict.get("EventTypes", []),
+            )
+            print(query_params)
+            return query_params
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse LLM JSON response: {response}") from e
+    
+        except Exception as e:
+            raise e
 
 
     async def extract_query_params_from_question(self, question: str) -> QueryParams:
@@ -457,6 +651,7 @@ class KnowleadgeGraphRetriver:
             - When information comes from a specific subgraph, indicate it clearly by citing it at the end of the relevant paragraph in the form: (see Subgraph 3).
             - Do not fabricate or hallucinate information. Use only what is provided.
             - Write clearly, concisely, and in professional academic style.
+            - Do not do something like this: subgraphs (13, 15, 19, 20) do this: (Subgraph 13, Subgraph 15, Subgraph 19, Subgraph 20)
 
             ### Output Format
             Provide a **Markdown** formatted summary as your final answer.
@@ -468,6 +663,9 @@ class KnowleadgeGraphRetriver:
 
             ---User Question---
             {question}
+
+            ---Important---
+            Do not do something like this: subgraphs (13, 15, 19, 20) do this: (Subgraph 13, Subgraph 15, Subgraph 19, Subgraph 20)
             """
         answer = await self.llm.invoke_prompt(
                 system_prompt=system_prompt,
