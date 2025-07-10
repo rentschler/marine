@@ -12,7 +12,7 @@ class Summary(BaseModel):
     rating: float
     rating_explanation: str
     findings: List[Finding]
-    nodes: List[str]
+    nodes: Optional[List[str]] = None
 
     def to_string(self) -> str:
         return (

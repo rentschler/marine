@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from typing import List, Set
+from typing import List, Set, Tuple
 
 from retriver.summary import Finding, Summary
 from database_utils import get_node_by_id
@@ -13,6 +13,7 @@ from nl_querying.utils.llm.llm import LLM
 from retriver.query_params import QueryParams
 from neo4j.graph import Relationship
 from fastapi import WebSocket
+import asyncio
 
 
 
@@ -38,10 +39,21 @@ class KnowleadgeGraphRetriver:
     async def extract_query_params_from_summaries_and_question(self, question: str) -> QueryParams:
         summaries: List[Summary] = self._laod_summaries()
 
-        query_params: List[QueryParams] = []
-        for summary in summaries:
-            query_param = await self._parse_summary_with_question(question=question, summary=summary)
-            query_params.append(query_param)
+        semaphore = asyncio.Semaphore(4)
+
+        async def analyze_single_summary(summary: Summary) -> QueryParams:
+            async with semaphore:
+                try:
+                    return await self._parse_summary_with_question(question=question, summary=summary)
+                except Exception as e:
+                    print(f"Error in LLM call for summary {summary.title}: {e}")
+                    return QueryParams(
+                        Persons=[], Vessels=[], Locations=[], Groups=[],
+                        Organizations=[], RelationshipTypes=[], EventTypes=[]
+                    )
+                
+        tasks = [analyze_single_summary(summary) for summary in summaries]
+        query_params_list: List[QueryParams] = await asyncio.gather(*tasks)
 
         data = {
             'Persons': set(),
@@ -53,7 +65,7 @@ class KnowleadgeGraphRetriver:
             'EventTypes': set()
         }
 
-        for query_param in query_params:
+        for query_param in query_params_list:
             for key in data:
                 items = getattr(query_param, key, [])
                 data[key].update(items)
@@ -82,8 +94,7 @@ class KnowleadgeGraphRetriver:
                                     explanation=finding.get("explanation")
                                 )
                                 for finding in data.get("findings", [])
-                            ],
-                            nodes=data.get("nodes")
+                            ]
                         )
                         summaries.append(summary_obj)
                     except json.JSONDecodeError as e:
@@ -631,51 +642,27 @@ class KnowleadgeGraphRetriver:
         )
 
     async def get_final_answer(self, question: str, sub_graph_desctiptions: List[SubGraphDiscription]):
-        final_context = ""
-        for index, sub_graph in enumerate(sub_graph_desctiptions):
-            final_context += f"Subgraph: {index}"
-            final_context += sub_graph.llm_summary + "\n\n"
-        system_prompt = """
-            ### Role
-            You are an advanced AI assistant supporting a human in information discovery and research.
+        chunks = self.chunk_subgraphs(sub_graph_desctiptions, 5)
 
-            ### Goal
-            You will receive:
-            1. A user question.
-            2. Descriptions of relationships between entities, supported by communications, structured as subgraphs.
+        semaphore = asyncio.Semaphore(4)
 
-            Your task is to **answer the question using only the provided information** from the subgraphs.
+        async def safe_partial_answer(idx, chunk):
+            async with semaphore:
+                return await self.get_partial_answer(question, chunk, idx)
 
-            ### Instructions
-            - Integrate relevant details and entities from the subgraphs into your answer.
-            - When information comes from a specific subgraph, indicate it clearly by citing it at the end of the relevant paragraph in the form: (see Subgraph 3).
-            - Do not fabricate or hallucinate information. Use only what is provided.
-            - Write clearly, concisely, and in professional academic style.
-            - Do not do something like this: subgraphs (13, 15, 19, 20) do this: (Subgraph 13, Subgraph 15, Subgraph 19, Subgraph 20)
+        partial_answers = await asyncio.gather(*[
+            safe_partial_answer(idx, chunk)
+            for idx, chunk in enumerate(chunks)
+        ])
 
-            ### Output Format
-            Provide a **Markdown** formatted summary as your final answer.
-            """
+        final_answer_str = await self.merge_partial_answers(question, partial_answers)
 
-        user_prompt = f"""
-            ---Graph Summary---
-            {final_context}
-
-            ---User Question---
-            {question}
-
-            ---Important---
-            Do not do something like this: subgraphs (13, 15, 19, 20) do this: (Subgraph 13, Subgraph 15, Subgraph 19, Subgraph 20)
-            """
-        answer = await self.llm.invoke_prompt(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt
-            )
         return FinalAnswer(
             sub_graphs=sub_graph_desctiptions,
             hole_graph=self.build_answer_graph(sub_graphs=sub_graph_desctiptions),
-            answer=answer
-        )
+            answer=final_answer_str
+    )
+
     
     def build_answer_graph(self, sub_graphs: List[SubGraphDiscription]) -> GraphData:
         graph = Graph(
@@ -705,12 +692,127 @@ class KnowleadgeGraphRetriver:
 
         return combined_graph
     
-    async def reducer_pipeline_reporter(self, ws: WebSocket, question: str):
+    def chunk_subgraphs(self, subgraphs: List[SubGraphDiscription], chunk_size: int) -> List[List[Tuple[int, SubGraphDiscription]]]:
+        return [
+            list(enumerate(subgraphs[i:i + chunk_size], start=i))
+            for i in range(0, len(subgraphs), chunk_size)
+        ]
+
+    async def get_partial_answer(self, question: str, subgraphs_chunk: List[Tuple[int, SubGraphDiscription]], chunk_index: int):
+        final_context = ""
+        for global_index, sub_graph in subgraphs_chunk:
+            final_context += f"Subgraph: {global_index}\n{sub_graph.llm_summary}\n\n"
+
+
+        system_prompt = """
+            ### Role
+            You are an advanced AI assistant supporting a human in information discovery and research.
+
+            ### Goal
+            Your task is to give detailed summaries for the subgraphs in regart to a user question.
+            It is very important to look at every detail in the communications:
+            - Who is talking?
+            - What is the topic?
+            - Are other entities part of this?
+            - When do they talk? (time)
+
+            Your task is to **answer the question using only the provided information** from the subgraphs.
+
+            ### Instructions
+            - Integrate relevant details and entities from the subgraphs into your answer.
+            - When information comes from a specific subgraph, indicate it clearly by citing it at the end of the relevant paragraph in the form: (see Subgraph 3).
+            - Do not fabricate or hallucinate information. Use only what is provided.
+            - Write clearly, concisely, and in professional academic style.
+            - Do not do something like this: subgraphs (13, 15, 19, 20) do this: (Subgraph 13, Subgraph 15, Subgraph 19, Subgraph 20)
+
+            ### Output Format
+            Provide a **Markdown** formatted summary as your final answer.
+            """
+
+        user_prompt = f"""
+            ---Graph Summary---
+            {final_context}
+
+            ---User Question---
+            {question}
+
+            Remember:
+            - Cite relevant Subgraph indices explicitly (e.g., (Subgraph {chunk_index})).
+            - Use only the provided information, no hallucinations.
+            - If no Graph Summary is Provided, just say so. Dont make ANYTHING up.
+            """
+
+        partial_answer = await self.llm.invoke_prompt(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt
+        )
+        return partial_answer
+
+    async def merge_partial_answers(self, question: str, partial_answers: List[str]) -> str:
+        merged_context = "\n\n".join(f"Partial Answer {idx}:\n{ans}" for idx, ans in enumerate(partial_answers))
+
+        system_prompt = """
+            ### Role
+            You are an advanced AI assistant supporting a human in information discovery and research.
+
+            ### Goal
+            Your task is to give detailed summaries for the subgraphs in regart to a user question.
+            It is very important to look at every detail in the communications:
+            - Who is talking?
+            - What is the topic?
+            - Are other entities part of this?
+            - When do they talk? (time)
+
+            Your task is to **answer the question using only the provided information** from the subgraphs.
+
+            ### Instructions
+            - Integrate relevant details and entities from the subgraphs into your answer.
+            - When information comes from a specific subgraph, indicate it clearly by citing it at the end of the relevant paragraph in the form: (see Subgraph 3).
+            - Do not fabricate or hallucinate information. Use only what is provided.
+            - If no context is Provided, just say so.
+            - Write clearly, concisely, and in professional academic style.
+            - Do not do something like this: subgraphs (13, 15, 19, 20) do this: (Subgraph 13, Subgraph 15, Subgraph 19, Subgraph 20)
+
+            ### Output Format
+            Provide a **Markdown** formatted summary as your final answer.
+            """
+
+        user_prompt = f"""
+            ---Graph Summary---
+            {merged_context}
+
+            ---User Question---
+            {question}
+
+            Remember:
+            - Cite relevant Subgraph indices explicitly (e.g., (Subgraph 1)).
+            - Use only the provided information, no hallucinations.
+            - If no Graph Summary is Provided, just say so. Dont make ANYTHING up.
+            """
+
+        final_answer = await self.llm.invoke_prompt(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt
+        )
+        return final_answer
+
+    
+    async def reducer_pipeline_reporter(self, ws: WebSocket, question: str, use_context: bool):
         await ws.send_text(f"[0/4] Starting Pipeline")
-        qp =  await self.extract_query_params_from_question(question=question)
+        if use_context:
+            qp =  await self.extract_query_params_from_summaries_and_question(question=question)
+        else:
+            qp =  await self.extract_query_params_from_question(question=question)
         print(qp)
         await ws.send_text(f"[1/4] Extracted query parameters")
         sub_graphs =  await self.query_subgraph(query_params=qp)
+        print(f"Fund {len(sub_graphs)} Subgraps")
+        if len(sub_graphs) == 0:
+            return FinalAnswer(
+                sub_graphs=[],
+                hole_graph= None,
+                answer=f"Dont find any Data. You can try using the context Search."
+            )
         await ws.send_text(f"[2/4] Retrieved {len(sub_graphs)} subgraphs.")
         sub_graphs_descs=  await self.anaylse_subgraphs(question=question, sub_graphs=sub_graphs)
         await ws.send_text(f"[3/4] Analyzed subgraphs and prepared summaries.")

@@ -9,6 +9,7 @@ import { getQueryWebsocket } from "./web-socket";
 
 export function ChatUI() {
   const [loading, setLoading] = useState<boolean>(false);
+  const [useContext, setUseContext] = useState<boolean>(false);
   const [inputText, setInputText] = useState('');
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -44,8 +45,12 @@ export function ChatUI() {
       const socket = getQueryWebsocket();
 
       socket.onopen = () => {
-        socket.send(message.content as string);
-      };
+        socket.send(JSON.stringify({
+            question: message.content,
+            useContext: useContext
+        }));
+    };
+
 
       let hasAddedStatusMessage = false;
 
@@ -115,6 +120,8 @@ export function ChatUI() {
             inputText={inputText}
             setInputText={setInputText}
             onSubmit={submit}
+            useContext={useContext}
+            setUseContext={setUseContext}
         />
     </div>
 

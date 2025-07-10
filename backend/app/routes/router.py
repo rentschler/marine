@@ -195,7 +195,12 @@ async def graph_with_timestamps(request: TimestampRequestBody):
 async def websocket_nl_query(websocket: WebSocket):
     await websocket.accept()
     try:
-        question = await websocket.receive_text()
+        data = await websocket.receive_text()
+        data = json.loads(data)
+
+        question = data["question"]
+        use_context = data["useContext"]
+
         message_cache.append(Message(
             type = MessageType.User,
             content = question
@@ -203,7 +208,7 @@ async def websocket_nl_query(websocket: WebSocket):
         await websocket.send_text("Received question...")
         async with AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD)) as driver:
             kr = KnowleadgeGraphRetriver(llm=llm, index_summary_path="retriver/index/retriever_summary.json", driver=driver)
-            answer = await kr.reducer_pipeline_reporter(ws=websocket, question=question)
+            answer = await kr.reducer_pipeline_reporter(ws=websocket, question=question, use_context = use_context)
             result = answer.model_dump(exclude_unset=True, exclude_none=True)
             message_cache.append(Message(
                 type = MessageType.System,
