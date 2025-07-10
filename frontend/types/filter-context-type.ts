@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 export enum ColorPalette {
   NODE_TYPE = 'NODE_TYPE',
+  EVENT_TYPE = 'EVENT_TYPE',
   EDGE_TYPE = 'EDGE_TYPE', 
   COMMUNITY = 'COMMUNITY',
   COMPARISON = 'COMPARISON'

@@ -155,7 +155,7 @@ export const useThreeGraph = (containerRef: React.RefObject<HTMLDivElement | nul
       colorScale
     );
     
-  }, [highLightedNodes, highLightedEdges, colorPalette]);
+  }, [colorPalette]);
 
   return {
     tooltipState,

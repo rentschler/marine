@@ -145,6 +145,19 @@ export enum SubType {
   VesselMovement = 'VesselMovement',
 }
 
+export enum EventType {
+  Communication = 'Communication',
+  Collaborate = 'Collaborate',
+  TourActivity = 'TourActivity',
+  Assessment = 'Assessment',
+  VesselMovement = 'VesselMovement',
+  Monitoring = 'Monitoring',
+  Enforcement = 'Enforcement',
+  TransponderPing = 'TransponderPing',
+  HarborReport = 'HarborReport',
+  Criticize = 'Criticize',
+}
+
 export interface ThingCollected {
   type: string;
   name: string;
