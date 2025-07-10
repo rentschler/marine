@@ -21,7 +21,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const navBarDimensions = useDimensionsRef(navRef);  
 
-  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.EDGE_TYPE);
+  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.EVENT_TYPE);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

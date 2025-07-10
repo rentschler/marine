@@ -137,13 +137,13 @@ async def get_diff_graph(session, filters: DiffRequestBody):
             merged_nodes[node_id].subset = "A"
     for node_id, node in nodesB.items():
         if node_id in merged_nodes:
-            merged_nodes[node_id].subset = "A∩B"
+            merged_nodes[node_id].subset = "A and B"
         else:
             merged_nodes[node_id] = node
             merged_nodes[node_id].subset = "B"
 
     # 4. Optionally filter by subset
-    if filters.subsetFilter and filters.subsetFilter != "A∪B":
+    if filters.subsetFilter and filters.subsetFilter != "unselected":
         merged_nodes = {
             nid: n
             for nid, n in merged_nodes.items()

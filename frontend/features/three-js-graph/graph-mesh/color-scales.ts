@@ -7,7 +7,10 @@ const NODE_TYPE_COLORS = d3.schemeTableau10;
 const EVENT_TYPE_COLORS = d3.schemeObservable10;
 const EDGE_TYPE_COLORS = d3.schemeCategory10;
 const COMMUNITY_COLORS = d3.schemeSet3;
-const COMPARISON_COLORS = ['#ff0000', '#008000', '#4682b4', '#aaaaaa']; // Red, Green, Blue, Grey
+// const COMPARISON_COLORS = ['#c4dfff', '#ffccf2', '#dbb9f2', '#eeeeee']; // A, B, A and B, Unselected
+// const COMPARISON_COLORS = ['#004699', '#B71C1C', '8aee8a', '#eeeeee']; // A, B, A and B, Unselected
+const COMPARISON_COLORS = ['#DD0000', '#0000DD', '#00DD00', '#cccccc']; // A, B, A and B, Unselected
+
 
 const DEFAULT_COLOR = '#aaaaaa';
 
