@@ -1,13 +1,15 @@
 'use client';
 
-import { Button, Divider } from '@heroui/react';
-import { ColorPalette, DateRangeFilter, DiffGraphOptions, GraphOptions } from '@/types/filter-context-type';
+import { Navbar, NavbarContent, NavbarItem } from '@heroui/react';
+import {
+  ColorPalette,
+  DiffGraphOptions,
+} from '@/types/filter-context-type';
 import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
 import { LoadingButton } from '@/components/loading-button/loading-button';
 import { recalculateLayout } from './recalculate-layout';
 import { useFilterContext } from '@/context/filter-context';
-import { ColorPaletteSelector } from './color-palette-selector';
 import { CommunitySelector } from './community-selector';
 
 interface DiffGraphToolbarProps {
@@ -21,37 +23,50 @@ interface DiffGraphToolbarProps {
 }
 
 const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
-  ({ graphOptions, setGraphOptions, disabledSubsetFilter, recalculatingLayout, setRecalculatingLayout, colorPalette, setColorPalette }, ref) => {
+  (
+    {
+      graphOptions,
+      setGraphOptions,
+      disabledSubsetFilter,
+      recalculatingLayout,
+      setRecalculatingLayout,
+    },
+    ref
+  ) => {
     const { filteredData, setFilteredData } = useFilterContext();
 
     const handleClick = async () => {
-      console.log("Button clicked Diff");
+      console.log('Button clicked Diff');
       setRecalculatingLayout(true);
       try {
-        const dataToSend = filteredData ;
+        const dataToSend = filteredData;
         if (!dataToSend) return;
 
-        await recalculateLayout(dataToSend,setFilteredData );
+        await recalculateLayout(dataToSend, setFilteredData);
       } finally {
         setRecalculatingLayout(false);
       }
     };
 
     return (
-      <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100 w-full">
-        {/* tool bar */}
-        <div className="flex flex-row items-center justify-between p-1 gap-2 w-full" style={{ zIndex: 100 }}>
-          <div className="flex flex-row gap-2">
-            {/* Community Selector */}
-          <CommunitySelector
-            selectedCommunities={graphOptions.selectedCommunities}
-            setSelectedCommunities={(communities) =>
-              setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
-            }
-          />
-            
-            <Divider orientation="vertical" className="h-8" />
-            
+      <Navbar
+        position="sticky"
+        ref={ref}
+        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+      >
+        <NavbarContent className="hidden sm:flex gap-4 min-w-max" justify="start">
+          <NavbarItem>
+            <CommunitySelector
+              selectedCommunities={graphOptions.selectedCommunities}
+              setSelectedCommunities={(communities) =>
+                setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
+              }
+              showLabel={false}
+            />
+          </NavbarItem>
+
+          <NavbarItem>
+            <div className="flex flex-row items-center gap-2">
             {Object.values(SubsetType).map((subset) => (
               <label key={subset} className="flex items-center gap-2">
                 <input
@@ -67,53 +82,67 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 />
                 <span>{subset}</span>
               </label>
-            ))}
-            <Divider orientation="vertical" className="h-8" />
-          {/* toggle dateRangeFilter.neighboorNodes */}
-          <div className="flex flex-row items-center gap-2">
-            <input
-              type="checkbox"
-              id="neighboorNodesSwitchDiff"
-              checked={graphOptions.neighboorNodes}
-              onChange={(e) =>
-                setGraphOptions((prev) => ({
-                  ...prev,
-                  neighboorNodes: e.target.checked,
-                }))
-              }
-            />
-            <label htmlFor="neighboorNodesSwitchDiff" className="text-sm font-medium text-gray-700">
-              Include Neighbor Nodes in Diff Graph
-            </label>
-            <Divider orientation="vertical" className="h-8" />
-          {/* toggle dateRangeFilter.collapseComms */}
-          <div className="flex flex-row items-center gap-2">
-            <input
-              type="checkbox"
-              id="collapseCommsSwitchDiff"
-              checked={graphOptions.collapseComms}
-              onChange={(e) =>
-                setGraphOptions((prev) => ({
-                  ...prev,
-                  neighboorNodes: e.target.checked ? true : prev.neighboorNodes, // ensure neighboorNodes is true if collapseComms is true
-                  collapseComms: e.target.checked,
-                }))
-              }
-            />
-            <label htmlFor="collapseCommsSwitchDiff" className="text-sm font-medium text-gray-700">
-              Collapse Communication Edges
-            </label>
-          </div>
-          </div>
-          </div>
+            ))}</div>
+          </NavbarItem>
+          </NavbarContent>
+          <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="end">
 
-        <LoadingButton
-          loading={recalculatingLayout}
-          text="Recalculate Layout"
-          onClick={handleClick}
-        />
-        </div>
-      </div>
+          <NavbarItem>
+            {/* toggle dateRangeFilter.neighboorNodes */}
+            <div className="flex flex-row items-center gap-2">
+              <input
+                type="checkbox"
+                id="neighboorNodesSwitchDiff"
+                checked={graphOptions.neighboorNodes}
+                onChange={(e) =>
+                  setGraphOptions((prev) => ({
+                    ...prev,
+                    neighboorNodes: e.target.checked,
+                  }))
+                }
+              />
+              <label
+                htmlFor="neighboorNodesSwitchDiff"
+                className="text-sm font-medium text-gray-700"
+              >
+                Include Neighbor Nodes
+              </label>
+            </div>
+          </NavbarItem>
+
+          <NavbarItem>
+            {/* toggle dateRangeFilter.collapseComms */}
+            <div className="flex flex-row items-center gap-2">
+              <input
+                type="checkbox"
+                id="collapseCommsSwitchDiff"
+                checked={graphOptions.collapseComms}
+                onChange={(e) =>
+                  setGraphOptions((prev) => ({
+                    ...prev,
+                    neighboorNodes: e.target.checked ? true : prev.neighboorNodes, // ensure neighboorNodes is true if collapseComms is true
+                    collapseComms: e.target.checked,
+                  }))
+                }
+              />
+              <label
+                htmlFor="collapseCommsSwitchDiff"
+                className="text-sm font-medium text-gray-700"
+              >
+                Collapse Communication
+              </label>
+            </div>
+          </NavbarItem>
+
+          <NavbarItem>
+            <LoadingButton
+              loading={recalculatingLayout}
+              text="Recalculate Layout"
+              onClick={handleClick}
+            />
+          </NavbarItem>
+        </NavbarContent>
+      </Navbar>
     );
   }
 );

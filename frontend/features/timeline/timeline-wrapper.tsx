@@ -254,7 +254,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full overflow-hidden">
       {/* tool bar */}
       <TimelineToolbar
         ref={navRef}

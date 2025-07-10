@@ -1,13 +1,11 @@
 'use client';
 
-import { Button, Divider } from '@heroui/react';
+import { Divider, Navbar, NavbarBrand, NavbarContent, NavbarItem, Switch } from '@heroui/react';
 import { ColorPalette, GraphOptions } from '@/types/filter-context-type';
-import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
 import { LoadingButton } from '@/components/loading-button/loading-button';
 import { recalculateLayout } from './recalculate-layout';
 import { useFilterContext } from '@/context/filter-context';
-import { ColorPaletteSelector } from './color-palette-selector';
 import { CommunitySelector } from './community-selector';
 
 interface GraphToolbarProps {
@@ -20,17 +18,7 @@ interface GraphToolbarProps {
 }
 
 const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
-  (
-    {
-      graphOptions,
-      setGraphOptions,
-      recalculatingLayout,
-      setRecalculatingLayout,
-      colorPalette,
-      setColorPalette,
-    },
-    ref
-  ) => {
+  ({ graphOptions, setGraphOptions, recalculatingLayout, setRecalculatingLayout }, ref) => {
     const { currentData, setCurrentData } = useFilterContext();
 
     const handleClick = async () => {
@@ -45,49 +33,31 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
         setRecalculatingLayout(false);
       }
     };
+
     return (
-      <div
+      <Navbar
+        position="static"
         ref={ref}
-        className="flex items-center justify-between p-1 bg-gray-100 w-full relative z-10"
+        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
       >
-        {/* tool bar */}
-        <div
-          className="flex flex-row items-center gap-2 justify-between p-1 w-full"
-          style={{ zIndex: 100 }}
-        >
-          {/* Community Selector */}
-          <CommunitySelector
-            selectedCommunities={graphOptions.selectedCommunities}
-            setSelectedCommunities={(communities) =>
-              setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
-            }
-          />
-
-          <Divider orientation="vertical" className="h-8" />
-
-          {/* toggle dateRangeFilter.neighboorNodes */}
-          <div className="flex flex-row items-center gap-2" >
-            <input
-              type="checkbox"
-              id="neighboorNodesSwitch"
-              checked={graphOptions.neighboorNodes}
-              onChange={(e) =>
-                setGraphOptions((prev) => ({
-                  ...prev,
-                  neighboorNodes: e.target.checked,
-                }))
+        <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
+          <NavbarItem>
+            <CommunitySelector
+              selectedCommunities={graphOptions.selectedCommunities}
+              setSelectedCommunities={(communities) =>
+                setGraphOptions((prev) => ({ ...prev, selectedCommunities: communities }))
               }
-              style={{ visibility: 'hidden' }}
+              showCount={false}
+              showLabel={false}
             />
-            <label htmlFor="neighboorNodesSwitch" className="text-sm font-medium text-gray-700" style={{ visibility: 'hidden' }}>
-              Include Neighbor Nodes in Diff Graph
-            </label>
-            <Divider orientation="vertical" className="h-8"style={{ visibility: 'hidden' }} />
+          </NavbarItem>
+
+          <NavbarItem>
             {/* toggle dateRangeFilter.collapseComms */}
             <div className="flex flex-row items-center gap-2">
               <input
                 type="checkbox"
-                id="collapseCommsSwitch"
+                id="collapseCommsSwitchDiff"
                 checked={graphOptions.collapseComms}
                 onChange={(e) =>
                   setGraphOptions((prev) => ({
@@ -97,18 +67,24 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
                   }))
                 }
               />
-              <label htmlFor="collapseCommsSwitch" className="text-sm font-medium text-gray-700">
-                Collapse Communication Edges
+              <label
+                htmlFor="collapseCommsSwitchDiff"
+                className="text-sm font-medium text-gray-700"
+              >
+                Collapse Communication
               </label>
             </div>
-          </div>
-          <LoadingButton
-            loading={recalculatingLayout}
-            text="Recalculate Layout"
-            onClick={handleClick}
-          />
-        </div>
-      </div>
+          </NavbarItem>
+
+          <NavbarItem>
+            <LoadingButton
+              loading={recalculatingLayout}
+              text="Recalculate Layout"
+              onClick={handleClick}
+            />
+          </NavbarItem>
+        </NavbarContent>
+      </Navbar>
     );
   }
 );
