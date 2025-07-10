@@ -9,9 +9,10 @@ interface CommunitySelectorProps {
   setSelectedCommunities: (communities: string[]) => void;
   showCount?: boolean;
   showButtons?: boolean;
+  showLabel?: boolean;
 }
 
-export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommunities, showCount = true, showButtons = true }: CommunitySelectorProps) => {
+export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommunities, showCount = true, showButtons = true, showLabel = true }: CommunitySelectorProps) => {
   const { communities } = useFilterContext();
 
   const handleSelectionChange = useCallback((keys: any) => {
@@ -43,28 +44,8 @@ export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommuni
 
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm font-medium text-gray-700">Communities:</label>
-      <div className="flex flex-col gap-1">
-        {showButtons && (
-          <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant="flat"
-            onClick={handleSelectAll}
-            className="text-xs px-2 py-1"
-          >
-            Select All
-          </Button>
-          <Button
-            size="sm"
-            variant="flat"
-            onClick={handleDeselectAll}
-            className="text-xs px-2 py-1"
-          >
-            Deselect All
-          </Button>
-          </div>
-        )}
+      <div className="flex">
+ 
         <Select
           size="sm"
           selectedKeys={new Set(selectedCommunities)}
@@ -73,6 +54,7 @@ export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommuni
           aria-label="Select communities"
           selectionMode="multiple"
           placeholder="Select communities..."
+          label={showLabel ? 'Communities' : undefined}
         >
           {communities.map((community) => (
             <SelectItem key={community}>
@@ -80,6 +62,16 @@ export const CommunitySelector = memo(({ selectedCommunities, setSelectedCommuni
             </SelectItem>
           ))}
         </Select>
+        {showButtons && (
+          <Button
+            size="sm"
+            variant="flat"
+            onClick={handleSelectAll}
+            className="text-xs px-2 py-1"
+          >
+            Select All
+          </Button>
+        )}
         {isSomeSelected && showCount && (
           <span className="text-xs text-gray-500">
             {selectedCommunities.length} of {communities.length} selected

@@ -27,9 +27,9 @@ export const ColorPaletteSelector = ({ colorPalette, setColorPalette }: ColorPal
 
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm font-medium text-gray-700">Color By:</label>
       <Select
         size="sm"
+        label="Color By"
         selectedKeys={[colorPalette]}
         onSelectionChange={handleSelectionChange}
         className="w-40"
