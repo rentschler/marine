@@ -92,7 +92,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
             <div className="flex flex-row items-center gap-2">
               <input
                 type="checkbox"
-                id="neighboorNodesSwitchDiff"
+                id="neighboorNodesSwitchDiff2"
                 checked={graphOptions.neighboorNodes}
                 onChange={(e) =>
                   setGraphOptions((prev) => ({
@@ -102,7 +102,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 }
               />
               <label
-                htmlFor="neighboorNodesSwitchDiff"
+                htmlFor="neighboorNodesSwitchDiff2"
                 className="text-sm font-medium text-gray-700"
               >
                 Include Neighbor Nodes
@@ -115,7 +115,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
             <div className="flex flex-row items-center gap-2">
               <input
                 type="checkbox"
-                id="collapseCommsSwitchDiff"
+                id="collapseCommsSwitchDiff2"
                 checked={graphOptions.collapseComms}
                 onChange={(e) =>
                   setGraphOptions((prev) => ({
@@ -126,7 +126,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 }
               />
               <label
-                htmlFor="collapseCommsSwitchDiff"
+                htmlFor="collapseCommsSwitchDiff2"
                 className="text-sm font-medium text-gray-700"
               >
                 Collapse Communication
