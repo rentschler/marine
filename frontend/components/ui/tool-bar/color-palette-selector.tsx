@@ -13,7 +13,7 @@ interface ColorPaletteSelectorProps {
 export const ColorPaletteSelector = ({ colorPalette, setColorPalette }: ColorPaletteSelectorProps) => {
 
   const colorPaletteOptions = [
-    { key: ColorPalette.EDGE_TYPE, label: 'Edge Type' },
+    { key: ColorPalette.EVENT_TYPE, label: 'Event Type' },
     { key: ColorPalette.COMMUNITY, label: 'Community' },
     { key: ColorPalette.COMPARISON, label: 'Comparison' },
   ];

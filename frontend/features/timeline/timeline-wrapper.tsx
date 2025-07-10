@@ -275,7 +275,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
       />
 
       {/* bar chart */}
-        {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EDGE_TYPE ? (
+        {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EVENT_TYPE ? (
           <StackedBarChart
             data={currentStackedData?.data}
             bars={currentStackedData?.bars}
