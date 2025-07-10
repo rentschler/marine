@@ -213,6 +213,7 @@ class KnowleadgeGraphRetriver:
         This is a summary of all Entities, all possible Events and Relationship:
         {self.summary}
         Only use Entities, Events and Relationships, which are included.
+        Dont make anything up and only use Entities, who are used in the summary.
         """
 
         try:
