@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Callable
+from nl_querying.query_utils import clean_json_string
 from models.Graph import GraphData
 from retriver.sub_graph_discription import SubGraphDiscription
 from nl_querying.utils.llm.parallel_llm_call import ParallelLLMCall
-from nl_querying.query_utils import clean_json_string
 from openai import AsyncOpenAI
 import asyncio, json
 import re
@@ -111,9 +111,40 @@ class LLM:
         """
         semaphore = asyncio.Semaphore(4)  # adjust concurrency as needed
 
+        async def recover_response(system_prompt: str, question: str, response: str, sub_graph_description: SubGraphDiscription) -> SubGraphDiscription:
+            user_prompt = f"""
+            ---Graph Summary---
+            {response}
+
+            ---User Question---
+            {question}
+            """
+            try:
+                response = await self.invoke_prompt(system_prompt=system_prompt, user_prompt=user_prompt)
+                cleaned = self.extract_json_block(clean_json_string(response))
+                cleaned = self.sanitize_json_string(cleaned)
+                response_data = json.loads(cleaned)
+                relevant = response_data.get("Relevant", False)
+                if isinstance(relevant, str):
+                    relevant = relevant.lower() in ("true", "yes", "1")
+                elif not isinstance(relevant, bool):
+                    relevant = False
+                if relevant:
+                    sub_graph_description.llm_summary = response_data.get("Summary")
+                    return sub_graph_description
+                else:
+                    return None
+            except Exception as e:
+                print(f"LLM call for subgraph failed: {e} {response}")
+                return await recover_response(system_prompt=system_prompt, question=question, response=response, sub_graph_description=sub_graph_description) 
+
+
+
+
         async def analyze_single(sub_graph: GraphData) -> SubGraphDiscription:
             async with semaphore:
-                sub_graph_description = describe_subgraph_func(sub_graph)
+                if describe_subgraph_func:
+                    sub_graph_description = describe_subgraph_func(sub_graph)
 
                 system_prompt = """
                 ---Role---
@@ -122,7 +153,7 @@ class LLM:
 
                 ---Goal---
                 You are provided with Radio communications between entities (persons, vessels, locations, groups, organisations).
-                Your task is to give detailed summaries for the communitcations in regart to a user question.
+                Your task is to decide if this subgraph is important to answer the question and if so to give detailed summary for the communitcations in regart to a user question.
                 It is very important to look at every detail in the communications:
                 - Who is talking?
                 - What is the topic?
@@ -130,8 +161,10 @@ class LLM:
                 - When do they talk? (time)
 
                 ---Output Structure---
-                Provide a text summary. 
-                Not longer then 8 sentences.
+                {
+                "Relevant": <boolean>,
+                "Summary": <summary of the subgraph>,
+                }
                 """
 
                 user_prompt = f"""
@@ -143,18 +176,70 @@ class LLM:
                 """
 
                 try:
-                    summary = await self.invoke_prompt(system_prompt=system_prompt, user_prompt=user_prompt)
-                    sub_graph_description.llm_summary = summary
+                    response = await self.invoke_prompt(system_prompt=system_prompt, user_prompt=user_prompt)
+                    cleaned = self.extract_json_block(clean_json_string(response))
+                    cleaned = self.sanitize_json_string(cleaned)
+                    response_data = json.loads(cleaned)
+                    relevant = response_data.get("Relevant", False)
+                    if isinstance(relevant, str):
+                        relevant = relevant.lower() in ("true", "yes", "1")
+                    elif not isinstance(relevant, bool):
+                        relevant = False
+                    if relevant:
+                        sub_graph_description.llm_summary = response_data.get("Summary")
+                        return sub_graph_description
+                    else:
+                        return None
                 except Exception as e:
-                    print(f"LLM call for subgraph failed: {e}")
-                    sub_graph_description.llm_summary = f"Error during summarization: {e}"
+                    print(f"LLM call for subgraph failed: {e} {response}")
+                    return await recover_response(system_prompt=system_prompt, question=question, response=response, sub_graph_description=sub_graph_description) 
 
-                return sub_graph_description
+
+                
 
         tasks = [analyze_single(sub_graph) for sub_graph in sub_graphs]
         results = await asyncio.gather(*tasks)
-        return results
+        relevant_subgraphs = [result for result in results if result is not None]
+        return relevant_subgraphs
 
+    async def invoke_llm_parallel_communication_subgraphs(self, question: str, sub_graphs: List[SubGraphDiscription]) -> List[SubGraphDiscription]:
+        semaphore = asyncio.Semaphore(4)
+
+        async def summarize_single_subtree(sub_graph: SubGraphDiscription) -> SubGraphDiscription:
+            async with semaphore:
+                system_prompt = """
+                    ---Role---
+                    You are an AI assistant that helps a human to perform a general information discovery. 
+                    You help to summarize Communitions and extract relevant Informations and Entities regarding a Question.
+
+                    ---Goal---
+                    You are provided with Radio communications between entities (persons, vessels, locations, groups, organisations).
+                    Your task is to a give detailed summary for the communitcations in regart to a user question.
+                    It is very important to look at every detail in the communications:
+                    - Who is talking?
+                    - What is the topic?
+                    - Are other entities part of this?
+                    - When do they talk? (time), always include the time of the communication.
+
+                    ---Output Structure---
+                    <summary of the subgraph>,
+                    """
+
+                user_prompt = f"""
+                    ---Graph Summary---
+                    {sub_graph.description}
+
+                    ---User Question---
+                    {question}
+                """
+                response = await self.invoke_prompt(system_prompt=system_prompt, user_prompt=user_prompt)
+                sub_graph.llm_summary = response
+                return sub_graph
+
+        tasks = [summarize_single_subtree(sub_graph) for sub_graph in sub_graphs]
+        results = await asyncio.gather(*tasks)
+        relevant_subgraphs = [result for result in results]
+        return relevant_subgraphs
     
 
     def extract_json_block(self, text: str) -> str:
@@ -188,6 +273,8 @@ class LLM:
         )
 
         return json_str
+    
+
 
 
     

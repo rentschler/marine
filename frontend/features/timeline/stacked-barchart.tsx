@@ -2,6 +2,8 @@ import { ChartType, InteractionMode, StackedBarChartProps } from './time-line-ty
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+import { SubsetType } from '@/types/graph-types';
+import { ColorPalette } from '@/types/filter-context-type';
 
 const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const StackedBarChart = ({
@@ -27,6 +29,8 @@ const StackedBarChart = ({
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
     const svg = d3.select(svgRef.current).attr('width', width).attr('height', height);
+
+    const subsetColorScale = getColorScale(ColorPalette.COMPARISON, []);
 
     // clear all the elements
     svg.selectAll('*').remove();
@@ -110,7 +114,16 @@ const StackedBarChart = ({
 
     // Create complete bar rectangles for highlighting
     g.selectAll('.bar-outline')
-      .data(Array.from(barGroups.values()))
+      .data(Array.from(barGroups.values()).map((d) => {
+          const isInSelectionA = selectionA && d.start >= selectionA[0] && d.end <= selectionA[1];
+          const isInSelectionB = selectionB && d.start >= selectionB[0] && d.end <= selectionB[1];
+          const isInSelectionAUnionB = isInSelectionA && isInSelectionB;
+          const subset =  isInSelectionAUnionB ? SubsetType.A_INTERSECT_B : isInSelectionA ? SubsetType.A : isInSelectionB ? SubsetType.B : SubsetType.A_UNION_B;
+          return {
+            ...d,
+            subset,
+          };
+        }))
       .join('rect')
       .attr('class', 'bar-outline')
       .attr('x', (d) => scaleTime(d.start)!)
@@ -118,12 +131,8 @@ const StackedBarChart = ({
       .attr('height', (d) => Math.abs(scaleLinear(0) - scaleLinear(d.totalHeight)))
       .attr('width', barWidth)
       .attr('fill', 'none')
-      .attr('stroke-width', 2)
-      .attr('stroke', (d) => {
-        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return 'red';
-        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return 'green';
-        return 'none';
-      });
+      .attr('stroke-width', (d) => d.subset != SubsetType.A_UNION_B ? 3 : 0)
+        .attr('stroke', (d) => subsetColorScale(d.subset));
 
     // add the axes
     const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);

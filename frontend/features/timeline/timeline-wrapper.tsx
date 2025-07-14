@@ -21,7 +21,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const navBarDimensions = useDimensionsRef(navRef);  
 
-  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.EDGE_TYPE);
+  const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.EVENT_TYPE);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -254,7 +254,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full overflow-hidden">
       {/* tool bar */}
       <TimelineToolbar
         ref={navRef}
@@ -275,7 +275,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
       />
 
       {/* bar chart */}
-        {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EDGE_TYPE ? (
+        {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EVENT_TYPE ? (
           <StackedBarChart
             data={currentStackedData?.data}
             bars={currentStackedData?.bars}

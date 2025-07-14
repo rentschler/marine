@@ -9813,7 +9813,7 @@
             "id": "94",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_20"
         },
         {
@@ -9839,7 +9839,7 @@
             "id": "102",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_260"
         },
         {
@@ -9852,7 +9852,7 @@
             "id": "105",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Remora",
             "target": "Event_Communication_281"
         },
         {
@@ -9866,35 +9866,35 @@
             "id": "110",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_291"
         },
         {
             "id": "112",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_295"
         },
         {
             "id": "114",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_343"
         },
         {
             "id": "116",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Nadia Conti",
             "target": "Event_Communication_521"
         },
         {
             "id": "118",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_548"
         },
         {
@@ -9914,7 +9914,7 @@
             "id": "122",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Marlin",
             "target": "Event_Communication_581"
         },
         {
@@ -9940,7 +9940,7 @@
             "id": "127",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Marlin",
             "target": "Event_Communication_585"
         },
         {
@@ -9953,14 +9953,14 @@
             "id": "130",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_639"
         },
         {
             "id": "132",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_802"
         },
         {
@@ -9979,7 +9979,7 @@
             "id": "136",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_819"
         },
         {
@@ -10012,7 +10012,7 @@
             "id": "145",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Remora",
             "target": "Event_Communication_853"
         },
         {
@@ -10025,7 +10025,7 @@
             "id": "148",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Nadia Conti",
             "target": "Event_Communication_869"
         },
         {
@@ -10044,14 +10044,14 @@
             "id": "153",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_916"
         },
         {
             "id": "155",
             "type": "sent",
             "is_inferred": false,
-            "source": "Davis",
+            "source": "Mako",
             "target": "Event_Communication_963"
         },
         {
@@ -10114,7 +10114,7 @@
             "id": "163",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Mako",
             "target": "Event_Communication_142"
         },
         {
@@ -10127,7 +10127,7 @@
             "id": "167",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_199"
         },
         {
@@ -10146,14 +10146,14 @@
             "id": "171",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Davis",
             "target": "Event_Communication_240"
         },
         {
             "id": "172",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_328"
         },
         {
@@ -10167,14 +10167,14 @@
             "id": "176",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_511"
         },
         {
             "id": "177",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_562"
         },
         {
@@ -10187,7 +10187,7 @@
             "id": "180",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Davis",
             "target": "Event_Communication_588"
         },
         {
@@ -10200,21 +10200,21 @@
             "id": "182",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_764"
         },
         {
             "id": "184",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Davis",
             "target": "Event_Communication_804"
         },
         {
             "id": "185",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Davis",
             "target": "Event_Communication_805"
         },
         {
@@ -10227,21 +10227,21 @@
             "id": "188",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_810"
         },
         {
             "id": "189",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Remora",
             "target": "Event_Communication_893"
         },
         {
             "id": "190",
             "type": "sent",
             "is_inferred": false,
-            "source": "Rodriguez",
+            "source": "Davis",
             "target": "Event_Communication_982"
         },
         {
@@ -10793,7 +10793,7 @@
             "id": "300",
             "type": "sent",
             "is_inferred": false,
-            "source": "The Intern",
+            "source": "Mrs. Money",
             "target": "Event_Communication_702"
         },
         {
@@ -11474,7 +11474,7 @@
             "id": "428",
             "type": "sent",
             "is_inferred": false,
-            "source": "The Middleman",
+            "source": "Mrs. Money",
             "target": "Event_Communication_40"
         },
         {
@@ -11515,14 +11515,14 @@
             "id": "436",
             "type": "sent",
             "is_inferred": false,
-            "source": "The Middleman",
+            "source": "Mrs. Money",
             "target": "Event_Communication_519"
         },
         {
             "id": "437",
             "type": "sent",
             "is_inferred": false,
-            "source": "The Middleman",
+            "source": "Mrs. Money",
             "target": "Event_Communication_721"
         },
         {
@@ -11548,7 +11548,7 @@
             "id": "442",
             "type": "sent",
             "is_inferred": false,
-            "source": "The Middleman",
+            "source": "The Accountant",
             "target": "Event_Communication_867"
         },
         {
@@ -11960,7 +11960,7 @@
             "id": "523",
             "type": "sent",
             "is_inferred": false,
-            "source": "Oceanus City Council",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_218"
         },
         {
@@ -12087,7 +12087,7 @@
             "id": "555",
             "type": "sent",
             "is_inferred": false,
-            "source": "Oceanus City Council",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_399"
         },
         {
@@ -12107,7 +12107,7 @@
             "id": "564",
             "type": "sent",
             "is_inferred": false,
-            "source": "Oceanus City Council",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_604"
         },
         {
@@ -12239,7 +12239,7 @@
             "id": "602",
             "type": "sent",
             "is_inferred": false,
-            "source": "Oceanus City Council",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_928"
         },
         {
@@ -12379,7 +12379,7 @@
             "id": "630",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_182"
         },
         {
@@ -12449,7 +12449,7 @@
             "id": "647",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Sentinel",
             "target": "Event_Communication_239"
         },
         {
@@ -12495,7 +12495,7 @@
             "id": "667",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_354"
         },
         {
@@ -12515,7 +12515,7 @@
             "id": "670",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_356"
         },
         {
@@ -12541,7 +12541,7 @@
             "id": "675",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Sentinel",
             "target": "Event_Communication_411"
         },
         {
@@ -12555,7 +12555,7 @@
             "id": "679",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Horizon",
             "target": "Event_Communication_431"
         },
         {
@@ -12575,7 +12575,7 @@
             "id": "683",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Sentinel",
             "target": "Event_Communication_437"
         },
         {
@@ -12595,7 +12595,7 @@
             "id": "686",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_439"
         },
         {
@@ -12626,7 +12626,7 @@
             "id": "692",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Sentinel",
             "target": "Event_Communication_568"
         },
         {
@@ -12658,7 +12658,7 @@
             "id": "701",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Horizon",
             "target": "Event_Communication_610"
         },
         {
@@ -12685,7 +12685,7 @@
             "id": "710",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "EcoVigil",
             "target": "Event_Communication_672"
         },
         {
@@ -12704,7 +12704,7 @@
             "id": "715",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_692"
         },
         {
@@ -12723,7 +12723,7 @@
             "id": "720",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Sentinel",
             "target": "Event_Communication_778"
         },
         {
@@ -12749,7 +12749,7 @@
             "id": "728",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Horizon",
             "target": "Event_Communication_831"
         },
         {
@@ -12763,7 +12763,7 @@
             "id": "733",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_834"
         },
         {
@@ -12801,7 +12801,7 @@
             "id": "740",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_901"
         },
         {
@@ -12821,7 +12821,7 @@
             "id": "744",
             "type": "sent",
             "is_inferred": false,
-            "source": "Green Guardians",
+            "source": "Sentinel",
             "target": "Event_Communication_908"
         },
         {
@@ -13086,7 +13086,7 @@
             "id": "810",
             "type": "sent",
             "is_inferred": false,
-            "source": "Sailor Shifts Team",
+            "source": "Remora",
             "target": "Event_Communication_283"
         },
         {
@@ -13174,7 +13174,7 @@
             "id": "825",
             "type": "sent",
             "is_inferred": false,
-            "source": "Neptune",
+            "source": "Mako",
             "target": "Event_Communication_419"
         },
         {
@@ -13278,7 +13278,7 @@
             "id": "856",
             "type": "sent",
             "is_inferred": false,
-            "source": "Neptune",
+            "source": "Mako",
             "target": "Event_Communication_506"
         },
         {
@@ -14214,7 +14214,7 @@
             "id": "1122",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardian",
+            "source": "Serenity",
             "target": "Event_Communication_225"
         },
         {
@@ -14332,7 +14332,7 @@
             "id": "1149",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardian",
+            "source": "Sentinel",
             "target": "Event_Communication_576"
         },
         {
@@ -14352,7 +14352,7 @@
             "id": "1155",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardian",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_614"
         },
         {
@@ -14416,7 +14416,7 @@
             "id": "1171",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardian",
+            "source": "Marlin",
             "target": "Event_Communication_660"
         },
         {
@@ -14559,7 +14559,7 @@
             "id": "1205",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardian",
+            "source": "Sentinel",
             "target": "Event_Communication_899"
         },
         {
@@ -14597,7 +14597,7 @@
             "id": "1212",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardian",
+            "source": "Serenity",
             "target": "Event_Communication_945"
         },
         {
@@ -14736,7 +14736,7 @@
             "id": "1241",
             "type": "sent",
             "is_inferred": false,
-            "source": "Horizon",
+            "source": "Green Guardians",
             "target": "Event_Communication_325"
         },
         {
@@ -14922,7 +14922,7 @@
             "id": "1277",
             "type": "sent",
             "is_inferred": false,
-            "source": "Seawatch",
+            "source": "Green Guardians",
             "target": "Event_Communication_793"
         },
         {
@@ -15072,7 +15072,7 @@
             "id": "1309",
             "type": "sent",
             "is_inferred": false,
-            "source": "EcoVigil",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_731"
         },
         {
@@ -15222,7 +15222,7 @@
             "id": "1349",
             "type": "sent",
             "is_inferred": false,
-            "source": "EcoVigil",
+            "source": "Sentinel",
             "target": "Event_Communication_974"
         },
         {
@@ -15813,7 +15813,7 @@
             "id": "1475",
             "type": "sent",
             "is_inferred": false,
-            "source": "Remora",
+            "source": "Paackland Harbor",
             "target": "Event_Communication_214"
         },
         {
@@ -15996,7 +15996,7 @@
             "id": "1512",
             "type": "sent",
             "is_inferred": false,
-            "source": "Remora",
+            "source": "Mako",
             "target": "Event_Communication_556"
         },
         {
@@ -16094,7 +16094,7 @@
             "id": "1535",
             "type": "sent",
             "is_inferred": false,
-            "source": "Remora",
+            "source": "Mako",
             "target": "Event_Communication_871"
         },
         {
@@ -16231,7 +16231,7 @@
             "id": "1563",
             "type": "sent",
             "is_inferred": false,
-            "source": "Knowles",
+            "source": "Mako",
             "target": "Event_Communication_1001"
         },
         {
@@ -17568,7 +17568,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_40",
-            "target": "Mrs. Money"
+            "target": "The Middleman"
         },
         {
             "id": "1771",
@@ -18946,7 +18946,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_182",
-            "target": "Oceanus City Council"
+            "target": "Green Guardians"
         },
         {
             "id": "2104",
@@ -19107,7 +19107,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_199",
-            "target": "Boss"
+            "target": "Rodriguez"
         },
         {
             "id": "2143",
@@ -19331,7 +19331,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_214",
-            "target": "Paackland Harbor"
+            "target": "Remora"
         },
         {
             "id": "2195",
@@ -19366,7 +19366,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_218",
-            "target": "Paackland Harbor"
+            "target": "Oceanus City Council"
         },
         {
             "id": "2206",
@@ -19471,7 +19471,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_225",
-            "target": "Serenity"
+            "target": "Reef Guardian"
         },
         {
             "id": "2231",
@@ -19632,7 +19632,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_240",
-            "target": "Davis"
+            "target": "Rodriguez"
         },
         {
             "id": "2268",
@@ -19918,7 +19918,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_272",
-            "target": "Mako"
+            "target": "Paackland Harbor"
         },
         {
             "id": "2337",
@@ -20091,7 +20091,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_281",
-            "target": "Remora"
+            "target": "Davis"
         },
         {
             "id": "2378",
@@ -20140,7 +20140,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_283",
-            "target": "Remora"
+            "target": "Sailor Shifts Team"
         },
         {
             "id": "2387",
@@ -20532,7 +20532,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_325",
-            "target": "Green Guardians"
+            "target": "Horizon"
         },
         {
             "id": "2479",
@@ -20567,7 +20567,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_328",
-            "target": "Boss"
+            "target": "Rodriguez"
         },
         {
             "id": "2486",
@@ -20896,14 +20896,14 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_355",
-            "target": "Oceanus City Council"
+            "target": "Paackland Harbor"
         },
         {
             "id": "2558",
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_356",
-            "target": "Oceanus City Council"
+            "target": "Green Guardians"
         },
         {
             "id": "2559",
@@ -21462,7 +21462,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_399",
-            "target": "Paackland Harbor"
+            "target": "Oceanus City Council"
         },
         {
             "id": "2691",
@@ -21692,7 +21692,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_419",
-            "target": "City Officials"
+            "target": "Neptune"
         },
         {
             "id": "2741",
@@ -21958,7 +21958,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_439",
-            "target": "Oceanus City Council"
+            "target": "Green Guardians"
         },
         {
             "id": "2805",
@@ -22623,7 +22623,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_506",
-            "target": "Mako"
+            "target": "Neptune"
         },
         {
             "id": "2959",
@@ -22665,7 +22665,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_511",
-            "target": "Sailor Shifts Team"
+            "target": "Rodriguez"
         },
         {
             "id": "2971",
@@ -22784,7 +22784,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_519",
-            "target": "Liam Thorne"
+            "target": "The Middleman"
         },
         {
             "id": "2998",
@@ -22798,7 +22798,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_521",
-            "target": "Nadia Conti"
+            "target": "Davis"
         },
         {
             "id": "3001",
@@ -23125,7 +23125,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_548",
-            "target": "Neptune"
+            "target": "Davis"
         },
         {
             "id": "3081",
@@ -23230,7 +23230,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_556",
-            "target": "Mako"
+            "target": "Remora"
         },
         {
             "id": "3104",
@@ -23293,7 +23293,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_562",
-            "target": "Mrs. Money"
+            "target": "Rodriguez"
         },
         {
             "id": "3118",
@@ -23545,7 +23545,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_585",
-            "target": "Nadia Conti"
+            "target": "Davis"
         },
         {
             "id": "3176",
@@ -23746,7 +23746,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_604",
-            "target": "Reef Guardian"
+            "target": "Oceanus City Council"
         },
         {
             "id": "3222",
@@ -23865,7 +23865,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_613",
-            "target": "Reef Guardian"
+            "target": "Paackland Harbor"
         },
         {
             "id": "3249",
@@ -23886,7 +23886,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_614",
-            "target": "Oceanus City Council"
+            "target": "Reef Guardian"
         },
         {
             "id": "3254",
@@ -24159,7 +24159,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_639",
-            "target": "V. Miesel Shipping"
+            "target": "Davis"
         },
         {
             "id": "3318",
@@ -24382,7 +24382,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_660",
-            "target": "Marlin"
+            "target": "Reef Guardian"
         },
         {
             "id": "3367",
@@ -24508,7 +24508,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_672",
-            "target": "EcoVigil"
+            "target": "Green Guardians"
         },
         {
             "id": "3397",
@@ -25068,7 +25068,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_721",
-            "target": "Liam Thorne"
+            "target": "The Middleman"
         },
         {
             "id": "3524",
@@ -25649,7 +25649,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_764",
-            "target": "Boss"
+            "target": "Rodriguez"
         },
         {
             "id": "3660",
@@ -25964,7 +25964,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_793",
-            "target": "Green Guardians"
+            "target": "Seawatch"
         },
         {
             "id": "3731",
@@ -26068,7 +26068,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_802",
-            "target": "Mako"
+            "target": "Davis"
         },
         {
             "id": "3757",
@@ -26089,7 +26089,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_804",
-            "target": "Davis"
+            "target": "Rodriguez"
         },
         {
             "id": "3762",
@@ -26117,7 +26117,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_805",
-            "target": "Nadia Conti"
+            "target": "Rodriguez"
         },
         {
             "id": "3766",
@@ -26285,7 +26285,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_819",
-            "target": "Mako"
+            "target": "Davis"
         },
         {
             "id": "3808",
@@ -26446,7 +26446,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_831",
-            "target": "Horizon"
+            "target": "Green Guardians"
         },
         {
             "id": "3844",
@@ -26803,7 +26803,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_853",
-            "target": "Remora"
+            "target": "Davis"
         },
         {
             "id": "3926",
@@ -26936,7 +26936,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_867",
-            "target": "The Accountant"
+            "target": "Boss"
         },
         {
             "id": "3957",
@@ -26957,7 +26957,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_869",
-            "target": "Nadia Conti"
+            "target": "Davis"
         },
         {
             "id": "3960",
@@ -26978,7 +26978,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_871",
-            "target": "Mako"
+            "target": "Remora"
         },
         {
             "id": "3966",
@@ -27216,7 +27216,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_893",
-            "target": "Remora"
+            "target": "Rodriguez"
         },
         {
             "id": "4020",
@@ -27986,7 +27986,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_963",
-            "target": "Boss"
+            "target": "Davis"
         },
         {
             "id": "4202",
@@ -28161,7 +28161,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_977",
-            "target": "Sentinel"
+            "target": "EcoVigil"
         },
         {
             "id": "4239",
@@ -28406,7 +28406,7 @@
             "type": "received",
             "is_inferred": false,
             "source": "Event_Communication_1001",
-            "target": "Davis"
+            "target": "Knowles"
         },
         {
             "id": "4297",

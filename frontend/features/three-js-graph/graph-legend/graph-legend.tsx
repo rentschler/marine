@@ -47,6 +47,7 @@ export function GraphLegend({
           >
             {colorPalette === palette ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             {palette === ColorPalette.NODE_TYPE && 'Node Type Colors'}
+            {palette === ColorPalette.EVENT_TYPE && 'Event Type Colors'}
             {palette === ColorPalette.COMMUNITY && 'Community Colors'}
             {palette === ColorPalette.COMPARISON && 'Comparison Colors'}
             {palette === ColorPalette.EDGE_TYPE && 'Edge Type Colors'}

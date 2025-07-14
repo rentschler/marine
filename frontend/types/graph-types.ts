@@ -72,8 +72,8 @@ export interface Node {
 export enum SubsetType {
   A = 'A', // only in graph A
   B = 'B', // only in graph B
-  A_INTERSECT_B = 'A∩B', // in both graph A and B (intersection)
-  A_UNION_B = 'A∪B', // in graph A or B or both (union)
+  A_INTERSECT_B = 'A and B', // in both graph A and B (intersection)
+  A_UNION_B = 'unselected', // in graph A or B or both (union)
 }
 
 export interface DiffNode extends Node {
@@ -143,6 +143,19 @@ export enum SubType {
   Unfriendly = 'Unfriendly',
   Vessel = 'Vessel',
   VesselMovement = 'VesselMovement',
+}
+
+export enum EventType {
+  Communication = 'Communication',
+  Collaborate = 'Collaborate',
+  TourActivity = 'TourActivity',
+  Assessment = 'Assessment',
+  VesselMovement = 'VesselMovement',
+  Monitoring = 'Monitoring',
+  Enforcement = 'Enforcement',
+  TransponderPing = 'TransponderPing',
+  HarborReport = 'HarborReport',
+  Criticize = 'Criticize',
 }
 
 export interface ThingCollected {

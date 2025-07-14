@@ -2,18 +2,13 @@
 
 import { useCallback, useState, useRef } from 'react';
 import {
-  ControlsContainer,
   FullScreenControl,
   SigmaContainer,
   ZoomControl,
 } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
-import { LinkType, NodeType } from '@/types/graph-types';
-import * as d3 from 'd3';
-import { ColorLegend } from '@/components/ui/color-legend';
-import { LayoutForceAtlas2Control } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
-import { GraphSearch, GraphSearchOption } from '@react-sigma/graph-search';
+import { GraphSearchOption } from '@react-sigma/graph-search';
 import '@react-sigma/graph-search/lib/style.css';
 import { FocusOnNode } from '../graph/focus-on-node';
 import GraphTooltip from '../graph/graph-tooltip';
@@ -24,7 +19,7 @@ import { CommunityGraph } from './community-graph';
 import { useFilterContext } from '@/context/filter-context';
 import { ColorPalette } from '@/types/filter-context-type';
 import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
-import { GraphLegend, LegendContent } from '../three-js-graph/graph-legend/graph-legend';
+import { LegendContent } from '../three-js-graph/graph-legend/graph-legend';
 import { AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Card } from '@heroui/react';
@@ -143,7 +138,6 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           <Card className="absolute top-0 left-0 py-3" style={{ zIndex: 100, paddingInlineStart: '12px', marginTop: '5px'}}>
             <ZoomControl />
             <FullScreenControl />
-            <LayoutForceAtlas2Control />
           </Card>
 
           {/* Container for the search bar */}

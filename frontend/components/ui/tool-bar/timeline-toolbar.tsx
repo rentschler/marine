@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Divider, Slider, Tooltip } from '@heroui/react';
+import { Button, Divider, Navbar, NavbarContent, NavbarItem, Select, SelectItem, Slider, Tooltip } from '@heroui/react';
 import { ColorPalette, DateRangeFilter } from '@/types/filter-context-type';
 import { ChartType, InteractionMode } from '@/features/timeline/time-line-types';
 
@@ -45,90 +45,94 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
     },
     ref
   ) => {
+
+    const selectOptions = [
+      { label: 'No Selection', value: InteractionMode.NONE },
+      { label: 'Single Selection', value: InteractionMode.SINGLE },
+      { label: 'Diff Selection', value: InteractionMode.DIFF },
+    ];
+
     return (
-      <div ref={ref} className="flex items-center justify-between p-1 bg-gray-100">
-        <div className="flex gap-2">
-          <Tooltip content="Disable selection to enable tooltips">
-            <Button
+      <Navbar
+        position="sticky"
+        ref={ref}
+        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+      >
+        <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
+          <div className="grid grid-flow-col justify-items-center-safe"></div>
+          <NavbarItem>
+            <Select
+              label="Selection Mode"
               size="sm"
-              variant={interactionMode === InteractionMode.NONE ? 'solid' : 'bordered'}
-              onPress={() => {
-                setInteractionMode(InteractionMode.NONE);
-                resetSelections();
+              selectedKeys={[interactionMode]}
+              onChange={(e) => {
+                const value = e.target.value as InteractionMode;
+                setInteractionMode(value);
+                if (value === InteractionMode.NONE) {
+                  resetSelections();
+                }
               }}
+              className="min-w-[160px]"
             >
-              No Selection
-            </Button>
-          </Tooltip>
-          <Tooltip content="Select a single time range to analyze">
-            <Button
-              size="sm"
-              variant={interactionMode === InteractionMode.SINGLE ? 'solid' : 'bordered'}
-              onPress={() => setInteractionMode(InteractionMode.SINGLE)}
+              {selectOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </Select>
+          </NavbarItem>
+
+          <NavbarItem>
+            <Tooltip
+              content={
+                isAnimating
+                  ? 'Stop automatic time progression'
+                  : 'Start automatic time progression (3s intervals)'
+              }
             >
-              Single Selection
-            </Button>
-          </Tooltip>
-          <Tooltip content="Select two time ranges to compare">
-            <Button
-              size="sm"
-              variant={interactionMode === InteractionMode.DIFF ? 'solid' : 'bordered'}
-              onPress={() => setInteractionMode(InteractionMode.DIFF)}
-            >
-              Diff Selection
-            </Button>
-          </Tooltip>
-        </div>
+              <Button
+                size="sm"
+                color={isAnimating ? 'danger' : 'primary'}
+                variant="solid"
+                onPress={() => setIsAnimating(!isAnimating)}
+              >
+                {isAnimating ? 'Stop Animation' : 'Start Animation'}
+              </Button>
+            </Tooltip>
+          </NavbarItem>
 
-        <Divider orientation="vertical" className="h-8" />
+          <NavbarItem>
+            <Tooltip content="Change the bin size for the bar chart">
+              <div style={{ maxWidth: 200, minWidth: 120, width: '100%' }}>
+                {/* <span className="text-sm font-medium text-gray-700 mr-2">Bins</span> */}
+                <Slider
+                  label="#Bins"
+                  maxValue={24}
+                  minValue={1}
+                  onChangeEnd={(val) => setNumberBins(+val * 14)}
+                  defaultValue={numberBins / 14}
+                  showTooltip={true}
+                  size="sm"
+                  step={1}
+                />
+              </div>
+            </Tooltip>
+          </NavbarItem>
 
-        <Tooltip
-          content={
-            isAnimating
-              ? 'Stop automatic time progression'
-              : 'Start automatic time progression (3s intervals)'
-          }
-        >
-          <Button
-            size="sm"
-            color={isAnimating ? 'danger' : 'primary'}
-            variant="solid"
-            onPress={() => setIsAnimating(!isAnimating)}
-          >
-            {isAnimating ? 'Stop Animation' : 'Start Animation'}
-          </Button>
-        </Tooltip>
+          <NavbarItem>
+            <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
+          </NavbarItem>
 
-        <Divider orientation="vertical" className="h-8" />
-        <Tooltip content="Change the bin size for the bar chart">
-          <div style={{ maxWidth: 200, minWidth: 120, width: '100%' }}>
-            {/* <span className="text-sm font-medium text-gray-700 mr-2">Bins</span> */}
-            <Slider
-              label="#Bins"
-              maxValue={24}
-              minValue={1}
-              onChangeEnd={(val) => setNumberBins(+val * 14)}
-              defaultValue={numberBins / 14}
-              showTooltip={true}
-              size="sm"
-              step={1}
+          <NavbarItem>
+            <CommunitySelector
+              selectedCommunities={selectedCommunities}
+              setSelectedCommunities={setSelectedCommunities}
+              showCount={false}
+              showButtons={false}
             />
-          </div>
-        </Tooltip>
-        <Divider orientation="vertical" className="h-8" />
-        <ColorPaletteSelector colorPalette={colorPalette} setColorPalette={setColorPalette} />
-
-        <Divider orientation="vertical" className="h-8" />
-
-        <div className="flex gap-2">
-          <CommunitySelector
-            selectedCommunities={selectedCommunities}
-            setSelectedCommunities={setSelectedCommunities}
-            showCount={false}
-            showButtons={false}
-          />
-        </div>
-      </div>
+          </NavbarItem>
+        </NavbarContent>
+      </Navbar>
     );
   }
 );

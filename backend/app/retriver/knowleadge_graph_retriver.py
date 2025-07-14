@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 import json
 from typing import List, Set, Tuple
@@ -25,6 +26,12 @@ class KnowleadgeGraphRetriver:
         self.llm = llm
         self.index_summary_path = index_summary_path
         self.driver = driver
+        self.graph_meta = Graph(
+                mode="default",  
+                edge_default=EDefault(),
+                node_default=EDefault(),
+                name="Knowledge Graph"
+            )
 
         try:
             with open(self.index_summary_path, "r", encoding="utf-8") as f:
@@ -35,6 +42,339 @@ class KnowleadgeGraphRetriver:
         except json.JSONDecodeError as e:
             print(f"[ERROR] JSON decode failed: {e}")
             self.summary = {}
+
+    async def analyse_of_communitcations(self, question: str):
+        print("Extracting Entities.")
+        entities = await self._extract_entities(question=question)
+        sub_tree_descs =  await self._get_communication_subtrees(entities=entities, question=question)
+        return sub_tree_descs
+
+
+    async def _extract_entities(self, question: str) -> QueryParams:
+        system_prompt = """
+        ---Role--- 
+        You are an AI assistant that helps a human to perform a general information discovery.
+
+        ---Goal---
+        Identify all Entities, which are named in the user query. Only include directly named entities.
+        Only include Entities, which are also included here: 
+        "Sam",
+        "Kelly",
+        "Nadia Conti",
+        "Elise",
+        "Liam Thorne",
+        "Samantha Blake",
+        "Davis",
+        "Rodriguez",
+        "Sailor Shift",
+        "Clepper Jensen",
+        "Miranda Jordan",
+        "The Intern",
+        "The Lookout",
+        "The Accountant",
+        "Mrs. Money",
+        "The Middleman",
+        "Boss",
+        "Small Fry",
+        "Neptune",
+        "Marlin",
+        "Serenity",
+        "Mako",
+        "Reef Guardian",
+        "Horizon",
+        "Seawatch",
+        "EcoVigil",
+        "Sentinel",
+        "Osprey",
+        "Defender",
+        "Northern Light",
+        "Remora",
+        "Knowles",
+        "Mariner's Dream",
+        "Paackland Harbor",
+        "Haacklee Harbor",
+        "Himark Harbor",
+        "Nemo Reef",
+        "Restricted areas",
+        "Azure Cove",
+        "Protected areas",
+        "Eastern reefs",
+        "Eastern Coastline",
+        "Southern islands",
+        "Southern coastline",
+        "Coral Point",
+        "Dolphin Bay",
+        "E7",
+        "Northern quadrant",
+        "Southern quadrant",
+        "Eastern quadrant",
+        "Western quadrant",
+        "Eastern Islands",
+        "Western Boundary",
+        "Eastern Boundary",
+        "Southern Boundary",
+        "Eastern Shoals",
+        "Restricted Zone",
+        "Route C",
+        "South Dock",
+        "Castaway Cove",
+        "Berth 14",
+        "Port Security",
+        "Recreational Fishing Boats",
+        "City Officials",
+        "Diving Tour Operators",
+        "Tourists",
+        "Conservation Vessels",
+        "Glitters Team",
+        "Oceanus City Council",
+        "Green Guardians",
+        "V. Miesel Shipping",
+        "Sailor Shifts Team"
+
+        ---Output Structure---
+        The Output should ONLY include a JSON-Object of the following format:
+        {
+            "Entities": []
+        }
+
+        ---Examples---
+        Question: Is Nadia Conti talking to Liam Throne?
+        Output:
+        {
+            "Entities": ["Nadia Conti", "Liam Throne"]
+        }
+
+        Question: Is Haacklee Harbor communitcating with  Oceanus City Council ? And what are the talking about?
+        Output:
+        {
+            "Entities": ["Haacklee Harbor, "Oceanus City Council"]
+        }
+
+        Question: Are the Boss, the middleman and the Intern talk to each other?
+        Output:
+        {
+            "Entities":["Boss", "The Middleman", "The Intern"]
+        }
+        """
+        user_prompt = f"""
+        ---User Question---
+        {question}
+        
+        """
+        try:
+            response = await self.llm.invoke_prompt(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt
+            )
+            response_dict = json.loads(response.strip())
+            query_params = QueryParams(
+                Persons=response_dict.get("Entities", []),
+                Vessels=response_dict.get("Vessels", []),
+                Locations=response_dict.get("Locations", []),
+                Groups=response_dict.get("Groups", []),
+                Organizations=response_dict.get("Organizations", []),
+                RelationshipTypes=response_dict.get("RelationshipTypes", []),
+                EventTypes=response_dict.get("EventTypes", []),
+            )
+            return query_params
+            
+
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse LLM JSON response: {response}") from e
+    
+        except Exception as e:
+            raise e
+        
+    async def _get_communication_subtrees(self, entities: QueryParams, question: str) -> List[SubGraphDiscription]:
+        entities_list: List[str] = entities.Persons
+        print(f"Extracted Person: {entities_list}")
+        
+        communication_sub_graphs = await self._get_communcation_subgraphs_per_day(entities=entities_list)
+        
+        communication_sub_graphs = await self.llm.invoke_llm_parallel_communication_subgraphs(
+            question=question,
+            sub_graphs=communication_sub_graphs
+        )
+        
+        return communication_sub_graphs
+
+
+    async def _get_communcation_subgraphs_per_day(self, entities: List[str]) -> List[SubGraphDiscription]:
+        graph_data = await self._get_all_communications(entities=entities)
+        print(f"Found {len(graph_data.nodes)} Nodes.")
+
+        node_lookup = {str(node.id): node for node in graph_data.nodes}
+        daily_data = defaultdict(lambda: {
+            "messages": [],
+            "nodes": {},
+            "links": set()
+        })
+
+        for link1 in graph_data.links:
+            if str(link1.source) not in node_lookup or str(link1.target) not in node_lookup:
+                continue
+
+            if node_lookup[str(link1.source)].type == "Entity" and node_lookup[str(link1.target)].sub_type == "Communication":
+                entity1_id = str(link1.source)
+                communication_id = str(link1.target)
+            elif node_lookup[str(link1.target)].type == "Entity" and node_lookup[str(link1.source)].sub_type == "Communication":
+                entity1_id = str(link1.target)
+                communication_id = str(link1.source)
+            else:
+                continue
+
+            for link2 in graph_data.links:
+                if link2 == link1:
+                    continue
+
+                if communication_id in [str(link2.source), str(link2.target)]:
+                    entity2_id = str(link2.target) if str(link2.source) == communication_id else str(link2.source)
+                    if entity2_id == entity1_id:
+                        continue
+
+                    entity1 = node_lookup[entity1_id]
+                    entity2 = node_lookup[entity2_id]
+                    communication = node_lookup[communication_id]
+
+                    timestamp = communication.timestamp
+                    content = communication.content
+
+
+                    try:
+                        if isinstance(timestamp, str):
+                            dt = datetime.fromisoformat(timestamp)
+                        elif isinstance(timestamp, datetime):
+                            dt = timestamp
+                        else:
+                            dt = None
+
+                        if dt:
+                            date_key = dt.date().isoformat()
+                            timestamp_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+                        else:
+                            date_key = "unknown"
+                            timestamp_str = str(timestamp)
+                    except:
+                        date_key = "unknown"
+                        timestamp_str = str(timestamp)
+
+                    message_str = (
+                        f'At {timestamp_str} {entity1.id} -> send -> '
+                        f'"{content}" -> received -> {entity2.id}'
+                    )
+                    print(f"Found link: {entity1.id} <-> {entity2.id} via {communication_id} on {timestamp_str}")
+
+                    day_data = daily_data[date_key]
+                    day_data["messages"].append({
+                        "timestamp": timestamp_str,
+                        "message_str": message_str
+                    })
+                    for node in [entity1, entity2, communication]:
+                        day_data["nodes"][str(node.id)] = node
+                    for link in [link1, link2]:
+                        link_key = (link.source, link.target, link.type, link.is_inferred)
+                        day_data["links"].add(link_key)
+
+        result = []
+        for day, data in daily_data.items():
+            sorted_messages = sorted(data["messages"], key=lambda x: x["timestamp"])
+            
+            # Hier die Tuples wieder zu Link-Objekten machen:
+            links = [
+                Link(source=src, target=tgt, type=typ, is_inferred=inf)
+                for (src, tgt, typ, inf) in data["links"]
+            ]
+            
+            graph = GraphData(
+                directed=True,
+                multigraph=False,
+                graph=self.graph_meta,
+                nodes=list(data["nodes"].values()),
+                links=links,
+            )
+
+            sub_graph = SubGraphDiscription(
+                day=day,
+                description="\n".join(m["message_str"] for m in sorted_messages),
+                graph=graph
+            )
+            print(sub_graph.description)
+            result.append(sub_graph)
+
+        return sorted(result, key=lambda x: x.day)
+
+    async def _get_all_communications(self, entities: List[str]) -> GraphData:
+        nodes = {}
+        links_set = set()  
+        try:
+            async with self.driver.session() as session:
+                for i in range(len(entities)):
+                    for j in range(i + 1, len(entities)):
+                        entity1 = entities[i]
+                        entity2 = entities[j]
+
+                        query = """
+                            MATCH (e1:Entity)-[l1]-(c:Event)-[l2]-(e2:Entity)
+                            WHERE e1.id = $entity1
+                            AND e2.id = $entity2
+                            AND c.sub_type = "Communication"
+                            RETURN 
+                                e1, e2, c, 
+                                startNode(l1) AS s1, endNode(l1) AS t1, type(l1) AS type1,
+                                startNode(l2) AS s2, endNode(l2) AS t2, type(l2) AS type2
+                        """
+
+
+                        result = await session.run(query, entity1=entity1, entity2=entity2)
+                        records = await result.data()
+                        print("running query")
+
+                        for record in records:
+                            
+                            for key in ["e1", "e2", "c"]:
+                                node_data = record.get(key)
+                                if node_data:
+                                    node_dict = dict(node_data.items())
+                                    node_id = node_dict.get("id")
+                                    if node_id and node_id not in nodes:
+                                        nodes[node_id] = Node(**node_dict)
+
+                            
+                            for prefix in [("s1", "t1", "type1"), ("s2", "t2", "type2")]:
+                                source = record.get(prefix[0])
+                                target = record.get(prefix[1])
+                                link_type = record.get(prefix[2])
+
+                                source_id = source.get("id") if isinstance(source, dict) else source
+                                target_id = target.get("id") if isinstance(target, dict) else target
+
+                                link_key = (source_id, target_id, link_type)
+                                if link_key not in links_set:
+                                    links_set.add(link_key)
+            print("Building graph")
+            links = [
+                Link(source=src, target=tgt, type=typ, is_inferred=True)
+                for (src, tgt, typ) in links_set
+            ]
+
+            return GraphData(
+                directed=True,
+                multigraph=False,
+                graph=self.graph_meta,
+                nodes=list(nodes.values()),
+                links=links
+            )
+
+        except Exception as e:
+            print(f"Error in _get_all_communications: {e}")
+            return GraphData(
+                directed=True,
+                multigraph=False,
+                graph=self.graph_meta,
+                nodes=[],
+                links=[]
+            )
+
 
     async def extract_query_params_from_summaries_and_question(self, question: str) -> QueryParams:
         summaries: List[Summary] = self._laod_summaries()
@@ -572,7 +912,7 @@ class KnowleadgeGraphRetriver:
             print(e)
         
 
-    async def anaylse_subgraphs(self, question: str, sub_graphs: List[GraphData]):
+    async def anaylse_subgraphs(self, question: str, sub_graphs: List[Graph]):
         return await self.llm.invoke_llm_parallel_subgraphs(
             question=question,
             sub_graphs=sub_graphs,
@@ -715,7 +1055,7 @@ class KnowleadgeGraphRetriver:
             - Who is talking?
             - What is the topic?
             - Are other entities part of this?
-            - When do they talk? (time)
+            - When do they talk? (time) if possible include time.
 
             Your task is to **answer the question using only the provided information** from the subgraphs.
 
@@ -762,7 +1102,7 @@ class KnowleadgeGraphRetriver:
             - Who is talking?
             - What is the topic?
             - Are other entities part of this?
-            - When do they talk? (time)
+            - When do they talk? (time) if possible include time.
 
             Your task is to **answer the question using only the provided information** from the subgraphs.
 
@@ -800,21 +1140,22 @@ class KnowleadgeGraphRetriver:
     
     async def reducer_pipeline_reporter(self, ws: WebSocket, question: str, use_context: bool):
         await ws.send_text(f"[0/4] Starting Pipeline")
-        if use_context:
-            qp =  await self.extract_query_params_from_summaries_and_question(question=question)
+        if not use_context:
+            sub_graphs_descs =  await self.analyse_of_communitcations(question=question)
+            print(sub_graphs_descs)
         else:
             qp =  await self.extract_query_params_from_question(question=question)
-        print(qp)
-        await ws.send_text(f"[1/4] Extracted query parameters")
-        sub_graphs =  await self.query_subgraph(query_params=qp)
-        print(f"Fund {len(sub_graphs)} Subgraps")
-        if len(sub_graphs) == 0:
-            return FinalAnswer(
-                sub_graphs=[],
-                hole_graph= None,
-                answer=f"Dont find any Data. You can try using the context Search."
-            )
-        await ws.send_text(f"[2/4] Retrieved {len(sub_graphs)} subgraphs.")
-        sub_graphs_descs=  await self.anaylse_subgraphs(question=question, sub_graphs=sub_graphs)
+            print(qp)
+            await ws.send_text(f"[1/4] Extracted query parameters")
+            sub_graphs =  await self.query_subgraph(query_params=qp)
+            print(f"Fund {len(sub_graphs)} Subgraps")
+            if len(sub_graphs) == 0:
+                return FinalAnswer(
+                    sub_graphs=[],
+                    hole_graph= None,
+                    answer=f"Dont find any Data. You can try using the context Search."
+                )
+            await ws.send_text(f"[2/4] Retrieved {len(sub_graphs)} subgraphs.")
+            sub_graphs_descs=  await self.anaylse_subgraphs(question=question, sub_graphs=sub_graphs)
         await ws.send_text(f"[3/4] Analyzed subgraphs and prepared summaries.")
         return await self.get_final_answer(question=question, sub_graph_desctiptions=sub_graphs_descs)

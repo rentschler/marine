@@ -2,6 +2,8 @@ import { BarChartProps, InteractionMode } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { SubsetType } from '@/types/graph-types';
+import { ColorPalette } from '@/types/filter-context-type';
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
 
 const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const Barchart = ({
@@ -16,13 +18,7 @@ const Barchart = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const { width, height } = dimensions;
-  const colors = ['#ff0000', '#008000', '#4682b4', '#aaaaaa']; // Red, Green, Blue, Grey#
-  const colorScale = d3.scaleOrdinal(colors).domain([
-    SubsetType.A,
-    SubsetType.B, 
-    SubsetType.A_INTERSECT_B,
-    SubsetType.A_UNION_B
-  ]);
+  const colorScale = getColorScale(ColorPalette.COMPARISON, []);
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -62,7 +58,16 @@ const Barchart = ({
     // create the bars
     const bars = g
       .selectAll('.bar')
-      .data(data)
+      .data(data.map((d) => {
+        const isInSelectionA = selectionA && d.start >= selectionA[0] && d.end <= selectionA[1];
+        const isInSelectionB = selectionB && d.start >= selectionB[0] && d.end <= selectionB[1];
+        const isInSelectionAUnionB = isInSelectionA && isInSelectionB;
+        const subset =  isInSelectionAUnionB ? SubsetType.A_INTERSECT_B : isInSelectionA ? SubsetType.A : isInSelectionB ? SubsetType.B : SubsetType.A_UNION_B;
+        return {
+          ...d,
+          subset,
+        };
+      }))
       .enter()
       .append('rect')
       .classed('bar', true)
@@ -70,11 +75,7 @@ const Barchart = ({
       .attr('y', (d) => scaleLinear(d.count))
       .attr('width', (d) => scaleTime(d.end) - scaleTime(d.start))
       .attr('height', (d) => boundsHeight - scaleLinear(d.count))
-      .attr('fill', (d, i) => {
-        if (selectionA && d.start >= selectionA[0] && d.end <= selectionA[1]) return colorScale(SubsetType.A);
-        if (selectionB && d.start >= selectionB[0] && d.end <= selectionB[1]) return colorScale(SubsetType.B);
-        return colorScale(SubsetType.A_UNION_B);
-      })
+      .attr('fill', (d) => colorScale(d.subset))
       .append('title')
       .text(
         (d) =>

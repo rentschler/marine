@@ -30,7 +30,6 @@ const sizeScale = d3.scaleLinear().domain([1, 1000]).range([5, 100]).clamp(true)
 
 // Component that load the graph
 export const CommunityGraph = ({
-  layout = 'random',
   limit,
   hoveredNode,
   setHoveredNode,
@@ -45,6 +44,8 @@ export const CommunityGraph = ({
   const setSettings = useSetSettings();
   const disableHoverEffect = false;
 
+
+  const layout = 'circlepack' as 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null'
   // Hook for the layout
   let positions: any;
   let assign: any;
@@ -79,7 +80,7 @@ export const CommunityGraph = ({
         type: 'circle',
   //      x: Math.random() * 50 - 5, // Random position between -5 and 5
     //    y: Math.random() * 50 - 5,
-        label: "Community",
+        label: `${node.title}\n(${node.node_count})`,
         size: sizeScale(node.node_count),
         color: colorScale(node.title),
         data: {
@@ -101,7 +102,7 @@ export const CommunityGraph = ({
           ...edge,
           type: 'line',
           label: edge.type || 'CONNECTED_VIA',
-          color: '#aaaaaa',
+          color: '#cccccc',
           size: sizeScale(edge.connection_count),
         },
       );
