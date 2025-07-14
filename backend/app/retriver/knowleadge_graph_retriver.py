@@ -298,6 +298,7 @@ class KnowleadgeGraphRetriver:
                 description="\n".join(m["message_str"] for m in sorted_messages),
                 graph=graph
             )
+            print(sub_graph.description)
             result.append(sub_graph)
 
         return sorted(result, key=lambda x: x.day)
@@ -313,7 +314,7 @@ class KnowleadgeGraphRetriver:
                         entity2 = entities[j]
 
                         query = """
-                            MATCH (e1:Entity)-[l1]->(c:Event)-[l2]->(e2:Entity)
+                            MATCH (e1:Entity)-[l1]-(c:Event)-[l2]-(e2:Entity)
                             WHERE e1.id = $entity1
                             AND e2.id = $entity2
                             AND c.sub_type = "Communication"
@@ -1054,7 +1055,7 @@ class KnowleadgeGraphRetriver:
             - Who is talking?
             - What is the topic?
             - Are other entities part of this?
-            - When do they talk? (time)
+            - When do they talk? (time) if possible include time.
 
             Your task is to **answer the question using only the provided information** from the subgraphs.
 
@@ -1139,8 +1140,9 @@ class KnowleadgeGraphRetriver:
     
     async def reducer_pipeline_reporter(self, ws: WebSocket, question: str, use_context: bool):
         await ws.send_text(f"[0/4] Starting Pipeline")
-        if use_context:
+        if not use_context:
             sub_graphs_descs =  await self.analyse_of_communitcations(question=question)
+            print(sub_graphs_descs)
         else:
             qp =  await self.extract_query_params_from_question(question=question)
             print(qp)
