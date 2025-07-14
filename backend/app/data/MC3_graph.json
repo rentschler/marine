@@ -12763,7 +12763,7 @@
             "id": "733",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_834"
         },
         {
@@ -12801,7 +12801,7 @@
             "id": "740",
             "type": "sent",
             "is_inferred": false,
-            "source": "Reef Guardians",
+            "source": "Reef Guardian",
             "target": "Event_Communication_901"
         },
         {
