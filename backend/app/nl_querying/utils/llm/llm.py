@@ -6,6 +6,7 @@ from nl_querying.query_utils import clean_json_string
 from openai import AsyncOpenAI
 import asyncio, json
 import re
+import os
 
 class LLM:
     """
@@ -32,8 +33,8 @@ class LLM:
             The name of the model to use for text generation.
         """
         self.model = model
-        self.host = "https://ollama.joos.dbvis.de/v1"
-        self.client = AsyncOpenAI(api_key="ollama", base_url=self.host)
+        self.host = os.environ.get('OLLAMA_HOST')
+        self.client = AsyncOpenAI(api_key=os.environ.get('OLLAMA_API_KEY', "ollama"), base_url=self.host)
 
 
     async def invoke_prompt(self, system_prompt: str, user_prompt: str) -> str:
