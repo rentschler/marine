@@ -1,11 +1,12 @@
-"use client"
+'use client';
 
-import { ChatInput } from "@/components/chat-input/chat-input";
-import { ChatPanel } from "@/components/chat-panel/chat-panel";
-import { FinalAnswer, Message, MessageType } from "@/types/message-type";
-import { QueryAnswerType } from "@/types/query-answer-type";
-import { useEffect, useState } from "react";
-import { getQueryWebsocket } from "./web-socket";
+import { useEffect, useState } from 'react';
+
+import { getQueryWebsocket } from './web-socket';
+
+import { ChatInput } from '@/components/chat-input/chat-input';
+import { ChatPanel } from '@/components/chat-panel/chat-panel';
+import { FinalAnswer, Message, MessageType } from '@/types/message-type';
 
 export function ChatUI() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -16,21 +17,21 @@ export function ChatUI() {
 
   useEffect(() => {
     async function get_cached_messages() {
-      const response = await fetch("/api/get-cached-messages", {
-        method: "GET",
+      const response = await fetch('/api/get-cached-messages', {
+        method: 'GET',
         headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      const data:[Message] = await response.json()
-      console.log(data)
-      if (data.length > 0){
-        setMessages(data)
+          'Content-Type': 'application/json',
+        },
+      });
+      const data: [Message] = await response.json();
+
+      console.log(data);
+      if (data.length > 0) {
+        setMessages(data);
       }
     }
-    get_cached_messages()
-  },[])
+    get_cached_messages();
+  }, []);
 
   async function submit() {
     setLoading(true);
@@ -38,19 +39,21 @@ export function ChatUI() {
       type: MessageType.User,
       content: inputText,
     };
+
     setMessages((prev) => [...prev, message]);
-    setInputText("");
+    setInputText('');
 
     try {
       const socket = getQueryWebsocket();
 
       socket.onopen = () => {
-        socket.send(JSON.stringify({
+        socket.send(
+          JSON.stringify({
             question: message.content,
-            useContext: useContext
-        }));
-    };
-
+            useContext: useContext,
+          })
+        );
+      };
 
       let hasAddedStatusMessage = false;
 
@@ -76,9 +79,11 @@ export function ChatUI() {
           setMessages((prev) => {
             if (!hasAddedStatusMessage) {
               hasAddedStatusMessage = true;
+
               return [...prev, systemMessage];
             } else {
               const updated = [...prev.slice(0, -1), systemMessage];
+
               return updated;
             }
           });
@@ -86,12 +91,12 @@ export function ChatUI() {
       };
 
       socket.onerror = (err) => {
-        console.error("WebSocket error:", err);
+        console.error('WebSocket error:', err);
         setMessages((prev) => [
           ...prev,
           {
             type: MessageType.System,
-            content: "Error processing your request.\nPlease try again.",
+            content: 'Error processing your request.\nPlease try again.',
           },
         ]);
         setLoading(false);
@@ -102,7 +107,7 @@ export function ChatUI() {
         ...prev,
         {
           type: MessageType.System,
-          content: "WebSocket connection failed.\nPlease try again.",
+          content: 'WebSocket connection failed.\nPlease try again.',
         },
       ]);
       setLoading(false);
@@ -111,19 +116,18 @@ export function ChatUI() {
 
   return (
     <div className="w-full h-full grid grid-rows-[1fr_auto]">
-        <div className="overflow-y-auto">
-            <ChatPanel messages={messages} />
-        </div>
-        <ChatInput
-            loading={loading}
-            setLoading={setLoading}
-            inputText={inputText}
-            setInputText={setInputText}
-            onSubmit={submit}
-            useContext={useContext}
-            setUseContext={setUseContext}
-        />
+      <div className="overflow-y-auto">
+        <ChatPanel messages={messages} />
+      </div>
+      <ChatInput
+        inputText={inputText}
+        loading={loading}
+        setInputText={setInputText}
+        setLoading={setLoading}
+        setUseContext={setUseContext}
+        useContext={useContext}
+        onSubmit={submit}
+      />
     </div>
-
   );
 }

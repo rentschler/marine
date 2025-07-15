@@ -1,9 +1,12 @@
-import { BarChartProps, InteractionMode } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+
+import { BarChartProps, InteractionMode } from './time-line-types';
+
 import { SubsetType } from '@/types/graph-types';
 import { ColorPalette } from '@/types/filter-context-type';
-import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
 
 const MARGIN = { top: 25, right: 0, bottom: 40, left: 50 };
 const Barchart = ({
@@ -58,16 +61,25 @@ const Barchart = ({
     // create the bars
     const bars = g
       .selectAll('.bar')
-      .data(data.map((d) => {
-        const isInSelectionA = selectionA && d.start >= selectionA[0] && d.end <= selectionA[1];
-        const isInSelectionB = selectionB && d.start >= selectionB[0] && d.end <= selectionB[1];
-        const isInSelectionAUnionB = isInSelectionA && isInSelectionB;
-        const subset =  isInSelectionAUnionB ? SubsetType.A_INTERSECT_B : isInSelectionA ? SubsetType.A : isInSelectionB ? SubsetType.B : SubsetType.A_UNION_B;
-        return {
-          ...d,
-          subset,
-        };
-      }))
+      .data(
+        data.map((d) => {
+          const isInSelectionA = selectionA && d.start >= selectionA[0] && d.end <= selectionA[1];
+          const isInSelectionB = selectionB && d.start >= selectionB[0] && d.end <= selectionB[1];
+          const isInSelectionAUnionB = isInSelectionA && isInSelectionB;
+          const subset = isInSelectionAUnionB
+            ? SubsetType.A_INTERSECT_B
+            : isInSelectionA
+              ? SubsetType.A
+              : isInSelectionB
+                ? SubsetType.B
+                : SubsetType.A_UNION_B;
+
+          return {
+            ...d,
+            subset,
+          };
+        })
+      )
       .enter()
       .append('rect')
       .classed('bar', true)
@@ -79,7 +91,11 @@ const Barchart = ({
       .append('title')
       .text(
         (d) =>
-          d3.timeFormat('%Y-%m-%d %H:%M')(d.start) + ' - ' + d3.timeFormat('%Y-%m-%d %H:%M')(d.end) + '\nCount: ' + d.count
+          d3.timeFormat('%Y-%m-%d %H:%M')(d.start) +
+          ' - ' +
+          d3.timeFormat('%Y-%m-%d %H:%M')(d.end) +
+          '\nCount: ' +
+          d.count
       );
 
     // add the axes
@@ -116,8 +132,10 @@ const Barchart = ({
       ])
       .on('end', (event) => {
         const selection = event.selection;
+
         if (!selection) {
           onSelection?.(null, null);
+
           return;
         }
 
@@ -129,6 +147,7 @@ const Barchart = ({
         data.forEach((d) => {
           const barX = scaleTime(d.start);
           const barXEnd = scaleTime(d.end);
+
           // Check if bar is within brush selection
           if (x0 <= barXEnd && x1 >= barX) {
             highlightBars.push(d);
@@ -136,6 +155,7 @@ const Barchart = ({
         });
         const startDate = d3.min(highlightBars, (d) => d.start);
         const endDate = d3.max(highlightBars, (d) => d.end);
+
         onSelection?.(startDate, endDate);
       });
 
@@ -144,9 +164,7 @@ const Barchart = ({
     }
   }, [data, width, height, onSelection, selectionA, selectionB]);
 
-  return (
-    <svg ref={svgRef}></svg>
-  );
+  return <svg ref={svgRef} />;
 };
 
 export default Barchart;

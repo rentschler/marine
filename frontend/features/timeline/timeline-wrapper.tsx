@@ -1,17 +1,20 @@
 'use client';
 
-import { useFilterContext } from '@/context/filter-context';
-import { GraphData, SubsetType, SubType,Node  } from '@/types/graph-types';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import * as d3 from 'd3';
+import { TabNode } from 'flexlayout-react';
+
+import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+
 import StackedBarChart from './stacked-barchart';
 import BarChart from './barchart';
 import { DayBin, StackedBarChartData, ChartType, InteractionMode } from './time-line-types';
-import { TabNode } from 'flexlayout-react';
-import TimelineToolbar from '../../components/ui/tool-bar/timeline-toolbar';
+
 import { useDimensionsRef } from '@/hooks/use-dimension';
 import { ColorPalette } from '@/types/filter-context-type';
-import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+import { GraphData, SubsetType } from '@/types/graph-types';
+import { useFilterContext } from '@/context/filter-context';
 
 interface TimelineWrapperProps {
   currentNode?: TabNode;
@@ -19,7 +22,7 @@ interface TimelineWrapperProps {
 
 export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   const navRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
-  const navBarDimensions = useDimensionsRef(navRef);  
+  const navBarDimensions = useDimensionsRef(navRef);
 
   const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.EVENT_TYPE);
 
@@ -39,7 +42,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
   );
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
 
-
   const {
     selectedNodeTypes,
     selectedNodeDegrees,
@@ -49,7 +51,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     setDiffGraphOptions,
     communities,
   } = useFilterContext();
-
 
   // get the dimensions of the current node
   const dimensions = currentNode
@@ -65,16 +66,19 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
         setCurrentTimeStep((prev) => {
           //  get the next time step that contains data
           let nextStep = (prev + 1) % numberBins;
+
           while (currentData && currentData[nextStep]?.count === 0) {
             nextStep = (nextStep + 1) % numberBins;
           } // Update the time range in the filter context
           if (currentData) {
             const bin = currentData[nextStep];
+
             setDateRangeFilter({
               dateRangeA: [bin.start, bin.end],
               dateRangeB: undefined,
             });
           }
+
           return nextStep;
         });
       }, 3000);
@@ -103,8 +107,9 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     const fetchData = async () => {
       try {
         const requestBody = {
-          communities: selectedCommunities && selectedCommunities.length > 0 ? selectedCommunities : [],
-        }
+          communities:
+            selectedCommunities && selectedCommunities.length > 0 ? selectedCommunities : [],
+        };
         const response = await fetch('/api/graph-data-timestamps', {
           method: 'POST',
           headers: {
@@ -125,7 +130,8 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             day: d.timestamp ? new Date(d.timestamp) : null,
             type: d.type,
             label: d.label,
-            stack_by: colorPalette === ColorPalette.COMMUNITY ? d.community || "Community" : d.stack_by,
+            stack_by:
+              colorPalette === ColorPalette.COMMUNITY ? d.community || 'Community' : d.stack_by,
             sub_type: d.sub_type,
             id: d.id,
             x: d.x ?? 0,
@@ -137,6 +143,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
         const dates = nodes.filter((n) => n.timestamp).map((n) => n.timestamp as Date);
         const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
         const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+
         setCurrentDateRange([minDate, maxDate]);
 
         // Calculate bin size in milliseconds
@@ -160,7 +167,6 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
           };
         });
 
-
         setCurrentData(bins);
 
         setLoading(false);
@@ -183,6 +189,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             start: new Date(minDate.getTime() + binIndex * binSize),
             end: new Date(minDate.getTime() + (binIndex + 1) * binSize),
           };
+
           // initialize the counts to 0
           Array.from(groups).forEach((subType) => {
             obj[subType] = 0;
@@ -190,9 +197,9 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
           subTypes.forEach((count, subType) => {
             obj[subType] = count ?? 0;
           });
+
           return obj;
         });
-
 
         // stack the data using the subtype and the day
         const series = d3.stack().keys(groups).order(d3.stackOrderDescending)(aggregatedArray);
@@ -209,7 +216,15 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     };
 
     fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, numberBins, chartType, colorPalette, selectedCommunities]);
+  }, [
+    selectedNodeTypes,
+    selectedNodeDegrees,
+    selectedEdgeTypes,
+    numberBins,
+    chartType,
+    colorPalette,
+    selectedCommunities,
+  ]);
 
   const resetSelections = useCallback(() => {
     setDateRangeFilter({
@@ -222,6 +237,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
     (start: Date | null, end: Date | null) => {
       if (!start || !end) {
         resetSelections();
+
         return;
       }
       if (interactionMode === 'single') {
@@ -260,52 +276,52 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
       <TimelineToolbar
         ref={navRef}
         chartType={chartType}
-        setChartType={(type: ChartType) => setChartType(type)}
-        interactionMode={interactionMode}
-        setInteractionMode={setInteractionMode}
-        isAnimating={isAnimating}
-        setIsAnimating={setIsAnimating}
-        resetSelections={resetSelections}
-        dateRangeFilter={dateRangeFilter}
-        numberBins={numberBins}
-        setNumberBins={setNumberBins}
         colorPalette={colorPalette}
-        setColorPalette={setColorPalette}
+        dateRangeFilter={dateRangeFilter}
+        interactionMode={interactionMode}
+        isAnimating={isAnimating}
+        numberBins={numberBins}
+        resetSelections={resetSelections}
         selectedCommunities={selectedCommunities}
+        setChartType={(type: ChartType) => setChartType(type)}
+        setColorPalette={setColorPalette}
+        setInteractionMode={setInteractionMode}
+        setIsAnimating={setIsAnimating}
+        setNumberBins={setNumberBins}
         setSelectedCommunities={setSelectedCommunities}
       />
 
       {/* bar chart */}
-        {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EVENT_TYPE ? (
-          <StackedBarChart
-            data={currentStackedData?.data}
-            bars={currentStackedData?.bars}
-            segments={currentStackedData?.segments}
-            numberOfBins={numberBins}
-            dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
-            onSelection={handleSelection}
-            selectionA={dateRangeFilter.dateRangeA}
-            selectionB={dateRangeFilter.dateRangeB}
-            currentDateRange={currentDateRange}
-            interactionMode={interactionMode}
-            colorScale={getColorScale(colorPalette, communities)}
-          />
-        ) : colorPalette === ColorPalette.COMPARISON ? (
-          <BarChart
-            data={currentData}
-            numberOfBins={numberBins}
-            dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
-            onSelection={handleSelection}
-            selectionA={dateRangeFilter.dateRangeA}
-            selectionB={dateRangeFilter.dateRangeB}
-            currentDateRange={currentDateRange}
-            interactionMode={interactionMode}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p>Community chart coming soon...</p>
-          </div>
-        )}
+      {colorPalette === ColorPalette.COMMUNITY || colorPalette === ColorPalette.EVENT_TYPE ? (
+        <StackedBarChart
+          bars={currentStackedData?.bars}
+          colorScale={getColorScale(colorPalette, communities)}
+          currentDateRange={currentDateRange}
+          data={currentStackedData?.data}
+          dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
+          interactionMode={interactionMode}
+          numberOfBins={numberBins}
+          segments={currentStackedData?.segments}
+          selectionA={dateRangeFilter.dateRangeA}
+          selectionB={dateRangeFilter.dateRangeB}
+          onSelection={handleSelection}
+        />
+      ) : colorPalette === ColorPalette.COMPARISON ? (
+        <BarChart
+          currentDateRange={currentDateRange}
+          data={currentData}
+          dimensions={{ ...dimensions, height: dimensions.height - navBarDimensions.height }}
+          interactionMode={interactionMode}
+          numberOfBins={numberBins}
+          selectionA={dateRangeFilter.dateRangeA}
+          selectionB={dateRangeFilter.dateRangeB}
+          onSelection={handleSelection}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full">
+          <p>Community chart coming soon...</p>
+        </div>
+      )}
     </div>
   );
 }

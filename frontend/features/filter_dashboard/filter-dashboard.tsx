@@ -1,19 +1,11 @@
 'use client';
 
-import { Options } from '@/types/options-types';
 import { useEffect, useState } from 'react';
-import {
-  Button,
-  DateRangePicker,
-  DateValue,
-  Divider,
-  RangeValue,
-  Slider,
-  Spinner,
-} from '@heroui/react';
-import { useFilterContext } from '@/context/filter-context';
+import { Button, Divider, Slider, Spinner } from '@heroui/react';
 import * as d3 from 'd3';
-import { SubsetType } from '@/types/graph-types';
+
+import { useFilterContext } from '@/context/filter-context';
+import { Options } from '@/types/options-types';
 
 export function FilterDashboard() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,10 +28,12 @@ export function FilterDashboard() {
       setLoading(true);
       try {
         const response = await fetch('/api/options');
+
         if (!response.ok) {
           throw new Error('Failed to fetch filter options');
         }
         const options: Options = await response.json();
+
         setOptionsValues(options);
         setSelectedNodeTypes(options.type);
         setSelectedNodeDegrees([options.min_degree, options.max_degree]);
@@ -54,6 +48,7 @@ export function FilterDashboard() {
 
     loadOptions();
   }, []);
+
   return (
     <div className="h-full w-full flex items-center justify-center">
       {loading ? (
@@ -68,6 +63,7 @@ export function FilterDashboard() {
           <div className="flex flex-wrap gap-3 w-full">
             {optionsValues?.type.map((nodeType) => {
               const isSelected = selectedNodeTypes.includes(nodeType);
+
               return (
                 <Button
                   key={nodeType}
@@ -77,6 +73,7 @@ export function FilterDashboard() {
                     const newNodeTypes = isSelected
                       ? selectedNodeTypes.filter((t) => t !== nodeType)
                       : [...selectedNodeTypes, nodeType];
+
                     setSelectedNodeTypes(newNodeTypes);
                   }}
                 >
@@ -88,12 +85,12 @@ export function FilterDashboard() {
 
           <Slider
             className="w-full"
-            label="Node Degree"
             defaultValue={selectedNodeDegrees}
-            onChangeEnd={(val) => setSelectedNodeDegrees(val as [number, number])}
+            label="Node Degree"
             maxValue={optionsValues?.max_degree as number}
             minValue={optionsValues?.min_degree as number}
             step={1}
+            onChangeEnd={(val) => setSelectedNodeDegrees(val as [number, number])}
           />
 
           <Divider />
@@ -101,6 +98,7 @@ export function FilterDashboard() {
           <div className="flex flex-wrap gap-3 w-full">
             {optionsValues?.edge_types.map((edgeType) => {
               const isSelected = selectedEdgeTypes.includes(edgeType);
+
               return (
                 <Button
                   key={edgeType}
@@ -110,6 +108,7 @@ export function FilterDashboard() {
                     const newEdgeTypes = isSelected
                       ? selectedEdgeTypes.filter((t) => t !== edgeType)
                       : [...selectedEdgeTypes, edgeType];
+
                     setSelectedEdgeTypes(newEdgeTypes);
                   }}
                 >

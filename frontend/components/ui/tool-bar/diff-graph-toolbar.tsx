@@ -1,16 +1,15 @@
 'use client';
 
 import { Navbar, NavbarContent, NavbarItem } from '@heroui/react';
-import {
-  ColorPalette,
-  DiffGraphOptions,
-} from '@/types/filter-context-type';
-import { SubsetType } from '@/types/graph-types';
 import { forwardRef } from 'react';
-import { LoadingButton } from '@/components/loading-button/loading-button';
+
 import { recalculateLayout } from './recalculate-layout';
-import { useFilterContext } from '@/context/filter-context';
 import { CommunitySelector } from './community-selector';
+
+import { ColorPalette, DiffGraphOptions } from '@/types/filter-context-type';
+import { SubsetType } from '@/types/graph-types';
+import { LoadingButton } from '@/components/loading-button/loading-button';
+import { useFilterContext } from '@/context/filter-context';
 
 interface DiffGraphToolbarProps {
   graphOptions: DiffGraphOptions;
@@ -40,6 +39,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
       setRecalculatingLayout(true);
       try {
         const dataToSend = filteredData;
+
         if (!dataToSend) return;
 
         await recalculateLayout(dataToSend, setFilteredData);
@@ -50,9 +50,9 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
 
     return (
       <Navbar
-        position="sticky"
         ref={ref}
         className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+        position="sticky"
       >
         <NavbarContent className="hidden sm:flex gap-4 min-w-max" justify="start">
           <NavbarItem>
@@ -67,33 +67,33 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
 
           <NavbarItem>
             <div className="flex flex-row items-center gap-2">
-            {Object.values(SubsetType).map((subset) => (
-              <label key={subset} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={graphOptions.subsetFilter === subset}
-                  onChange={() => {
-                    setGraphOptions((prev) => ({
-                      ...prev,
-                      subsetFilter: prev.subsetFilter === subset ? prev.subsetFilter : subset,
-                    }));
-                  }}
-                  disabled={disabledSubsetFilter}
-                />
-                <span>{subset}</span>
-              </label>
-            ))}</div>
+              {Object.values(SubsetType).map((subset) => (
+                <label key={subset} className="flex items-center gap-2">
+                  <input
+                    checked={graphOptions.subsetFilter === subset}
+                    disabled={disabledSubsetFilter}
+                    type="checkbox"
+                    onChange={() => {
+                      setGraphOptions((prev) => ({
+                        ...prev,
+                        subsetFilter: prev.subsetFilter === subset ? prev.subsetFilter : subset,
+                      }));
+                    }}
+                  />
+                  <span>{subset}</span>
+                </label>
+              ))}
+            </div>
           </NavbarItem>
-          </NavbarContent>
-          <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="end">
-
+        </NavbarContent>
+        <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="end">
           <NavbarItem>
             {/* toggle dateRangeFilter.neighboorNodes */}
             <div className="flex flex-row items-center gap-2">
               <input
-                type="checkbox"
-                id="neighboorNodesSwitchDiff2"
                 checked={graphOptions.neighboorNodes}
+                id="neighboorNodesSwitchDiff2"
+                type="checkbox"
                 onChange={(e) =>
                   setGraphOptions((prev) => ({
                     ...prev,
@@ -102,8 +102,8 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 }
               />
               <label
-                htmlFor="neighboorNodesSwitchDiff2"
                 className="text-sm font-medium text-gray-700"
+                htmlFor="neighboorNodesSwitchDiff2"
               >
                 Include Neighbor Nodes
               </label>
@@ -114,9 +114,9 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
             {/* toggle dateRangeFilter.collapseComms */}
             <div className="flex flex-row items-center gap-2">
               <input
-                type="checkbox"
-                id="collapseCommsSwitchDiff2"
                 checked={graphOptions.collapseComms}
+                id="collapseCommsSwitchDiff2"
+                type="checkbox"
                 onChange={(e) =>
                   setGraphOptions((prev) => ({
                     ...prev,
@@ -126,8 +126,8 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
                 }
               />
               <label
-                htmlFor="collapseCommsSwitchDiff2"
                 className="text-sm font-medium text-gray-700"
+                htmlFor="collapseCommsSwitchDiff2"
               >
                 Collapse Communication
               </label>

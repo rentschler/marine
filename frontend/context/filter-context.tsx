@@ -1,5 +1,7 @@
 'use client';
 
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+
 import {
   DateRangeFilter,
   DiffGraphOptions,
@@ -9,8 +11,6 @@ import {
   CommunitiesResponse,
 } from '@/types/filter-context-type';
 import { GraphData, LinkType, NodeType, SubsetType } from '@/types/graph-types';
-
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
@@ -51,17 +51,19 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     const fetchCommunities = async () => {
       try {
         const response = await fetch('/api/communities/names');
+
         if (!response.ok) {
           throw new Error('Failed to fetch communities');
         }
         const data: CommunitiesResponse = await response.json();
-        setCommunities(data["2"].map((community) => community.title));
+
+        setCommunities(data['2'].map((community) => community.title));
       } catch (error) {
         console.error('Error fetching communities:', error);
         setError('Failed to fetch communities');
       }
     };
-    
+
     fetchCommunities();
   }, []);
 
@@ -76,7 +78,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: selectedNodeDegrees?.[1] ?? 1000,
           nodeTypes: selectedNodeTypes.length > 0 ? selectedNodeTypes : Object.values(NodeType),
           edgeTypes: selectedEdgeTypes.length > 0 ? selectedEdgeTypes : Object.values(LinkType),
-          communities: graphOptions.selectedCommunities.length > 0 ? graphOptions.selectedCommunities : [],
+          communities:
+            graphOptions.selectedCommunities.length > 0 ? graphOptions.selectedCommunities : [],
           collapseComms: graphOptions.collapseComms,
           recalculateLayout: graphOptions.recalculateLayout ?? false,
 
@@ -97,6 +100,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         }
 
         const data: GraphData = await response.json();
+
         setCurrentData(data);
         setError(null);
       } catch (error) {
@@ -114,7 +118,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     const fetchData = async () => {
-      if(dateRangeFilter.dateRangeA === undefined && dateRangeFilter.dateRangeB === undefined) {
+      if (dateRangeFilter.dateRangeA === undefined && dateRangeFilter.dateRangeB === undefined) {
         return;
       }
       try {
@@ -123,7 +127,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           maxDegree: 1000,
           nodeTypes: Object.values(NodeType),
           edgeTypes: Object.values(LinkType),
-          communities: diffGraphOptions.selectedCommunities.length > 0 ? diffGraphOptions.selectedCommunities : [],
+          communities:
+            diffGraphOptions.selectedCommunities.length > 0
+              ? diffGraphOptions.selectedCommunities
+              : [],
           startDateA: dateRangeFilter.dateRangeA?.[0]?.toISOString(),
           endDateA: dateRangeFilter.dateRangeA?.[1]?.toISOString(),
           startDateB: dateRangeFilter.dateRangeB?.[0]?.toISOString(),
@@ -147,6 +154,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         }
 
         const data: GraphData = await response.json();
+
         setFilteredData(data);
         setError(null);
       } catch (error) {
@@ -190,8 +198,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
 
 export function useFilterContext() {
   const context = useContext(FilterContext);
+
   if (!context) {
     throw new Error('useFilterContext must be used within a FilterProvider');
   }
+
   return context;
 }

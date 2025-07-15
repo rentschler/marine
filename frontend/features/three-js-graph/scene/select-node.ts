@@ -1,21 +1,20 @@
-import * as THREE from "three";
-import { MutableRefObject } from "react";
-import { GraphData, Link, Node } from "@/types/graph-types";
+import * as THREE from 'three';
+import { MutableRefObject } from 'react';
 
+import { GraphData, Link, Node } from '@/types/graph-types';
 
 export function selectNode(
-    container: MutableRefObject<HTMLElement | null>,
-    cameraRef: MutableRefObject<THREE.PerspectiveCamera | null>,
-    nodeMeshRef: MutableRefObject<THREE.InstancedMesh | null>,
-    setSelectedNodes: (nodes: (prev: Node[]) => Node[]) => void,
-    setHighLightedEdges: (edges: Link[]) => void,
-    graph: GraphData,
-    mouse: THREE.Vector2,
-    raycaster: THREE.Raycaster,
-){
-    const onClick = (event: MouseEvent) => {
-    if (!container.current || !cameraRef.current || !nodeMeshRef.current)
-      return;
+  container: MutableRefObject<HTMLElement | null>,
+  cameraRef: MutableRefObject<THREE.PerspectiveCamera | null>,
+  nodeMeshRef: MutableRefObject<THREE.InstancedMesh | null>,
+  setSelectedNodes: (nodes: (prev: Node[]) => Node[]) => void,
+  setHighLightedEdges: (edges: Link[]) => void,
+  graph: GraphData,
+  mouse: THREE.Vector2,
+  raycaster: THREE.Raycaster
+) {
+  const onClick = (event: MouseEvent) => {
+    if (!container.current || !cameraRef.current || !nodeMeshRef.current) return;
 
     const rect = container.current.getBoundingClientRect();
 
@@ -32,24 +31,18 @@ export function selectNode(
         const clickedNode = graph.nodes[instanceId];
 
         setSelectedNodes((prevSelectedNodes) => {
-          const alreadySelected = prevSelectedNodes.some(
-            (node) => node.id === clickedNode.id,
-          );
+          const alreadySelected = prevSelectedNodes.some((node) => node.id === clickedNode.id);
 
           let newSelectedNodes: Node[];
 
           if (alreadySelected) {
-            newSelectedNodes = prevSelectedNodes.filter(
-              (node) => node.id !== clickedNode.id,
-            );
+            newSelectedNodes = prevSelectedNodes.filter((node) => node.id !== clickedNode.id);
           } else {
             newSelectedNodes = [...prevSelectedNodes, clickedNode];
           }
 
           const highlightedEdges: Link[] = graph.links.filter((e) =>
-            newSelectedNodes.some(
-              (n) => e.source === n.id || e.target === n.id,
-            ),
+            newSelectedNodes.some((n) => e.source === n.id || e.target === n.id)
           );
 
           setHighLightedEdges(highlightedEdges);
@@ -62,9 +55,9 @@ export function selectNode(
 
   const currentContainer = container.current;
 
-  currentContainer?.addEventListener("click", onClick);
+  currentContainer?.addEventListener('click', onClick);
 
   return () => {
-    currentContainer?.removeEventListener("click", onClick);
+    currentContainer?.removeEventListener('click', onClick);
   };
 }

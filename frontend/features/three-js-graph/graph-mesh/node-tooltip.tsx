@@ -1,14 +1,12 @@
-import { Tooltip } from "@heroui/react";
-import { JSX } from "react";
-
+import { Tooltip } from '@heroui/react';
+import { JSX } from 'react';
 
 export type NodeTooltipProps = {
-    visible: boolean,
-    label: string,
-    x: number,
-    y: number
-}
-
+  visible: boolean;
+  label: string;
+  x: number;
+  y: number;
+};
 
 export function NodeTooltip(props: NodeTooltipProps) {
   const { visible, label, x, y } = props;
@@ -18,20 +16,16 @@ export function NodeTooltip(props: NodeTooltipProps) {
   return (
     <div
       style={{
-        position: "fixed",
+        position: 'fixed',
         left: x,
         top: y - 20,
-        transform: "translate(-50%, 10px)",
+        transform: 'translate(-50%, 10px)',
         zIndex: 1000,
-        pointerEvents: "none",
+        pointerEvents: 'none',
       }}
     >
-      <Tooltip
-        isOpen
-        content={renderMultilineTooltip(label)}
-        placement="top"
-      >
-        <span style={{ visibility: "hidden" }}>.</span>
+      <Tooltip isOpen content={renderMultilineTooltip(label)} placement="top">
+        <span style={{ visibility: 'hidden' }}>.</span>
       </Tooltip>
     </div>
   );
@@ -39,11 +33,10 @@ export function NodeTooltip(props: NodeTooltipProps) {
 
 function renderMultilineTooltip(label: string): JSX.Element {
   return (
-    <div style={{ maxWidth: "400px", textAlign: "left", whiteSpace: "pre-wrap" }}>
-      {label.split("\n").map((line, idx) => (
+    <div style={{ maxWidth: '400px', textAlign: 'left', whiteSpace: 'pre-wrap' }}>
+      {label.split('\n').map((line, idx) => (
         <div key={idx}>{line}</div>
       ))}
     </div>
   );
 }
-

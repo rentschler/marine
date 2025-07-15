@@ -1,12 +1,10 @@
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 interface ColorLegendProps {
   title: string;
   scale: d3.ScaleOrdinal<string, string>;
   domain: string[];
 }
-    
-
 
 export const ColorLegend: React.FC<ColorLegendProps> = ({ title, scale, domain }) => {
   return (
@@ -15,14 +13,11 @@ export const ColorLegend: React.FC<ColorLegendProps> = ({ title, scale, domain }
       <div className="space-y-2">
         {domain.map((item) => (
           <div key={item} className="flex items-center gap-2">
-            <div
-              className="w-4 h-4 rounded-full"
-              style={{ backgroundColor: scale(item) }}
-            />
+            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: scale(item) }} />
             <span className="text-sm">{item}</span>
           </div>
         ))}
       </div>
     </div>
   );
-}; 
+};

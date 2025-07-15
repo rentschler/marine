@@ -5,17 +5,14 @@ import Graph from 'graphology';
 import { useLoadGraph, useRegisterEvents, useSetSettings, useSigma } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
 import * as d3 from 'd3';
-import { useLayoutForceAtlas2 } from '@react-sigma/layout-forceatlas2';
 import '@react-sigma/core/lib/style.css';
 import '@react-sigma/graph-search/lib/style.css';
-import { useLayoutCircular } from '@react-sigma/layout-circular';
-import { useLayoutForce } from '@react-sigma/layout-force';
-import { useLayoutNoverlap } from '@react-sigma/layout-noverlap';
-import { useLayoutRandom } from '@react-sigma/layout-random';
 import { useLayoutCirclepack } from '@react-sigma/layout-circlepack';
-import { Dimensions } from '@/types/dimension-type';
+
 import { CommunityGraphWrapperdProps } from './community-graph-wrapper';
 import { CommunityGraphData, CommunityNode, CommunityEdge } from './community-types';
+
+import { Dimensions } from '@/types/dimension-type';
 
 interface CommunityGraphProps extends CommunityGraphWrapperdProps {
   hoveredNode: string | null;
@@ -26,7 +23,6 @@ interface CommunityGraphProps extends CommunityGraphWrapperdProps {
 }
 
 const sizeScale = d3.scaleLinear().domain([1, 1000]).range([5, 100]).clamp(true);
-
 
 // Component that load the graph
 export const CommunityGraph = ({
@@ -44,25 +40,23 @@ export const CommunityGraph = ({
   const setSettings = useSetSettings();
   const disableHoverEffect = false;
 
-
-  const layout = 'circlepack' as 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null'
   // Hook for the layout
   let positions: any;
   let assign: any;
-  if (layout === 'circular') {
-    ({ positions, assign } = useLayoutCircular());
-  } else if (layout === 'force') {
-    ({ positions, assign } = useLayoutForce());
-  } else if (layout === 'atlas2') {
-    ({ positions, assign } = useLayoutForceAtlas2());
-  } else if (layout === 'circlepack') {
-    ({ positions, assign } = useLayoutCirclepack());
-  } else if (layout === 'noverlap') {
-    ({ positions, assign } = useLayoutNoverlap());
-  }
-  else if (layout === 'random') {
-    ({ positions, assign } = useLayoutRandom());
-  } 
+
+  // if (layout === 'circular') {
+  //   ({ positions, assign } = useLayoutCircular());
+  // } else if (layout === 'force') {
+  //   ({ positions, assign } = useLayoutForce());
+  // } else if (layout === 'atlas2') {
+  //   ({ positions, assign } = useLayoutForceAtlas2());
+  // } else if (layout === 'circlepack') {
+  ({ positions, assign } = useLayoutCirclepack());
+  // } else if (layout === 'noverlap') {
+  //   ({ positions, assign } = useLayoutNoverlap());
+  // } else if (layout === 'random') {
+  //   ({ positions, assign } = useLayoutRandom());
+  // }
 
   /**
    * When the data is loaded, create the graph
@@ -78,17 +72,18 @@ export const CommunityGraph = ({
       const n = {
         ...node,
         type: 'circle',
-  //      x: Math.random() * 50 - 5, // Random position between -5 and 5
-    //    y: Math.random() * 50 - 5,
+        //      x: Math.random() * 50 - 5, // Random position between -5 and 5
+        //    y: Math.random() * 50 - 5,
         label: `${node.title}\n(${node.node_count})`,
         size: sizeScale(node.node_count),
         color: colorScale(node.title),
         data: {
-          "label": node.title,
-          "node count": node.node_count,
-          "summary": node.summary,
+          label: node.title,
+          'node count': node.node_count,
+          summary: node.summary,
         },
-      }
+      };
+
       graph.addNode(node.id, n);
     });
 
@@ -104,12 +99,12 @@ export const CommunityGraph = ({
           label: edge.type || 'CONNECTED_VIA',
           color: '#cccccc',
           size: sizeScale(edge.connection_count),
-        },
+        }
       );
     });
     // Load the graph in sigma
     loadGraph(graph);
-    if(assign){
+    if (assign) {
       assign();
     }
     // Apply the layout
@@ -119,6 +114,7 @@ export const CommunityGraph = ({
     registerEvents({
       enterNode: (event: any) => {
         console.log('Enter node', event);
+
         return setHoveredNode(event.node);
       },
       leaveNode: () => setHoveredNode(null),
@@ -142,6 +138,7 @@ export const CommunityGraph = ({
             newData.highlighted = false;
           }
         }
+
         return newData;
       },
       edgeReducer: (edge, data) => {
@@ -151,11 +148,11 @@ export const CommunityGraph = ({
         if (!disableHoverEffect && hoveredNode && !graph.extremities(edge).includes(hoveredNode)) {
           newData.hidden = true;
         }
+
         return newData;
       },
     });
   }, [hoveredNode, setSettings, sigma, disableHoverEffect, dimensions]);
-
 
   if (!data) {
     return <div>Loading...</div>;

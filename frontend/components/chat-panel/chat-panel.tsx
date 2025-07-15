@@ -1,9 +1,8 @@
-import { Message } from "@/types/message-type";
-import { ChatMessage } from "../chat-message/chat-message";
+import { ChatMessage } from '../chat-message/chat-message';
 
-export function ChatPanel(props: {
-  messages: Message[];
-}) {
+import { Message } from '@/types/message-type';
+
+export function ChatPanel(props: { messages: Message[] }) {
   const { messages } = props;
 
   return (
@@ -22,4 +21,3 @@ export function ChatPanel(props: {
     </div>
   );
 }
-

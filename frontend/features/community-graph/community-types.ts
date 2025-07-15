@@ -1,10 +1,10 @@
 export interface CommunityGraphData {
-  directed:   boolean;
+  directed: boolean;
   multigraph: boolean;
-  graph:      Graph;
-  nodes:      CommunityNode[];
-  links:      CommunityEdge[];
-  metadata:   CommunityMetadata;
+  graph: Graph;
+  nodes: CommunityNode[];
+  links: CommunityEdge[];
+  metadata: CommunityMetadata;
 }
 
 export interface CommunityMetadata {
@@ -15,51 +15,50 @@ export interface CommunityMetadata {
 }
 
 export interface Graph {
-  mode:         string;
+  mode: string;
   edge_default: EDefault;
   node_default: EDefault;
-  name:         string;
+  name: string;
 }
 
-export interface EDefault {
-}
+export interface EDefault {}
 
 export interface CommunityEdge {
-  source:           string;
-  target:           string;
-  type:             LinkType;
-  elementId:        string;
+  source: string;
+  target: string;
+  type: LinkType;
+  elementId: string;
   community2_title: string;
-  level:            number;
+  level: number;
   connection_count: number;
-  dbId:             string;
-  created_at:       Date;
+  dbId: string;
+  created_at: Date;
   community1_title: string;
-  uuid:             string;
+  uuid: string;
 }
 
 export enum LinkType {
-  ConnectedVia = "CONNECTED_VIA",
+  ConnectedVia = 'CONNECTED_VIA',
 }
 
 export interface CommunityNode {
-  summary:            string;
-  updated_at:         Date;
-  level:              number;
+  summary: string;
+  updated_at: Date;
+  level: number;
   rating_explanation: string;
-  rating:             number;
-  created_at:         Date;
-  node_count:         number;
-  id:                 string;
-  title:              string;
-  labels:             TypeElement[];
-  type:               TypeElement;
-  description?:       string;
-  findings?:          string;
+  rating: number;
+  created_at: Date;
+  node_count: number;
+  id: string;
+  title: string;
+  labels: TypeElement[];
+  type: TypeElement;
+  description?: string;
+  findings?: string;
 }
 
 export enum TypeElement {
-  Community = "Community",
+  Community = 'Community',
 }
 
 export type CommunityLevels = '1' | '2' | '3' | '4' | '5';
@@ -67,4 +66,4 @@ export type CommunityLevels = '1' | '2' | '3' | '4' | '5';
 export interface DiffGraphWrapperProps {
   currentNode: any; // TabNode from flexlayout-react
   id: string;
-} 
+}
