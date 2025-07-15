@@ -40,8 +40,9 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
     return (
       <Navbar
         ref={ref}
-        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide  h-12 min-h-0 py-0"
+        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide h-12 min-h-0 py-0"
         position="static"
+        style={{ overflowY: 'hidden' }}
       >
         <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
           <NavbarItem>
