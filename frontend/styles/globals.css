@@ -12,3 +12,15 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+.layoutContainer {
+  flex-grow: 1;
+  position: relative;
+  border: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+:root {
+  --color-primary: #006fee;
+}
+

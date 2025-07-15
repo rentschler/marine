@@ -10,7 +10,7 @@ export default function Home() {
   const { model } = useLayout();
 
   return (
-    <div className="h-screen w-full">
+    <div className="layoutContainer h-full w-full">
       <Layout 
         model={model} 
         factory={LayoutFactory()} 

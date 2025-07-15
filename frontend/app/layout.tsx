@@ -7,10 +7,10 @@ import React from "react";
 
 export const metadata: Metadata = {
   title: {
-    default: "MARINE 360°",
-    template: "MARINE 360°",
+    default: "MARINE",
+    template: "MARINE",
   },
-  description: "MARINE 360°",
+  description: "MARINE",
   icons: {
     icon: "/favicon.ico",
   },
@@ -36,26 +36,31 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="en">
       <head />
       <body
-        className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable,
-        )}
+             className={clsx(
+              "min-h-screen bg-background font-sans antialiased",
+              fontSans.variable,
+            )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
             <div className="relative flex flex-col h-screen">
-              {/*
-              <header>
-                <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-                  <div className="inline-block max-w-xxl text-center justify-center flex flex-row gap-4">
-                    <span className={title({ color: "blue" })}>Applied Visual Analytics 2025&nbsp;</span>
-                    <div className="mt-3">
-                      <ThemeSwitch />
-                    </div>
-                  </div>
-                </section>
-              </header>
-              */}
-              <main>{children}</main>
+              {/* Simple Navbar */}
+              <nav className="w-full bg-primary text-white px-6 py-2 shadow flex items-center justify-between">
+                <span className="font-bold text-lg tracking-wide">MARINE Analytics for Radio Interception and Naval Environment
+                </span>
+                <div className="flex items-center space-x-6">
+                  <a 
+                    href="https://vast-challenge.github.io/2025/MC3.html" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-200 transition-colors"
+                  >
+                    VAST Challenge 2025 MC3
+                  </a>
+                  <span className="text-sm">Willi Kneer & Jonathan Rentschler</span>
+                </div>
+              </nav>
+              {/* End Navbar */}
+              <main className="flex-1">{children}</main>
             </div>
         </Providers>
       </body>
