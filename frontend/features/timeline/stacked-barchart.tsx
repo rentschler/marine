@@ -28,6 +28,7 @@ const StackedBarChart = ({
 
   useEffect(() => {
     if (!data || !svgRef.current || !bars || !segments) return;
+    console.log("stacked-barchart", data, bars, segments);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;

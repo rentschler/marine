@@ -131,7 +131,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             type: d.type,
             label: d.label,
             stack_by:
-              colorPalette === ColorPalette.COMMUNITY ? d.community || 'Community' : d.stack_by,
+              colorPalette === ColorPalette.COMMUNITY ? d.community || 'Community' : d.sub_type,
             sub_type: d.sub_type,
             id: d.id,
             x: d.x ?? 0,
