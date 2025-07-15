@@ -2,7 +2,7 @@
 import { SigmaContainer, useLoadGraph } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
 import { MultiDirectedGraph } from 'graphology';
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { useDimensions } from '@/hooks/use-dimension';
 import React from 'react';
 
@@ -33,9 +33,9 @@ const BasicGraphWrapper = () => {
       // Cleanup: forcibly remove canvas/WebGL context
       const canvases = boxRef.current?.getElementsByTagName('canvas');
       if (canvases?.length) {
-        for (const canvas of canvases) {
+        for (const canvas of Array.from(canvases)) {
           const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-          if (gl) {
+          if (gl && (gl instanceof WebGLRenderingContext)) {
             const loseContext = gl.getExtension('WEBGL_lose_context');
             if (loseContext) {
               loseContext.loseContext(); // release context
@@ -45,7 +45,7 @@ const BasicGraphWrapper = () => {
       }
     };
   }, []);
-  const boxRef = React.useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const dimensions = useDimensions(boxRef);
   return (
     <div ref={boxRef} style={{ width: dimensions.width, height: dimensions.height }}>

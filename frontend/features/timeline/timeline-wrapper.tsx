@@ -1,7 +1,7 @@
 'use client';
 
 import { useFilterContext } from '@/context/filter-context';
-import { GraphData, SubsetType,  } from '@/types/graph-types';
+import { GraphData, SubsetType, SubType,Node  } from '@/types/graph-types';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import * as d3 from 'd3';
 import StackedBarChart from './stacked-barchart';
@@ -125,7 +125,8 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
             day: d.timestamp ? new Date(d.timestamp) : null,
             type: d.type,
             label: d.label,
-            sub_type: colorPalette === ColorPalette.COMMUNITY ? d.community || "Community" : d.sub_type,
+            stack_by: colorPalette === ColorPalette.COMMUNITY ? d.community || "Community" : d.stack_by,
+            sub_type: d.sub_type,
             id: d.id,
             x: d.x ?? 0,
             y: d.y ?? 0,
@@ -148,7 +149,7 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
 
           const binNodes = nodes.filter(
             (node) => node.timestamp && node.timestamp >= binStart && node.timestamp < binEnd /*&&
-              node.sub_type === 'Communication'*/
+              node.stack_by === 'Communication'*/
           );
 
           return {
@@ -164,16 +165,16 @@ export default function TimelineWrapper({ currentNode }: TimelineWrapperProps) {
 
         setLoading(false);
 
-        // Aggregate the data by bin and sub_type before indexing
+        // Aggregate the data by bin and stack_by before indexing
         const aggregatedData = d3.rollup(
           nodes,
           (v) => v.length,
           (d) =>
             d.timestamp ? Math.floor((d.timestamp.getTime() - minDate.getTime()) / binSize) : -1,
-          (d) => d.sub_type
+          (d) => d.stack_by
         );
 
-        const groups = d3.union(nodes.map((d) => d.sub_type));
+        const groups = d3.union(nodes.map((d) => d.stack_by));
         const binIndices = Array.from({ length: numberBins }, (_, i) => i);
 
         // Convert the Map to an array of objects

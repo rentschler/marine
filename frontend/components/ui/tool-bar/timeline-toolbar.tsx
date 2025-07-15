@@ -75,7 +75,7 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
               className="min-w-[160px]"
             >
               {selectOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} textValue={option.label}>
                   {option.label}
                 </SelectItem>
               ))}

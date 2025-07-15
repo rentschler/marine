@@ -6,7 +6,7 @@ export function finalReportToMarkdown(answer: FinalAnswer): string {
   replaced = replaced.replace(/\((?:see|e\.g\.)?,?\s*Subgraphs?\s*([\d,\sandthrough\-]+)\)/gi, (match, sectionList) => {
     const sections = sectionList
       .split(/,|\sand\s/)
-      .flatMap(part => {
+      .flatMap((part: string) => {
         part = part.trim();
         const rangeMatch = part.match(/^(\d+)\s*(?:through|\-)\s*(\d+)$/);
         if (rangeMatch) {
@@ -16,9 +16,9 @@ export function finalReportToMarkdown(answer: FinalAnswer): string {
         }
         return part;
       })
-      .filter(s => s !== "");
+      .filter((s: string) => s !== "");
 
-    const links = sections.map(sectionId => {
+    const links = sections.map((sectionId: string) => {
       const idNum = parseInt(sectionId, 10);
       if (!isNaN(idNum) && idNum < answer.sub_graphs.length) {
         return `Subgraph ${idNum}`;
@@ -33,7 +33,7 @@ export function finalReportToMarkdown(answer: FinalAnswer): string {
   replaced = replaced.replace(/\bSubgraphs?\s+([\d,\sandthrough\-]+)\b/gi, (match, sectionList) => {
     const sections = sectionList
       .split(/,|\sand\s/)
-      .flatMap(part => {
+      .flatMap((part: string) => {
         part = part.trim();
         const rangeMatch = part.match(/^(\d+)\s*(?:through|\-)\s*(\d+)$/);
         if (rangeMatch) {
@@ -43,9 +43,9 @@ export function finalReportToMarkdown(answer: FinalAnswer): string {
         }
         return part;
       })
-      .filter(s => s !== "");
+      .filter((s: string) => s !== "");
 
-    const links = sections.map(sectionId => {
+    const links = sections.map((sectionId: string) => {
       const idNum = parseInt(sectionId, 10);
       if (!isNaN(idNum) && idNum < answer.sub_graphs.length) {
         return `[Subgraph ${idNum}](#section-${idNum}) `;

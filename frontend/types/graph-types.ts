@@ -20,7 +20,7 @@ export interface Link {
   is_inferred: boolean;
   source: string;
   target: string;
-  type?: LinkType;
+  type: LinkType;
 }
 
 export enum LinkType {
@@ -36,6 +36,7 @@ export interface Node {
   label: string;
   name?: string;
   sub_type: SubType;
+  stack_by: SubType | string; // used for stacking the data
   id: string;
   timestamp?: Date | null;
   monitoring_type?: MonitoringType;

@@ -32,8 +32,9 @@ function Page() {
         }
         limit={limit ? +limit : undefined}
         currentNode={undefined}
+        id="daily-graph"
       />
-      <TimelineWrapper numberOfBins={10} currentNode={undefined} />
+      <TimelineWrapper currentNode={undefined} />
     </div>
   );
 }
