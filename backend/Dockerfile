@@ -23,7 +23,7 @@ RUN pip install --upgrade pip && \
     pip install -r /tmp/requirements.txt
 
 # Copy the application code
-COPY . /usr/src/app
+COPY app/ /usr/src/app
 
 # Copy the entrypoint script
 COPY entryscript.sh /usr/src/entryscript.sh
