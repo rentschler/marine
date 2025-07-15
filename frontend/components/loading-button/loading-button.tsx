@@ -5,13 +5,17 @@ export function LoadingButton(props: {
   loading: boolean;
   text: string;
   onClick: (value: any) => any;
+  secondary?: boolean;
 }) {
-  const { loading, text, onClick } = props;
+  const { loading, text, onClick, secondary = false } = props;
 
   return (
     <>
       {!loading ? (
-        <Button color="primary" startContent={<Send />} onPress={onClick}>
+        <Button color="primary" startContent={<Send />} onPress={onClick} 
+          // variant={secondary ? 'solid' : 'flat'} 
+          className={secondary ? 'text-xs' : ''}
+            size={secondary ? 'sm' : 'md'}>
           {text}
         </Button>
       ) : (

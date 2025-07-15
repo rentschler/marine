@@ -64,7 +64,7 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
     return (
       <Navbar
         ref={ref}
-        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide  h-12 min-h-0 py-0"
         position="sticky"
       >
         <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
@@ -137,7 +137,7 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
             <CommunitySelector
               selectedCommunities={selectedCommunities}
               setSelectedCommunities={setSelectedCommunities}
-              showButtons={false}
+              showButtons={true}
               showCount={false}
             />
           </NavbarItem>

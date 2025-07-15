@@ -51,7 +51,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
     return (
       <Navbar
         ref={ref}
-        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+        className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide h-12 min-h-0 py-0"
         position="sticky"
       >
         <NavbarContent className="hidden sm:flex gap-4 min-w-max" justify="start">
@@ -67,7 +67,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
 
           <NavbarItem>
             <div className="flex flex-row items-center gap-2">
-              {Object.values(SubsetType).map((subset) => (
+              {!disabledSubsetFilter && Object.values(SubsetType).map((subset) => (
                 <label key={subset} className="flex items-center gap-2">
                   <input
                     checked={graphOptions.subsetFilter === subset}
@@ -139,6 +139,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
               loading={recalculatingLayout}
               text="Recalculate Layout"
               onClick={handleClick}
+              secondary
             />
           </NavbarItem>
         </NavbarContent>

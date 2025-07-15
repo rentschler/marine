@@ -73,14 +73,24 @@ export const CommunitySelector = memo(
               <SelectItem key={community}>{community}</SelectItem>
             ))}
           </Select>
-          {showButtons && (
+          {showButtons && !isAllSelected && (
             <Button
-              className="text-xs px-2 py-1"
+              className="text-xs px-2 p-1 my-auto mx-1"
               size="sm"
               variant="flat"
               onClick={handleSelectAll}
             >
               Select All
+            </Button>
+          )}
+          {showButtons && isAllSelected && (
+            <Button
+              className="text-xs px-2 p-1 my-auto mx-1"
+              size="sm"
+              variant="flat"
+              onClick={handleDeselectAll}
+            >
+              Deselect All
             </Button>
           )}
           {isSomeSelected && showCount && (
