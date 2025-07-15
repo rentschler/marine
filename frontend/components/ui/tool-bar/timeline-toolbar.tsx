@@ -65,7 +65,8 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
       <Navbar
         ref={ref}
         className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide  h-12 min-h-0 py-0"
-        position="sticky"
+        position="sticky"        
+        style={{ overflowY: 'hidden' }}
       >
         <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
           <div className="grid grid-flow-col justify-items-center-safe" />

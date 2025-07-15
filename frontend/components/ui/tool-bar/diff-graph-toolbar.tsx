@@ -50,6 +50,7 @@ const DiffGraphToolbar = forwardRef<HTMLDivElement, DiffGraphToolbarProps>(
 
     return (
       <Navbar
+        style={{ overflowY: 'hidden' }}
         ref={ref}
         className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide h-12 min-h-0 py-0"
         position="sticky"
