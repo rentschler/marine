@@ -1,13 +1,16 @@
 'use client';
 
 import { Spinner } from '@heroui/react';
+import { useRef, useState } from 'react';
+import { TabNode } from 'flexlayout-react/types/model/TabNode';
+
+import GraphToolbar from '../../components/ui/tool-bar/graph-toolbar';
+
 import { GraphLegend } from './graph-legend/graph-legend';
 import { NodeTooltip } from './graph-mesh/node-tooltip';
-import { useFilterContext } from '@/context/filter-context';
 import { useThreeGraph } from './use-three-graph';
-import { useEffect, useRef, useState } from 'react';
-import { TabNode } from 'flexlayout-react/types/model/TabNode';
-import GraphToolbar from '../../components/ui/tool-bar/graph-toolbar';
+
+import { useFilterContext } from '@/context/filter-context';
 import DiffGraphToolbar from '@/components/ui/tool-bar/diff-graph-toolbar';
 import { ColorPalette } from '@/types/filter-context-type';
 
@@ -17,14 +20,10 @@ interface GraphSceneProps {
   currentNode?: TabNode;
 }
 
-export function GraphScene({
-  showFilteredData,
-  defaultShow,
-  currentNode,
-}: GraphSceneProps) {
+export function GraphScene({ showFilteredData, defaultShow, currentNode }: GraphSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(true);
-  
+
   const [recalculatingLayout, setRecalculatingLayout] = useState<boolean>(false);
 
   const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.NODE_TYPE);
@@ -46,9 +45,16 @@ export function GraphScene({
     width: currentNode?.getRect().width || 0,
     height: currentNode?.getRect().height || 0,
   };
-  const { tooltipState } = useThreeGraph(ready ? containerRef : null, dimensions, data, colorPalette);
+  const { tooltipState } = useThreeGraph(
+    ready ? containerRef : null,
+    dimensions,
+    data,
+    colorPalette
+  );
 
-  const selectedCommunities = showFilteredData ? diffGraphOptions.selectedCommunities : graphOptions.selectedCommunities;
+  const selectedCommunities = showFilteredData
+    ? diffGraphOptions.selectedCommunities
+    : graphOptions.selectedCommunities;
 
   // if(!data || data.nodes.length == 0) {
   //   return null;
@@ -60,22 +66,25 @@ export function GraphScene({
       {showFilteredData ? (
         <DiffGraphToolbar
           colorPalette={colorPalette}
-          setColorPalette={setColorPalette}
-
-          graphOptions={diffGraphOptions}
-          setGraphOptions={setDiffGraphOptions}
           disabledSubsetFilter={
             // Disable subset filter checkboxes if the date range filter has no second range
             dateRangeFilter && dateRangeFilter.dateRangeB === undefined
           }
+          graphOptions={diffGraphOptions}
           recalculatingLayout={recalculatingLayout}
+          setColorPalette={setColorPalette}
+          setGraphOptions={setDiffGraphOptions}
           setRecalculatingLayout={setRecalculatingLayout}
         />
       ) : (
-        <GraphToolbar graphOptions={graphOptions} setGraphOptions={setGraphOptions} recalculatingLayout={recalculatingLayout}
-          setRecalculatingLayout={setRecalculatingLayout}        colorPalette={colorPalette}
+        <GraphToolbar
+          colorPalette={colorPalette}
+          graphOptions={graphOptions}
+          recalculatingLayout={recalculatingLayout}
           setColorPalette={setColorPalette}
-/>
+          setGraphOptions={setGraphOptions}
+          setRecalculatingLayout={setRecalculatingLayout}
+        />
       )}
 
       {/* container for the 3D graph */}
@@ -90,7 +99,15 @@ export function GraphScene({
       {ready && (
         <>
           <div className="absolute z-[100]" style={{ bottom: '10px', right: '10px' }}>
-            {communities && <GraphLegend defaultShow={defaultShow} colorPalette={colorPalette} setColorPalette={setColorPalette} communities={communities} selectedCommunities={selectedCommunities} />}
+            {communities && (
+              <GraphLegend
+                colorPalette={colorPalette}
+                communities={communities}
+                defaultShow={defaultShow}
+                selectedCommunities={selectedCommunities}
+                setColorPalette={setColorPalette}
+              />
+            )}
           </div>
           <NodeTooltip {...tooltipState} />
         </>

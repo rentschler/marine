@@ -1,12 +1,13 @@
-import { GraphData, SubsetType } from './graph-types';
 import { Dispatch, SetStateAction } from 'react';
+
+import { GraphData, SubsetType } from './graph-types';
 
 export enum ColorPalette {
   NODE_TYPE = 'NODE_TYPE',
   EVENT_TYPE = 'EVENT_TYPE',
-  EDGE_TYPE = 'EDGE_TYPE', 
+  EDGE_TYPE = 'EDGE_TYPE',
   COMMUNITY = 'COMMUNITY',
-  COMPARISON = 'COMPARISON'
+  COMPARISON = 'COMPARISON',
 }
 
 export interface DateRangeFilter {

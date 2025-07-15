@@ -1,32 +1,32 @@
 'use client';
 
 import { useCallback, useState, useRef } from 'react';
-import {
-  FullScreenControl,
-  SigmaContainer,
-  ZoomControl,
-} from '@react-sigma/core';
+import { FullScreenControl, SigmaContainer, ZoomControl } from '@react-sigma/core';
 import '@react-sigma/core/lib/style.css';
 import '@react-sigma/core/lib/style.css';
 import { GraphSearchOption } from '@react-sigma/graph-search';
+
 import '@react-sigma/graph-search/lib/style.css';
-import { FocusOnNode } from '../graph/focus-on-node';
-import GraphTooltip from '../graph/graph-tooltip';
 import { useEffect } from 'react';
 import { TabNode } from 'flexlayout-react';
-import { CommunityGraphData } from './community-types';
-import { CommunityGraph } from './community-graph';
-import { useFilterContext } from '@/context/filter-context';
-import { ColorPalette } from '@/types/filter-context-type';
-import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
-import { LegendContent } from '../three-js-graph/graph-legend/graph-legend';
 import { AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Card } from '@heroui/react';
 
+import { FocusOnNode } from '../graph/focus-on-node';
+import GraphTooltip from '../graph/graph-tooltip';
+import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+import { LegendContent } from '../three-js-graph/graph-legend/graph-legend';
+
+import { CommunityGraphData } from './community-types';
+import { CommunityGraph } from './community-graph';
+
+import { useFilterContext } from '@/context/filter-context';
+import { ColorPalette } from '@/types/filter-context-type';
+
 export interface CommunityGraphWrapperdProps {
   currentData?: CommunityGraphData;
-  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null' 
+  layout?: 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | 'null';
   limit?: number;
   currentNode: TabNode;
 }
@@ -67,6 +67,7 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
         }
 
         const communityGraphData = (await response.json()) as CommunityGraphData;
+
         console.log('complete graph data:', communityGraphData);
         setCurrentData(communityGraphData);
       } catch (error) {
@@ -118,24 +119,27 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6 w-full h-full" ref={boxRef}>
+    <div ref={boxRef} className="flex flex-col items-center gap-6 p-6 w-full h-full">
       <div className="relative flex flex-row items-center justify-center">
         {/* Container for the graph */}
         <SigmaContainer style={{ width: dimensions.width || 10, height: dimensions.height || 10 }}>
           {/* Graph component */}
           <CommunityGraph
-            layout={layout}
+            colorScale={colorScale}
             currentNode={currentNode}
-            hoveredNode={hoveredNode}
-            setHoveredNode={setHoveredNode}
             data={currentData}
             dimensions={dimensions}
-            colorScale={colorScale}
+            hoveredNode={hoveredNode}
+            layout={layout}
+            setHoveredNode={setHoveredNode}
           />
           {/* Focus on node component */}
-          <FocusOnNode node={focusNode ?? selectedNode} move={true} />
+          <FocusOnNode move={true} node={focusNode ?? selectedNode} />
           {/* Container for the controls */}
-          <Card className="absolute top-0 left-0 py-3" style={{ zIndex: 100, paddingInlineStart: '12px', marginTop: '5px'}}>
+          <Card
+            className="absolute top-0 left-0 py-3"
+            style={{ zIndex: 100, paddingInlineStart: '12px', marginTop: '5px' }}
+          >
             <ZoomControl />
             <FullScreenControl />
           </Card>
@@ -174,8 +178,8 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
           >
             {/* Container for the color legends */}
             <button
-              onClick={() => setShowLegend(!showLegend)}
               className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
+              onClick={() => setShowLegend(!showLegend)}
             >
               {showLegend ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               Community Colors
@@ -184,9 +188,9 @@ const CommunityGraphWrapper = ({ currentNode }: CommunityGraphWrapperdProps) => 
             <AnimatePresence initial={false}>
               {showLegend && communities && (
                 <LegendContent
-                  palette={ColorPalette.COMMUNITY}
                   communities={communities}
                   maxItemsPerColumn={1}
+                  palette={ColorPalette.COMMUNITY}
                 />
               )}
             </AnimatePresence>

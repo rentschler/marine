@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { TabNode } from 'flexlayout-react';
-import { Dimensions } from '@/types/dimension-type';
 
+import { Dimensions } from '@/types/dimension-type';
 
 type DimensionSource = React.RefObject<HTMLDivElement> | TabNode;
 
@@ -23,6 +23,7 @@ export const useDimensions = (source: DimensionSource): Dimensions => {
     } else {
       // Handle FlexLayout TabNode
       const rect = source.getRect();
+
       return {
         width: rect.width,
         height: rect.height,
@@ -40,11 +41,13 @@ export const useDimensions = (source: DimensionSource): Dimensions => {
     if ('current' in source) {
       // Only add window resize listener for HTML elements
       window.addEventListener('resize', handleResize);
+
       return () => window.removeEventListener('resize', handleResize);
     } else {
       // For TabNode, we'll rely on FlexLayout's internal resize handling
       // The node's rect will be updated automatically by FlexLayout
       window.addEventListener('resize', handleResize);
+
       return () => window.removeEventListener('resize', handleResize);
     }
   }, [source]);
@@ -55,8 +58,6 @@ export const useDimensions = (source: DimensionSource): Dimensions => {
 
   return dimensions;
 };
-
-
 
 /**
  * React hook that provides the dimensions (width and height) of a target HTMLDivElement.
@@ -81,6 +82,7 @@ export const useDimensionsRef = (targetRef: React.RefObject<HTMLDivElement>) => 
 
   useEffect(() => {
     const element = targetRef.current;
+
     if (!element) return;
 
     // Use ResizeObserver for more accurate dimension tracking

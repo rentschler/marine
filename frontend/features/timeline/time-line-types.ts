@@ -1,5 +1,6 @@
-import { Node } from '@/types/graph-types';
 import * as d3 from 'd3';
+
+import { Node } from '@/types/graph-types';
 
 export interface DayBin {
   start: Date;

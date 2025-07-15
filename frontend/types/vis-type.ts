@@ -10,4 +10,11 @@ export enum VisType {
   COMMUNITY_GRAPH = 'community-graph',
 }
 
-export type LayoutType = 'force' | 'circular' | 'atlas2' | 'circlepack' | 'noverlap' | 'random' | undefined; 
+export type LayoutType =
+  | 'force'
+  | 'circular'
+  | 'atlas2'
+  | 'circlepack'
+  | 'noverlap'
+  | 'random'
+  | undefined;

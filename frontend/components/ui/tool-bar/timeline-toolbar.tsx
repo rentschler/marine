@@ -1,12 +1,22 @@
 'use client';
 
-import { Button, Divider, Navbar, NavbarContent, NavbarItem, Select, SelectItem, Slider, Tooltip } from '@heroui/react';
-import { ColorPalette, DateRangeFilter } from '@/types/filter-context-type';
-import { ChartType, InteractionMode } from '@/features/timeline/time-line-types';
-
+import {
+  Button,
+  Navbar,
+  NavbarContent,
+  NavbarItem,
+  Select,
+  SelectItem,
+  Slider,
+  Tooltip,
+} from '@heroui/react';
 import { forwardRef } from 'react';
+
 import { ColorPaletteSelector } from './color-palette-selector';
 import { CommunitySelector } from './community-selector';
+
+import { ChartType, InteractionMode } from '@/features/timeline/time-line-types';
+import { ColorPalette, DateRangeFilter } from '@/types/filter-context-type';
 
 interface TimelineToolbarProps {
   chartType: ChartType;
@@ -45,7 +55,6 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
     },
     ref
   ) => {
-
     const selectOptions = [
       { label: 'No Selection', value: InteractionMode.NONE },
       { label: 'Single Selection', value: InteractionMode.SINGLE },
@@ -54,25 +63,26 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
 
     return (
       <Navbar
-        position="sticky"
         ref={ref}
         className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+        position="sticky"
       >
         <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
-          <div className="grid grid-flow-col justify-items-center-safe"></div>
+          <div className="grid grid-flow-col justify-items-center-safe" />
           <NavbarItem>
             <Select
+              className="min-w-[160px]"
               label="Selection Mode"
-              size="sm"
               selectedKeys={[interactionMode]}
+              size="sm"
               onChange={(e) => {
                 const value = e.target.value as InteractionMode;
+
                 setInteractionMode(value);
                 if (value === InteractionMode.NONE) {
                   resetSelections();
                 }
               }}
-              className="min-w-[160px]"
             >
               {selectOptions.map((option) => (
                 <SelectItem key={option.value} textValue={option.label}>
@@ -91,8 +101,8 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
               }
             >
               <Button
-                size="sm"
                 color={isAnimating ? 'danger' : 'primary'}
+                size="sm"
                 variant="solid"
                 onPress={() => setIsAnimating(!isAnimating)}
               >
@@ -106,14 +116,14 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
               <div style={{ maxWidth: 200, minWidth: 120, width: '100%' }}>
                 {/* <span className="text-sm font-medium text-gray-700 mr-2">Bins</span> */}
                 <Slider
+                  defaultValue={numberBins / 14}
                   label="#Bins"
                   maxValue={24}
                   minValue={1}
-                  onChangeEnd={(val) => setNumberBins(+val * 14)}
-                  defaultValue={numberBins / 14}
                   showTooltip={true}
                   size="sm"
                   step={1}
+                  onChangeEnd={(val) => setNumberBins(+val * 14)}
                 />
               </div>
             </Tooltip>
@@ -127,8 +137,8 @@ const TimelineToolbar = forwardRef<HTMLDivElement, TimelineToolbarProps>(
             <CommunitySelector
               selectedCommunities={selectedCommunities}
               setSelectedCommunities={setSelectedCommunities}
-              showCount={false}
               showButtons={false}
+              showCount={false}
             />
           </NavbarItem>
         </NavbarContent>

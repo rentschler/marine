@@ -1,7 +1,10 @@
-import { ChartType, InteractionMode, StackedBarChartProps } from './time-line-types';
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+
 import { getColorScale } from '../three-js-graph/graph-mesh/color-scales';
+
+import { InteractionMode, StackedBarChartProps } from './time-line-types';
+
 import { SubsetType } from '@/types/graph-types';
 import { ColorPalette } from '@/types/filter-context-type';
 
@@ -25,6 +28,7 @@ const StackedBarChart = ({
 
   useEffect(() => {
     if (!data || !svgRef.current || !bars || !segments) return;
+    console.log("stacked-barchart", data, bars, segments);
 
     const boundsWidth = width - MARGIN.left - MARGIN.right;
     const boundsHeight = height - MARGIN.top - MARGIN.bottom;
@@ -63,9 +67,11 @@ const StackedBarChart = ({
 
     // Group data by bar (time bin) to calculate total heights
     const barGroups = new Map();
+
     data.forEach((layer) => {
       layer.forEach((segment) => {
         const barId = segment.data.start?.toString() || 'null';
+
         if (!barGroups.has(barId)) {
           barGroups.set(barId, {
             start: new Date(segment.data.start),
@@ -75,6 +81,7 @@ const StackedBarChart = ({
           });
         }
         const barGroup = barGroups.get(barId);
+
         barGroup.segments.push(segment);
         barGroup.totalHeight = Math.max(barGroup.totalHeight, segment[1]);
       });
@@ -95,6 +102,7 @@ const StackedBarChart = ({
           const segmentId = `rect_${barId}_${segmentKey}`;
           const start = new Date(d.data.start);
           const end = new Date(d.data.end);
+
           return { ...d, barId, segmentId, index: i, start, end };
         })
       )
@@ -114,16 +122,25 @@ const StackedBarChart = ({
 
     // Create complete bar rectangles for highlighting
     g.selectAll('.bar-outline')
-      .data(Array.from(barGroups.values()).map((d) => {
+      .data(
+        Array.from(barGroups.values()).map((d) => {
           const isInSelectionA = selectionA && d.start >= selectionA[0] && d.end <= selectionA[1];
           const isInSelectionB = selectionB && d.start >= selectionB[0] && d.end <= selectionB[1];
           const isInSelectionAUnionB = isInSelectionA && isInSelectionB;
-          const subset =  isInSelectionAUnionB ? SubsetType.A_INTERSECT_B : isInSelectionA ? SubsetType.A : isInSelectionB ? SubsetType.B : SubsetType.A_UNION_B;
+          const subset = isInSelectionAUnionB
+            ? SubsetType.A_INTERSECT_B
+            : isInSelectionA
+              ? SubsetType.A
+              : isInSelectionB
+                ? SubsetType.B
+                : SubsetType.A_UNION_B;
+
           return {
             ...d,
             subset,
           };
-        }))
+        })
+      )
       .join('rect')
       .attr('class', 'bar-outline')
       .attr('x', (d) => scaleTime(d.start)!)
@@ -131,8 +148,8 @@ const StackedBarChart = ({
       .attr('height', (d) => Math.abs(scaleLinear(0) - scaleLinear(d.totalHeight)))
       .attr('width', barWidth)
       .attr('fill', 'none')
-      .attr('stroke-width', (d) => d.subset != SubsetType.A_UNION_B ? 3 : 0)
-        .attr('stroke', (d) => subsetColorScale(d.subset));
+      .attr('stroke-width', (d) => (d.subset != SubsetType.A_UNION_B ? 3 : 0))
+      .attr('stroke', (d) => subsetColorScale(d.subset));
 
     // add the axes
     const xAxis = d3.axisBottom(scaleTime).ticks(numberOfBins < 56 ? numberOfBins : 56);
@@ -167,8 +184,10 @@ const StackedBarChart = ({
       ])
       .on('end', (event) => {
         const selection = event.selection;
+
         if (!selection) {
           onSelection?.(null, null);
+
           return;
         }
 
@@ -192,6 +211,7 @@ const StackedBarChart = ({
 
         const startDate = d3.min(highlightBars, (d) => d.start);
         const endDate = d3.max(highlightBars, (d) => d.end);
+
         onSelection?.(startDate, endDate);
       });
 
@@ -202,7 +222,7 @@ const StackedBarChart = ({
 
   return (
     <div className="w-full h-full">
-      <svg width={width} height={height} ref={svgRef}></svg>
+      <svg ref={svgRef} height={height} width={width} />
     </div>
   );
 };

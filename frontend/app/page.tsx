@@ -1,7 +1,7 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { Layout } from 'flexlayout-react';
+
 import { useLayout } from '@/context/layout-context';
 import { LayoutFactory } from '@/components/layout/layout-factory';
 import 'flexlayout-react/style/light.css';
@@ -11,11 +11,7 @@ export default function Home() {
 
   return (
     <div className="layoutContainer h-full w-full">
-      <Layout 
-        model={model} 
-        factory={LayoutFactory()} 
-      />
+      <Layout factory={LayoutFactory()} model={model} />
     </div>
   );
 }
-

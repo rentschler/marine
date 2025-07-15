@@ -1,10 +1,12 @@
-"use client";
+'use client';
 
-import { GraphData, Node, Link, SubType } from "@/types/graph-types";
-import * as THREE from "three";
-import { ColorPalette } from "@/types/filter-context-type";
-import { getColor } from "./color-scales";
+import * as THREE from 'three';
 import * as d3 from 'd3';
+
+import { getColor } from './color-scales';
+
+import { GraphData, Node, Link, SubType } from '@/types/graph-types';
+import { ColorPalette } from '@/types/filter-context-type';
 
 export function getEdges(
   height: number,
@@ -24,18 +26,21 @@ export function getEdges(
   }
 
   const nodeMap: Record<string, { x: number; y: number; sub_type: string }> = {};
+
   nodes.forEach((node) => {
-    nodeMap[node.id] = { x: node.x, y: node.y, sub_type: node.sub_type};
+    nodeMap[node.id] = { x: node.x, y: node.y, sub_type: node.sub_type };
   });
 
   const lineGeometry = new THREE.PlaneGeometry(1, edgeSize);
   const arrowSize = edgeSize * 10;
   const triangleShape = new THREE.Shape();
+
   triangleShape.moveTo(0, 0);
   triangleShape.lineTo(-arrowSize / 2, -arrowSize);
   triangleShape.lineTo(arrowSize / 2, -arrowSize);
   triangleShape.lineTo(0, 0);
   const arrowGeometry = new THREE.ShapeGeometry(triangleShape);
+
   arrowGeometry.rotateZ(-Math.PI / 2);
 
   const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
@@ -78,24 +83,25 @@ export function getEdges(
     // ----- Arrow head -----
     const norm = Math.sqrt(dx * dx + dy * dy);
     const nodeSubType = target.sub_type;
-    let arrowOffsetX = (dx / norm) * (nodeSize);
-    let arrowOffsetY = (dy / norm) * (nodeSize);
-    if (nodeSubType == SubType.Location){
-        arrowOffsetX = (dx / norm) * (nodeSize * 3);
-        arrowOffsetY = (dy / norm) * (nodeSize * 3);
-      } else if (nodeSubType == SubType.Person){
-        arrowOffsetX = (dx / norm) * (nodeSize * 4);
-        arrowOffsetY = (dy / norm) * (nodeSize * 4);
-      } else if (nodeSubType == SubType.Vessel){
-        arrowOffsetX = (dx / norm) * (nodeSize * 3);
-        arrowOffsetY = (dy / norm) * (nodeSize * 3);
-      }else if (nodeSubType == SubType.Organization){
-        arrowOffsetX = (dx / norm) * (nodeSize * 4);
-        arrowOffsetY = (dy / norm) * (nodeSize * 4);
-      }else if (nodeSubType == SubType.Group){
-        arrowOffsetX = (dx / norm) * (nodeSize * 4);
-        arrowOffsetY = (dy / norm) * (nodeSize * 4);
-      }
+    let arrowOffsetX = (dx / norm) * nodeSize;
+    let arrowOffsetY = (dy / norm) * nodeSize;
+
+    if (nodeSubType == SubType.Location) {
+      arrowOffsetX = (dx / norm) * (nodeSize * 3);
+      arrowOffsetY = (dy / norm) * (nodeSize * 3);
+    } else if (nodeSubType == SubType.Person) {
+      arrowOffsetX = (dx / norm) * (nodeSize * 4);
+      arrowOffsetY = (dy / norm) * (nodeSize * 4);
+    } else if (nodeSubType == SubType.Vessel) {
+      arrowOffsetX = (dx / norm) * (nodeSize * 3);
+      arrowOffsetY = (dy / norm) * (nodeSize * 3);
+    } else if (nodeSubType == SubType.Organization) {
+      arrowOffsetX = (dx / norm) * (nodeSize * 4);
+      arrowOffsetY = (dy / norm) * (nodeSize * 4);
+    } else if (nodeSubType == SubType.Group) {
+      arrowOffsetX = (dx / norm) * (nodeSize * 4);
+      arrowOffsetY = (dy / norm) * (nodeSize * 4);
+    }
 
     arrowObject.scale.set(1, 1, 1);
     arrowObject.position.set(endX - arrowOffsetX, endY - arrowOffsetY, 0);
@@ -104,6 +110,7 @@ export function getEdges(
     arrowMesh.setMatrixAt(index, arrowObject.matrix);
 
     const color = new THREE.Color(getColor(colorPalette, colorScale, undefined, edge));
+
     edgeMesh.setColorAt(index, color);
     arrowMesh.setColorAt(index, color);
 

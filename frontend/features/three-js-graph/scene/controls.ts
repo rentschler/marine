@@ -1,20 +1,10 @@
-"use client";
+'use client';
 
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-
-export function getCamera(
-  containerWidth: number,
-  containerHeight: number,
-  zoom: number,
-) {
-  const camera = new THREE.PerspectiveCamera(
-    100,
-    containerWidth / containerHeight,
-    0.0001,
-    zoom,
-  );
+export function getCamera(containerWidth: number, containerHeight: number, zoom: number) {
+  const camera = new THREE.PerspectiveCamera(100, containerWidth / containerHeight, 0.0001, zoom);
 
   camera.position.set(0, 0, zoom / 2);
   camera.lookAt(0, 0, 0);
@@ -30,11 +20,7 @@ export function getRenderer(containerWidth: number, containerHeight: number) {
   return renderer;
 }
 
-export function getCustomControls(
-  camera: THREE.Camera,
-  domElement: HTMLElement,
-  zoom: number,
-) {
+export function getCustomControls(camera: THREE.Camera, domElement: HTMLElement, zoom: number) {
   const controls = new OrbitControls(camera, domElement);
 
   controls.enableRotate = false;

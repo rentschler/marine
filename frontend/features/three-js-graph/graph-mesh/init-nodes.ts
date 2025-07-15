@@ -1,16 +1,17 @@
 'use client';
 
-import { GraphData, Node, SubsetType, SubType } from '@/types/graph-types';
 import * as THREE from 'three';
-import { SubTypeColorMap } from './node-subtype-colormap';
 import * as d3 from 'd3';
+
 import { getColor } from './color-scales';
+
+import { GraphData, Node, SubType } from '@/types/graph-types';
 import { ColorPalette } from '@/types/filter-context-type';
 
 export function getNodes(
-  height: number, 
-  width: number, 
-  graph: GraphData, 
+  height: number,
+  width: number,
+  graph: GraphData,
   nodeSize: number,
   colorPalette: ColorPalette = ColorPalette.NODE_TYPE,
   colorScale: d3.ScaleOrdinal<string, string>
@@ -62,6 +63,7 @@ export function getNodes(
 
     // Use the new color system
     const colorHex = getColor(colorPalette, colorScale, node);
+
     nodeMesh.setColorAt(i, new THREE.Color(colorHex));
 
     nodeData.push({
@@ -90,6 +92,7 @@ export function getNodeLabel(node: Node): string {
       displayValue = value.toISOString().split('T')[0];
     } else if (typeof value === 'object') {
       const json = JSON.stringify(value);
+
       displayValue = json.length > 50 ? json.slice(0, 50) + '...' : json;
     } else {
       displayValue = String(value);
@@ -99,6 +102,7 @@ export function getNodeLabel(node: Node): string {
     const capitalizedKey = formattedKey.charAt(0).toUpperCase() + formattedKey.slice(1);
 
     const label = `${capitalizedKey}: ${displayValue}`;
+
     parts.push(label);
   });
 

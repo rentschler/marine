@@ -1,12 +1,14 @@
 'use client';
 
-import { Divider, Navbar, NavbarBrand, NavbarContent, NavbarItem, Switch } from '@heroui/react';
-import { ColorPalette, GraphOptions } from '@/types/filter-context-type';
+import { Navbar, NavbarContent, NavbarItem } from '@heroui/react';
 import { forwardRef } from 'react';
-import { LoadingButton } from '@/components/loading-button/loading-button';
+
 import { recalculateLayout } from './recalculate-layout';
-import { useFilterContext } from '@/context/filter-context';
 import { CommunitySelector } from './community-selector';
+
+import { ColorPalette, GraphOptions } from '@/types/filter-context-type';
+import { LoadingButton } from '@/components/loading-button/loading-button';
+import { useFilterContext } from '@/context/filter-context';
 
 interface GraphToolbarProps {
   graphOptions: GraphOptions;
@@ -26,6 +28,7 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
       setRecalculatingLayout(true);
       try {
         const dataToSend = currentData;
+
         if (!dataToSend) return;
 
         await recalculateLayout(dataToSend, setCurrentData);
@@ -36,9 +39,9 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
 
     return (
       <Navbar
-        position="static"
         ref={ref}
         className="bg-gray-100 relative z-10 overflow-x-auto scrollbar-hide"
+        position="static"
       >
         <NavbarContent className="hidden sm:flex gap-6 min-w-max" justify="start">
           <NavbarItem>
@@ -56,9 +59,9 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
             {/* toggle dateRangeFilter.collapseComms */}
             <div className="flex flex-row items-center gap-2">
               <input
-                type="checkbox"
-                id="collapseCommsSwitchDiff"
                 checked={graphOptions.collapseComms}
+                id="collapseCommsSwitchDiff"
+                type="checkbox"
                 onChange={(e) =>
                   setGraphOptions((prev) => ({
                     ...prev,
@@ -68,8 +71,8 @@ const GraphToolbar = forwardRef<HTMLDivElement, GraphToolbarProps>(
                 }
               />
               <label
-                htmlFor="collapseCommsSwitchDiff"
                 className="text-sm font-medium text-gray-700"
+                htmlFor="collapseCommsSwitchDiff"
               >
                 Collapse Communication
               </label>

@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LegendItem } from './legend-item';
 import { Card } from '@heroui/react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useFilterContext } from '@/context/filter-context';
+
 import { getLegendData, getColorScale } from '../graph-mesh/color-scales';
+
+import { LegendItem } from './legend-item';
+
 import { ColorPalette } from '@/types/filter-context-type';
-import { ColorPaletteSelector } from '@/components/ui/tool-bar/color-palette-selector';
 
 function splitIntoColumns<T>(entries: T[], maxItemsPerCol: number): T[][] {
   const result: T[][] = [];
+
   for (let i = 0; i < entries.length; i += maxItemsPerCol) {
     result.push(entries.slice(i, i + maxItemsPerCol));
   }
+
   return result;
 }
 
@@ -42,8 +45,8 @@ export function GraphLegend({
       {Object.values(ColorPalette).map((palette) => (
         <section key={palette}>
           <button
-            onClick={() => setColorPalette(palette)}
             className="flex items-center gap-1 font-semibold text-xs text-gray-800 mb-1 hover:underline"
+            onClick={() => setColorPalette(palette)}
           >
             {colorPalette === palette ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             {palette === ColorPalette.NODE_TYPE && 'Node Type Colors'}
@@ -55,10 +58,10 @@ export function GraphLegend({
           <AnimatePresence initial={false}>
             {colorPalette === palette && (
               <LegendContent
-                palette={palette}
                 communities={communities}
-                selectedCommunities={selectedCommunities}
                 maxItemsPerColumn={maxItemsPerColumn}
+                palette={palette}
+                selectedCommunities={selectedCommunities}
               />
             )}
           </AnimatePresence>
@@ -75,29 +78,36 @@ interface LegendContentProps {
   selectedCommunities?: string[];
 }
 
-export function LegendContent({ palette, communities, maxItemsPerColumn, selectedCommunities }: LegendContentProps) {
+export function LegendContent({
+  palette,
+  communities,
+  maxItemsPerColumn,
+  selectedCommunities,
+}: LegendContentProps) {
   return (
     <motion.div
       key="nodes"
-      initial={{ height: 0, opacity: 0 }}
       animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="overflow-hidden"
+      exit={{ height: 0, opacity: 0 }}
+      initial={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
     >
       <div className={`grid grid-cols-${maxItemsPerColumn} gap-x-2`}>
         {splitIntoColumns(getLegendData(palette, communities), maxItemsPerColumn).map(
           (column, colIdx) => (
             <div key={colIdx} className="flex flex-col gap-0.5 max-h-36 overflow-y-auto">
-              {column.map((item) => (
-                selectedCommunities && selectedCommunities.length > 0  && palette === ColorPalette.COMMUNITY ?
+              {column.map((item) =>
+                selectedCommunities &&
+                selectedCommunities.length > 0 &&
+                palette === ColorPalette.COMMUNITY ? (
                   selectedCommunities.includes(item.label) ? (
                     <LegendItem key={item.label} color={item.color} label={item.label} />
                   ) : null
-                : (
+                ) : (
                   <LegendItem key={item.label} color={item.color} label={item.label} />
                 )
-              ))}
+              )}
             </div>
           )
         )}

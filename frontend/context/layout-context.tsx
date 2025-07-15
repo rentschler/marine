@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { Model } from 'flexlayout-react';
+
 import { VisType } from '@/types/vis-type';
 
 interface LayoutContextType {
@@ -16,7 +17,7 @@ const defaultModel = Model.fromJson({
     borderMinSize: 100,
     tabSetEnableTabScrollbar: true,
     borderEnableTabScrollbar: true,
-    tabEnableClose: false
+    tabEnableClose: false,
   },
   layout: {
     type: 'row',
@@ -91,8 +92,10 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
 
 export function useLayout() {
   const context = useContext(LayoutContext);
+
   if (context === undefined) {
     throw new Error('useLayout must be used within a LayoutProvider');
   }
+
   return context;
 }
