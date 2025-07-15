@@ -29,10 +29,10 @@ def main(args):
 
     if args.dev:
         print(f"Serving on port {args.port} in development mode.")
-        uvicorn.run("main:api_app", host="0.0.0.0", port=args.port, reload=True, access_log=False, workers=4)
+        uvicorn.run("main:api_app", host="0.0.0.0", port=args.port, reload=True, access_log=False, workers=1)
     else:
         print(f"Serving on port {args.port} in live mode.")
-        uvicorn.run("main:api_app", host="0.0.0.0", port=args.port, access_log=False, workers=4)
+        uvicorn.run("main:api_app", host="0.0.0.0", port=args.port, access_log=False, workers=1)
 
 
 api_app = FastAPI(
