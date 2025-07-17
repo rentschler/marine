@@ -1139,23 +1139,22 @@ class KnowleadgeGraphRetriver:
 
     
     async def reducer_pipeline_reporter(self, ws: WebSocket, question: str, use_context: bool):
-        await ws.send_text(f"[0/4] Starting Pipeline")
+        await ws.send_text("[0/4] Starting Pipeline")
         if not use_context:
-            sub_graphs_descs =  await self.analyse_of_communitcations(question=question)
-            print(sub_graphs_descs)
+            sub_graphs_descs: List[SubGraphDiscription] =  await self.analyse_of_communitcations(question=question)
         else:
-            qp =  await self.extract_query_params_from_question(question=question)
+            qp =  await self.extract_query_params_from_summaries_and_question(question=question)
             print(qp)
-            await ws.send_text(f"[1/4] Extracted query parameters")
+            await ws.send_text("[1/4] Extracted query parameters")
             sub_graphs =  await self.query_subgraph(query_params=qp)
             print(f"Fund {len(sub_graphs)} Subgraps")
             if len(sub_graphs) == 0:
                 return FinalAnswer(
                     sub_graphs=[],
                     hole_graph= None,
-                    answer=f"Dont find any Data. You can try using the context Search."
+                    answer="Dont find any Data. You can try searching with more entities or reformulate your question."
                 )
             await ws.send_text(f"[2/4] Retrieved {len(sub_graphs)} subgraphs.")
-            sub_graphs_descs=  await self.anaylse_subgraphs(question=question, sub_graphs=sub_graphs)
-        await ws.send_text(f"[3/4] Analyzed subgraphs and prepared summaries.")
+            sub_graphs_descs =  await self.anaylse_subgraphs(question=question, sub_graphs=sub_graphs)
+        await ws.send_text("[3/4] Analyzed subgraphs and prepared summaries.")
         return await self.get_final_answer(question=question, sub_graph_desctiptions=sub_graphs_descs)
