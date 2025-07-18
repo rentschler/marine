@@ -187,7 +187,6 @@ class KnowleadgeGraphRetriver:
         
     async def _get_communication_subtrees(self, entities: QueryParams, question: str) -> List[SubGraphDiscription]:
         entities_list: List[str] = entities.Persons
-        print(f"Extracted Person: {entities_list}")
         
         communication_sub_graphs = await self._get_communcation_subgraphs_per_day(entities=entities_list)
         
@@ -201,7 +200,6 @@ class KnowleadgeGraphRetriver:
 
     async def _get_communcation_subgraphs_per_day(self, entities: List[str]) -> List[SubGraphDiscription]:
         graph_data = await self._get_all_communications(entities=entities)
-        print(f"Found {len(graph_data.nodes)} Nodes.")
 
         node_lookup = {str(node.id): node for node in graph_data.nodes}
         daily_data = defaultdict(lambda: {
@@ -298,7 +296,6 @@ class KnowleadgeGraphRetriver:
                 description="\n".join(m["message_str"] for m in sorted_messages),
                 graph=graph
             )
-            print(sub_graph.description)
             result.append(sub_graph)
 
         return sorted(result, key=lambda x: x.day)
@@ -1080,6 +1077,7 @@ class KnowleadgeGraphRetriver:
             Remember:
             - Cite relevant Subgraph indices explicitly (e.g., (Subgraph {chunk_index})).
             - Use only the provided information, no hallucinations.
+            - It is very VERY important, that you dont make any thing up. Just use provided infromation.
             - If no Graph Summary is Provided, just say so. Dont make ANYTHING up.
             """
 
@@ -1128,6 +1126,7 @@ class KnowleadgeGraphRetriver:
             Remember:
             - Cite relevant Subgraph indices explicitly (e.g., (Subgraph 1)).
             - Use only the provided information, no hallucinations.
+            - It is very VERY important, that you dont make any thing up. Just use provided infromation.
             - If no Graph Summary is Provided, just say so. Dont make ANYTHING up.
             """
 
@@ -1141,7 +1140,24 @@ class KnowleadgeGraphRetriver:
     async def reducer_pipeline_reporter(self, ws: WebSocket, question: str, use_context: bool):
         await ws.send_text("[0/4] Starting Pipeline")
         if not use_context:
-            sub_graphs_descs: List[SubGraphDiscription] =  await self.analyse_of_communitcations(question=question)
+            entities = await self._extract_entities(question=question)
+            await ws.send_text("[1/4] Extracted query parameters")
+            print(entities)
+            await ws.send_text(f"[2/4] Retrieved Entities.")
+            sub_graphs_descs =  await self._get_communication_subtrees(entities=entities, question=question)
+            print(f"Relevent Subgraphs: {len(sub_graphs_descs)}")
+            if len(sub_graphs_descs) == 0:
+                return FinalAnswer(
+                    sub_graphs=[],
+                    hole_graph= None,
+                    answer="Dont find any Data. You can try searching with more entities or reformulate your question."
+                )
+            if len(sub_graphs_descs) > 25:
+                return FinalAnswer(
+                    sub_graphs=[],
+                    hole_graph= None,
+                    answer="The LLM couldnt handle the amount of context. Please lower the scope of your prompt."
+                )
         else:
             qp =  await self.extract_query_params_from_summaries_and_question(question=question)
             print(qp)
@@ -1156,5 +1172,18 @@ class KnowleadgeGraphRetriver:
                 )
             await ws.send_text(f"[2/4] Retrieved {len(sub_graphs)} subgraphs.")
             sub_graphs_descs =  await self.anaylse_subgraphs(question=question, sub_graphs=sub_graphs)
+            print(f"Relevant subgraphs: {len(sub_graphs_descs)}")
+            if len(sub_graphs_descs) == 0:
+                return FinalAnswer(
+                    sub_graphs=[],
+                    hole_graph= None,
+                    answer="Dont find any Data. You can try searching with more entities or reformulate your question."
+                )
+            if len(sub_graphs_descs) > 25:
+                return FinalAnswer(
+                    sub_graphs=[],
+                    hole_graph= None,
+                    answer="The LLM couldnt handle the amount of context. Please lower the scope of your prompt."
+                )
         await ws.send_text("[3/4] Analyzed subgraphs and prepared summaries.")
         return await self.get_final_answer(question=question, sub_graph_desctiptions=sub_graphs_descs)
