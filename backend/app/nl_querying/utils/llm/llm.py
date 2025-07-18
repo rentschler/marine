@@ -83,7 +83,6 @@ class LLM:
                     call.answer = response_data
                 except Exception as e:
                     print(f"LLM call failed: {e}")
-                    print("Response: ", response)
                     call.answer = response
 
             return call
@@ -110,7 +109,7 @@ class LLM:
         List[SubGraphDiscription]
             List of SubGraphDiscription with filled llm_summary.
         """
-        semaphore = asyncio.Semaphore(4)  # adjust concurrency as needed
+        semaphore = asyncio.Semaphore(4)  
 
         async def recover_response(system_prompt: str, question: str, response: str, sub_graph_description: SubGraphDiscription) -> SubGraphDiscription:
             user_prompt = f"""
@@ -119,6 +118,10 @@ class LLM:
 
             ---User Question---
             {question}
+
+            ---Reminder---
+            - It is very VERY important, that you dont make any thing up. Just use provided infromation.
+                
             """
             try:
                 response = await self.invoke_prompt(system_prompt=system_prompt, user_prompt=user_prompt)
@@ -136,7 +139,7 @@ class LLM:
                 else:
                     return None
             except Exception as e:
-                print(f"LLM call for subgraph failed: {e} {response}")
+                print(f"Failed to Recover subgraph: {e}")
                 return await recover_response(system_prompt=system_prompt, question=question, response=response, sub_graph_description=sub_graph_description) 
 
 
@@ -164,7 +167,7 @@ class LLM:
                 ---Output Structure---
                 {
                 "Relevant": <boolean>,
-                "Summary": <summary of the subgraph>,
+                "Summary": <summary of the subgraph (as a string)>,
                 }
                 """
 
@@ -174,6 +177,9 @@ class LLM:
 
                 ---User Question---
                 {question}
+
+                ---Reminder---
+                - It is very VERY important, that you dont make any thing up. Just use provided infromation.
                 """
 
                 try:
@@ -192,7 +198,7 @@ class LLM:
                     else:
                         return None
                 except Exception as e:
-                    print(f"LLM call for subgraph failed: {e} {response}")
+                    print(f"LLM call for subgraph failed: {e}")
                     return await recover_response(system_prompt=system_prompt, question=question, response=response, sub_graph_description=sub_graph_description) 
 
 
@@ -232,6 +238,10 @@ class LLM:
 
                     ---User Question---
                     {question}
+
+                    ---Reminder---
+                    - It is very VERY important, that you dont make any thing up. Just use provided infromation.
+
                 """
                 response = await self.invoke_prompt(system_prompt=system_prompt, user_prompt=user_prompt)
                 sub_graph.llm_summary = response
