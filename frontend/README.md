@@ -1,3 +1,5 @@
+# frontend documentation
+
 ## Naming Conventions for React + Next.js
 
 **File Naming**

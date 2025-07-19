@@ -35,9 +35,17 @@ Password: `ava25-DB!!`
 
 ### Environment Variables
 
-The application requires the following environment variables to be set in the `docker-compose.yml` file:
+The application requires the following environment variables to be set in the `docker-compose.yml`  [`docker-compose.yml`](docker-compose.yml) file:
 
 - `OLLAMA_HOST`: The URL of the Ollama API endpoint
 - `OLLAMA_API_KEY`: The API key for Ollama
 
 These variables are used by the LLM service for natural language processing capabilities.
+
+
+# Submission
+
+You can find our submission form in the following multiple formats
+- [markdown](../../../wikis/home/Submission/Form.md)
+- [htm](submission/index.htm)
+- [pdf](submission/index.pdf)
