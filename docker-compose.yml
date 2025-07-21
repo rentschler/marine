@@ -1,0 +1,62 @@
+name: ava25-development-template
+
+services: 
+  database:
+      image: neo4j:bullseye
+      container_name: ava-template-database
+      ports:
+        - "7474:7474"   # HTTP
+        - "7687:7687"   # Bolt
+      volumes:
+        - neo4j_data:/data
+      environment:
+      - NEO4J_AUTH=neo4j/Ix5EyUzZ
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,dbms.*
+      - NEO4J_server_memory_pagecache_size=1G
+      - NEO4J_server_memory_heap_initial__size=512m
+      - NEO4J_server_memory_heap_max__size=1G
+      - NEO4J_server_bolt_enabled=true
+      - NEO4J_server_http_enabled=true
+      - NEO4J_server_https_enabled=false
+      - NEO4J_dbms_usage__report_enabled=false
+      healthcheck:
+        test: [ "CMD", "cypher-shell", "-u", "neo4j", "-p", "Ix5EyUzZ", "RETURN 1" ]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+
+  frontend: 
+    container_name: ava-template-frontend
+    image: ava-template-frontend:latest
+    build:
+      context: ./frontend/
+      dockerfile: ./Dockerfile
+    environment: 
+      NEXT_TELEMETRY_DISABLED: 1
+      PRODUCTION: "true"
+      BACKEND_URL: "http://ava-template-backend:8080"
+    ports: 
+      - "3000:3000"
+    volumes: 
+      - ./frontend:/app
+      - /app/node_modules
+
+  backend:
+    build: ./backend
+    container_name: ava-template-backend
+    image: ava-template-backend:latest
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=ava-template-database
+      - DB_PASSWORD=Ix5EyUzZ
+      - PRODUCTION=true
+      - OLLAMA_HOST=https://ollama.com
+      - OLLAMA_API_KEY=ollama
+  
+volumes:
+  neo4j_data:

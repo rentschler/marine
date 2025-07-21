@@ -1,5 +1,10 @@
 # MARINE Analytics for Radio Interception and Naval Environment
 
+* University Of Konstanz 
+* Data Analysis & Visualization Group 
+* Summer 2025
+* Applied Visual Analytics
+
 ## VAST Challenge 2025 MC3
 
 
@@ -31,7 +36,7 @@ Neo4j Online Browser: `http://localhost:7474/browser/`
 
 The database credentials are
 User: `neo4j`
-Password: `ava25-DB!!`
+Password: `Ix5EyUzZ`
 
 ### Environment Variables
 
@@ -41,11 +46,3 @@ The application requires the following environment variables to be set in the `d
 - `OLLAMA_API_KEY`: The API key for Ollama
 
 These variables are used by the LLM service for natural language processing capabilities.
-
-
-# Submission
-
-You can find our submission form in the following multiple formats
-- [markdown](../../../wikis/home/Submission/Form.md)
-- [htm](submission/index.htm)
-- [pdf](submission/index.pdf)
