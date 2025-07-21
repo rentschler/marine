@@ -37,6 +37,7 @@ export function GraphScene({ showFilteredData, defaultShow, currentNode }: Graph
     setGraphOptions,
     dateRangeFilter,
     communities,
+    statusMessage,
   } = useFilterContext();
   const data = showFilteredData ? filteredData : currentData;
 
@@ -90,9 +91,12 @@ export function GraphScene({ showFilteredData, defaultShow, currentNode }: Graph
       {/* container for the 3D graph */}
       <div ref={containerRef} className="h-full w-full absolute inset-0 m-2 z-0" />
 
-      {!ready && (
+      {(!ready || !data || data?.nodes.length <1) && (
         <div className="h-full w-full flex items-center justify-center absolute inset-0 z-10 bg-white bg-opacity-80">
           <Spinner />
+          {statusMessage && (
+            <><br/><span className="ml-4 text-gray-600">{statusMessage}</span></>
+          )}
         </div>
       )}
 

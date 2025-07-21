@@ -67,8 +67,6 @@ export function updateNodeMesh(
 
     const color = new THREE.Color(getColor(colorPalette, colorScale, node));
 
-    console.log('! updating node mesh', color);
-
     nodeMesh.setColorAt(i, color);
   }
 

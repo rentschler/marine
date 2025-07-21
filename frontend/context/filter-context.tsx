@@ -44,8 +44,43 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [filteredData, setFilteredData] = useState<GraphData | undefined>(undefined);
   const [colorPalette, setColorPalette] = useState<ColorPalette>(ColorPalette.NODE_TYPE);
   const [communities, setCommunities] = useState<string[]>([]);
+  const [isReady, setIsReady] = useState<boolean>(false);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>('Loading data...');
+
+  useEffect(() => {
+    const health_check_db = async () => {
+      try {
+        const response = await fetch('/api', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Database is not reachable');
+        } else {
+          setIsReady(true);
+          setError(null);
+        }
+      } catch (error: any) {
+        if (
+          error?.message === 'ConnectionError("Database is not reachable.")' ||
+          error?.toString().includes('Database is not reachable')
+        ) {
+          console.error('Database is not reachable');
+          setIsReady(false);
+          setError('Database is not reachable. Please try again later.');
+        } else {
+          console.error('Unexpected error:', error);
+          setIsReady(false);
+          setError('Backend is not reachable. Please try again later.');
+        }
+      }
+    };
+
+    health_check_db();
+  }, []);
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -60,12 +95,11 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setCommunities(data['2'].map((community) => community.title));
       } catch (error) {
         console.error('Error fetching communities:', error);
-        setError('Failed to fetch communities');
       }
     };
-
-    fetchCommunities();
-  }, []);
+    // Fetch communities only if the database is reachable
+    if (isReady) fetchCommunities();
+  }, [isReady]);
 
   /**
    * Fetch data for the current graph based on selected filters.
@@ -109,9 +143,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setCurrentData(undefined);
       }
     };
-
-    fetchData();
-  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, graphOptions]);
+    if (isReady) fetchData();
+  }, [selectedNodeTypes, selectedNodeDegrees, selectedEdgeTypes, graphOptions, isReady]);
 
   /**
    * Fetch data for the diff graph.
@@ -163,9 +196,8 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setFilteredData(undefined);
       }
     };
-
-    fetchData();
-  }, [dateRangeFilter, diffGraphOptions]);
+    if (isReady) fetchData();
+  }, [dateRangeFilter, diffGraphOptions, isReady]);
 
   return (
     <FilterContext.Provider
@@ -189,6 +221,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         colorPalette,
         setColorPalette,
         communities,
+        statusMessage: error ? error : undefined, // Use error state for status message
       }}
     >
       {children}

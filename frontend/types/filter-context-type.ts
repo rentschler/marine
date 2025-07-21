@@ -46,6 +46,7 @@ export interface FilterContextType {
   colorPalette: ColorPalette;
   setColorPalette: Dispatch<SetStateAction<ColorPalette>>;
   communities?: string[];
+  statusMessage?: string;
 }
 
 export interface Community {

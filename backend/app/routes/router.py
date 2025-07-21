@@ -117,6 +117,24 @@ async def start_up():
 async def get_cached_messages():
     return message_cache
 
+# health check endpoint
+@router.get("/")
+async def health_check():
+    driver = AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+    async with driver.session() as session:
+        print(f"Checking database health...")
+
+        node_count = await health_check_db(session)
+
+        if node_count == -1:
+                    raise ConnectionError("Database is not reachable.")
+
+        if node_count == 0:
+            await import_graph_to_db(session)
+
+        else:
+            return JSONResponse(status_code=200, content={"message": f"Database is healthy with {node_count} nodes."})
+
 @router.get("/graph-data")
 async def get_graph_data():
     try:
