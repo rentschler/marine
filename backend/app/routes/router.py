@@ -19,7 +19,8 @@ from models.message import Message, MessageType
 from database_utils.get_node_edges_filter_options import get_node_edges_filter_options
 from database_utils.get_min_max_node_degree import get_min_max_node_degree
 from database_utils.get_hole_graph import get_hole_graph
-from database_utils.get_node_count import get_node_count_in_db
+from database_utils.health_check_db import health_check_db
+from database_utils.import_graph_to_db import import_graph_to_db
 from database_utils.import_edges import import_edges
 from database_utils.import_nodes import import_nodes
 from database_utils.get_min_max_date import get_min_max_date
@@ -43,6 +44,7 @@ from neo4j import AsyncGraphDatabase
 import os
 from langchain_ollama import OllamaLLM
 import numpy as np
+import asyncio
 
 
 import json
@@ -77,43 +79,40 @@ router = APIRouter()
 
 @router.on_event("startup")
 async def start_up():
-    
-    with open('data/MC3_graph.json', 'r') as f:
-        json_data = json.load(f)
+    """
+    This function is called on application startup.
+    It checks the health of the database and imports the graph if necessary.
+    It will retry the connection up to 10 times with a 60-second delay between attempts.
+    """
+    max_retries = 10
+    for attempt in range(max_retries):
+        try:
+            driver = AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+            async with driver.session() as session:
+                print(f"Checking database health... (Attempt {attempt + 1}/{max_retries})")
 
-    try:
-        driver = AsyncGraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-        async with driver.session() as session:
-            print("Checking if Graph is already in Db ...")
-            node_count = await get_node_count_in_db(session)
-            if node_count == 0:
-                print("Laoding graph in DB...")
-                G = json_graph.node_link_graph(json_data, directed=True, edges="edges")
-                #G = await indexing_service.add_graph_communities(graph=G)
+                node_count = await health_check_db(session)
 
-                pos = nx.nx_agraph.graphviz_layout(G, prog="sfdp") 
-                pos = nx.rescale_layout_dict(pos)
+                if node_count == -1:
+                    raise ConnectionError("Database is not reachable.")
 
-                nodes = list(G.nodes(data=True))
-                edges = list(G.edges(data=True))
-                await import_nodes(session, nodes, pos)
-                await import_edges(session, edges)
-
-                # read communities from file and load communities summaries into db
-                level = 2
-                summaries_path = f"summaries/level_{level}"
-                imported_count = await import_communities_to_database(session, level, summaries_path)
-                print(f"Successfully imported {imported_count} communities to database")
-
-                # read communities from db and update nodes with community information
-                updated_count = await update_node_communities(session, level)
-                print(f"Successfully updated {updated_count} nodes with community information from level {level}")
+                if node_count == 0:
+                    print("Database is empty. Starting data import...")
+                    await import_graph_to_db(session)
+                else:
+                    print(f"Database contains {node_count} nodes. Skipping import.")
 
             await driver.close()
-            print("Database is ready")
-    except Exception as e:
-        print(f"Error during DB setup: \n {e}")
+            print("Database setup complete.")
+            break  # Success, exit loop
 
+        except Exception as e:
+            print(f"Attempt {attempt + 1}: {e}")
+            if attempt + 1 < max_retries:
+                print("Retrying in 60 seconds...")
+                await asyncio.sleep(60)
+            else:
+                print("Max retries reached. Skipping database setup.")
 @router.get("/get-cached-messages")
 async def get_cached_messages():
     return message_cache
