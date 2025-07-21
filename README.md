@@ -25,7 +25,7 @@ To run the application, follow these steps:
 
 1. Clone this repository with `git clone [url]`.
 
-2. Open a terminal/shell in the mc3 directory (`mc3`) and run `docker compose up`.
+2. Open a terminal/shell and run `docker compose up`.
 
 The website is available at `http://localhost:3000`.
 
