@@ -14,7 +14,6 @@ In [Mini-Challenge 3](https://vast-challenge.github.io/2025/MC3.html), participa
 
 This project is a solution to the challenge.
 
-For detailed background information and the full challenge description, see [MC3_release/MC3.md](MC3_release/MC3.md).
 
 ### How to run the application
 
@@ -40,7 +39,7 @@ Password: `Ix5EyUzZ`
 
 ### Environment Variables
 
-The application requires the following environment variables to be set in the `docker-compose.yml`  [`docker-compose.yml`](docker-compose.yml) file:
+The application requires the following environment variables to be set in the [`docker-compose.yml`](docker-compose.yml) file:
 
 - `OLLAMA_HOST`: The URL of the Ollama API endpoint
 - `OLLAMA_API_KEY`: The API key for Ollama
