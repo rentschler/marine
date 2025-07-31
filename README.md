@@ -6,7 +6,7 @@
 * Applied Visual Analytics
 
 ## VAST Challenge 2025 MC3
-
+![marine tool screenshot](uploads/marine_demo.png)
 
 ### Willi Kneer & Jonathan Rentschler
 
